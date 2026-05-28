@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemas.azure.com/staticwebapp/configuration.json",
+  "trailingSlash": "auto",
+  "routes": [
+    { "route": "/signin",  "rewrite": "/signin/index.html" },
+    { "route": "/atlas",   "rewrite": "/atlas/index.html" },
+    { "route": "/",        "rewrite": "/index.html" }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/api/*",
+      "/signin/*",
+      "/atlas/*",
+      "/*.{css,js,json,png,jpg,jpeg,svg,ico,webp,woff,woff2,ttf}"
+    ]
+  },
+  "mimeTypes": {
+    ".json": "application/json",
+    ".svg":  "image/svg+xml"
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Cache-Control": "public, max-age=3600"
+  }
+}

@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.python-version
+
+# Node (in case)
+node_modules/
+*.log
+npm-debug.log*
+
+# Azure Functions
+local.settings.json
+bin/
+obj/
+.python_packages/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Build artefacts
+dist/
+build/
+
+# Bicep compile output
+*.bicep.json
+
+# Test outputs
+.pytest_cache/
+.coverage

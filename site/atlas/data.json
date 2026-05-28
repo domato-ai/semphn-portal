@@ -1,0 +1,79 @@
+{
+  "_note": "PLACEHOLDER DATA — same shape as /snhn/data.json. Replaced by real loader output once the per-tenant Postgres reader Function lands. Do not cite these figures as canonical.",
+  "phn": {
+    "name": "South Eastern Melbourne PHN",
+    "short_name": "SEMPHN",
+    "code": "PHN108",
+    "state": "VIC",
+    "lga_count": 10
+  },
+  "snapshot": {
+    "generated_at": "2026-05-21T06:14:00+10:00",
+    "edition": "2025-2028 HNA · living atlas v1",
+    "census_year": 2021,
+    "erp_year": 2024,
+    "sources": [
+      "ABS Census 2021",
+      "ABS SEIFA 2021",
+      "ABS ERP 2024",
+      "AIHW PHN performance indicators",
+      "AIHW SHS NMDS 2022-23",
+      "VAED via VAHI (Victorian admissions)",
+      "DSS Payment Demographic Data",
+      "NDIS Quarterly Reports",
+      "ACARA School Profile",
+      "ATO ABN Bulk Extract",
+      "POLAR GP records (tenant)",
+      "rediCASE (tenant)",
+      "HealthMap service mapping (tenant)",
+      "SEMPHN CRM (tenant)"
+    ]
+  },
+  "summary": {
+    "lga_count": 10,
+    "population_latest": 1638000,
+    "population_2021_census": 1556800,
+    "growth_pa_pct": 3.1,
+    "aged_65_plus_pct": 16.2,
+    "born_overseas_pct": 33.2,
+    "gp_practices": 493,
+    "racfs": 155,
+    "accho_count": 2
+  },
+  "reporting_cycle": {
+    "hna_next_annual_update": "2026-11-15",
+    "hna_full_review_due": "2027-11-15",
+    "hna_cycle_period": "2025-2028",
+    "awp_forward_year_window": "Feb-Mar 2027",
+    "awp_schedule_count": 11,
+    "perf_report_12mpr": "annual post-FY",
+    "perf_report_next_note": "Confirm exact date in SEMPHN funding agreement",
+    "lodgement_channel": "PPERS",
+    "lodgement_url": "https://ppers.health.gov.au/"
+  },
+  "lgas": [
+    { "code": "20910", "name": "Bayside (Vic.)",        "population": 106000, "homeless_rate_10k": 13.7, "shs_rate_1k": 8.0 },
+    { "code": "21370", "name": "Cardinia",              "population": 122000, "homeless_rate_10k": 22.8, "shs_rate_1k": 19.7 },
+    { "code": "21610", "name": "Casey",                 "population": 385000, "homeless_rate_10k": 39.8, "shs_rate_1k": 20.4 },
+    { "code": "22170", "name": "Frankston",             "population": 144000, "homeless_rate_10k": 33.6, "shs_rate_1k": 34.2 },
+    { "code": "22310", "name": "Glen Eira",             "population": 155000, "homeless_rate_10k": 19.7, "shs_rate_1k": 11.7 },
+    { "code": "22670", "name": "Greater Dandenong",     "population": 170000, "homeless_rate_10k": 149.5, "shs_rate_1k": 54.2 },
+    { "code": "23110", "name": "Kingston (Vic.)",       "population": 169000, "homeless_rate_10k": 23.1, "shs_rate_1k": 13.6 },
+    { "code": "23270", "name": "Mornington Peninsula",  "population": 170000, "homeless_rate_10k": 18.8, "shs_rate_1k": 21.2 },
+    { "code": "23810", "name": "Port Phillip",          "population": 115000, "homeless_rate_10k": 31.2, "shs_rate_1k": 12.8 },
+    { "code": "24410", "name": "Stonnington",           "population": 102000, "homeless_rate_10k": 24.6, "shs_rate_1k": 10.3 }
+  ],
+  "funding_schedules": [
+    { "code": "core",                "name": "PHN Core",                              "fy26_value_aud": 19200000, "awp_status": "approved" },
+    { "code": "primary_mh",          "name": "Primary Mental Health",                 "fy26_value_aud": 19900000, "awp_status": "approved" },
+    { "code": "aod",                 "name": "Drug & Alcohol Treatment",              "fy26_value_aud":  2800000, "awp_status": "approved" },
+    { "code": "aged_care",           "name": "Aged Care",                             "fy26_value_aud":  4000000, "awp_status": "approved" },
+    { "code": "after_hours",         "name": "After Hours Primary Health Care",       "fy26_value_aud":  1800000, "awp_status": "approved" },
+    { "code": "headspace",           "name": "Headspace Demand Management",           "fy26_value_aud":  1800000, "awp_status": "approved" },
+    { "code": "itc",                 "name": "Integrated Team Care",                  "fy26_value_aud":  2000000, "awp_status": "approved" },
+    { "code": "ucc",                 "name": "Urgent Care Clinics",                   "fy26_value_aud":  1500000, "awp_status": "approved" },
+    { "code": "psychosocial",        "name": "Commonwealth Psychosocial Support",     "fy26_value_aud": 11500000, "awp_status": "approved" },
+    { "code": "pilots",              "name": "PHN Pilots & Targeted Programs",        "fy26_value_aud":  7200000, "awp_status": "approved" },
+    { "code": "nmhspa",              "name": "National MH & Suicide Prevention",      "fy26_value_aud":  4900000, "awp_status": "approved" }
+  ]
+}

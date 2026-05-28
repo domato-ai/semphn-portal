@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Step 11 · Recommendations · SEMPHN HNA Workbench</title>
+<meta name="description" content="Step 11 of 13: Aggregated recommendations from the 9 substantive chapters. Review, reorder, edit before lodgement." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..900;1,300..900&family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="/atlas/_assets/shell.css" rel="stylesheet" />
+</head>
+<body>
+
+<header class="shell-nav">
+  <div class="shell-nav-inner">
+    <a href="/atlas/" class="shell-brand">
+      <img class="logo" src="/atlas/_assets/semphn-logo.svg" alt="SEMPHN" />
+      <div class="title">
+        Health Needs Assessment <em>workbench</em>
+        <small>2025–2028 · annual update</small>
+      </div>
+    </a>
+    <div class="shell-user" aria-label="Signed-in tenant">
+      <span class="shell-user-mark">S</span>
+      <span class="shell-user-meta">
+        <span class="name">SEMPHN</span>
+        <span class="sub">tenant</span>
+      </span>
+      <button type="button" class="shell-user-out" title="Sign out">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell-progress" data-step="11">
+  <div class="shell-progress-inner">
+    <div class="shell-progress-meta">Step 11 of 13<span class="step-name">Recommendations</span></div>
+    <div class="shell-progress-track"><div class="shell-progress-fill" style="width: 77%"></div></div>
+    <div class="shell-progress-nav">
+      <span class="shell-progress-pct">77%</span>
+      <a href="/atlas/10-workforce/" data-nav="prev">← Back</a>
+      <a href="/atlas/12-preflight/" data-nav="next">Skip →</a>
+    </div>
+  </div>
+</div>
+
+<main class="shell-main">
+  <div class="shell-grid">
+
+    <article>
+      <div class="step-kicker">Step 11 · Synthesis</div>
+      <h1 class="step-title">Aggregated <em>recommendations</em>.</h1>
+      <p class="step-deck">
+        Every recommendation you flagged across Steps 2–10 collected here, grouped by theme.
+        Review, reorder, edit. These land in the HNA's <strong>Recommendations</strong> section
+        and feed directly into next year's commissioning priorities.
+      </p>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>1. Review the <em>aggregated set</em></h2>
+          <span class="meta">Pulled from your decisions across Steps 2–10</span>
+        </div>
+        <p style="margin-bottom: 1rem;">In the final product, this list auto-populates from the priorities ticked in each prior step. Below is a representative draft based on SEMPHN's published 2025–28 HNA structure — edit, reorder, or remove as needed.</p>
+        <table class="dt">
+          <thead>
+            <tr>
+              <th>Theme</th>
+              <th>Recommendation</th>
+              <th>Source step</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="lga">Growth-corridor capacity</td>          <td>Forward planning for primary care expansion in Cardinia, Casey, Greater Dandenong to meet projected demand at 2030.</td>          <td class="num">Step 2</td></tr>
+            <tr><td class="lga">CALD interpreter capacity</td>        <td>Expand interpreter + bilingual-staff coverage in Casey + Greater Dandenong — top 4 SEMPHN interpreter languages.</td>          <td class="num">Step 3</td></tr>
+            <tr><td class="lga">First Nations MH pathway</td>         <td>Culturally-safe MH services in Port Phillip, Frankston, Greater Dandenong — three LGAs above the 18.3% Vic average.</td>          <td class="num">Step 4</td></tr>
+            <tr><td class="lga">Older-person aged care</td>           <td>Mornington Peninsula + Bayside aged-care capacity expansion; integrated RACF + primary care model.</td>          <td class="num">Step 5</td></tr>
+            <tr><td class="lga">Homelessness — Greater Dandenong</td><td>Commission primary care outreach + in-reach in the LGA with rate of 149.5/10k.</td>          <td class="num">Step 6</td></tr>
+            <tr><td class="lga">MH — Frankston intensive</td>          <td>Highest MH conditions /1k + 25.4% psychological distress. Stepped-care + targeted commissioning.</td>          <td class="num">Step 7</td></tr>
+            <tr><td class="lga">Coastal-LGA alcohol response</td>      <td>Mornington Peninsula, Bayside, Port Phillip — targeted brief intervention via GP + community settings.</td>          <td class="num">Step 8</td></tr>
+            <tr><td class="lga">Chronic-disease intensive</td>         <td>Frankston: highest multi-chronic, ED, admissions. CDM expansion + integrated care plan model.</td>          <td class="num">Step 9</td></tr>
+            <tr><td class="lga">Workforce — RACGP accreditation</td>   <td>Greater Dandenong lowest accreditation (62.3%) despite highest disadvantage. Targeted support.</td>          <td class="num">Step 10</td></tr>
+          </tbody>
+        </table>
+        <div class="dt-source">Edit inline in the final product. CSV export available.</div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>2. Make a <em>decision</em></h2>
+          <span class="meta">How do these get framed for DoH submission?</span>
+        </div>
+        <ul class="decisions" data-slug="11-recommendations">
+          <li>
+            <input type="checkbox" id="r1" value="grouped" />
+            <label for="r1" class="lbl">
+              <strong>Group by priority population vs priority health.</strong>
+              <small>Mirrors SEMPHN HNA's chapter structure. Clearest for DoH reviewer.</small>
+            </label>
+          </li>
+          <li>
+            <input type="checkbox" id="r2" value="ranked" />
+            <label for="r2" class="lbl">
+              <strong>Rank by population impact + disadvantage overlap.</strong>
+              <small>Surfaces Greater Dandenong + Casey + Frankston as cross-cutting priorities.</small>
+            </label>
+          </li>
+          <li>
+            <input type="checkbox" id="r3" value="commissionable" />
+            <label for="r3" class="lbl">
+              <strong>Flag recommendations directly tied to existing funding schedules.</strong>
+              <small>Connects HNA recommendations to the FY27 AWP cycle (11 SEMPHN schedules).</small>
+            </label>
+          </li>
+          <li>
+            <input type="checkbox" id="r4" value="cross-sector" />
+            <label for="r4" class="lbl">
+              <strong>Highlight cross-sector partnerships needed.</strong>
+              <small>Housing + justice + family violence + education — recommendations beyond PHN commissioning alone.</small>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>3. Add the <em>preamble</em></h2>
+          <span class="meta">Opens your HNA Recommendations section</span>
+        </div>
+        <p style="margin-bottom: 0.9rem;">Write 1–2 paragraphs that frame the recommendations — how SEMPHN prioritised them, the cross-cutting LGAs and population groups, and how they connect to the FY27 AWP cycle.</p>
+        <textarea class="narrative" data-slug="11-recommendations" placeholder="The 2025–28 HNA recommendations reflect three years of SEMPHN's work to identify priority populations and priority health issues..."></textarea>
+        <div class="narrative-meta">
+          <span>Saves automatically</span>
+          <span class="saved">Not yet saved</span>
+        </div>
+      </section>
+
+      <div class="cta-row">
+        <button type="button" class="btn-primary" data-action="mark-ready" data-slug="11-recommendations" data-next="12-preflight">
+          Mark ready &amp; continue to pre-flight <span class="arrow">→</span>
+        </button>
+        <a href="/atlas/12-preflight/" class="btn-secondary">Skip without marking ready</a>
+      </div>
+    </article>
+
+    <aside class="chat" data-replies="Greater Dandenong + Casey + Frankston appear across 5 of the 9 chapters as priority LGAs. Cross-cutting framing strengthens the HNA narrative.||Group recommendations under the same 5 P&amp;Q Framework outcome themes DoH uses: Addressing Needs, Quality Care, Improving Access, Coordinated Care, Capable Organisations.||The aggregated MH + AOD + homelessness pattern in Port Phillip is the strongest cross-chapter story. Surface it explicitly here.||DoH expects recommendations to tie back to the funding schedules they cover. Mark which of SEMPHN's 11 schedules each recommendation aligns to.">
+      <div class="chat-head">
+        <h3>Assist · Step 11</h3>
+        <span class="demo-pill">Demo</span>
+      </div>
+      <div class="chat-body">
+        <div class="chat-msg bot">
+          I've pulled the recommendations you flagged across Steps 2–10. Want me to group them by population, by health issue, or by funding schedule?
+        </div>
+      </div>
+      <div class="chat-prompts">
+        <span class="chat-prompts-label">Try a prompt</span>
+        <button type="button">Show me the cross-cutting LGAs</button>
+        <button type="button">Group these by funding schedule</button>
+        <button type="button">Draft the preamble paragraph</button>
+        <button type="button">Compare to FY26 recommendations</button>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Ask anything about the synthesis…" />
+        <button type="button">Send</button>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="shell-foot">
+  <div class="shell-foot-inner">
+    <div class="shell-foot-row">
+      <span>SEMPHN · PHN108 · Step 11 of 13 · 2025–28 HNA workbench</span>
+      <span class="shell-foot-built">Built by <strong>Domato AI</strong> · <a href="mailto:support@domato.ai">support@domato.ai</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/atlas/_assets/shell.js"></script>
+</body>
+</html>

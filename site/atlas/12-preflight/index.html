@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Step 12 · Pre-flight check · SEMPHN HNA Workbench</title>
+<meta name="description" content="Step 12 of 13: DoH Compliance Checklist + Performance Rubric run on your draft HNA. Fix any flagged items before Step 13 lodgement." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..900;1,300..900&family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="/atlas/_assets/shell.css" rel="stylesheet" />
+
+<style>
+  /* Preflight-only styling — checklist tiles */
+  .pf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  @media (max-width: 720px) { .pf-grid { grid-template-columns: 1fr; } }
+  .pf-item {
+    display: flex; align-items: flex-start; gap: 0.7rem;
+    padding: 0.85rem 1rem;
+    background: white;
+    border: 1px solid var(--semphn-rule);
+    border-radius: 5px;
+  }
+  .pf-mark {
+    flex: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .pf-mark.ok { background: var(--semphn-safe-pale); color: var(--semphn-safe); }
+  .pf-mark.warn { background: var(--semphn-warn-pale); color: var(--semphn-warn); }
+  .pf-mark.todo { background: var(--semphn-blue-grey); color: var(--semphn-slate); }
+  .pf-text { font-size: 0.92rem; color: var(--semphn-navy-deep); line-height: 1.45; }
+  .pf-text strong { font-weight: 600; }
+  .pf-text small {
+    display: block;
+    margin-top: 0.18rem;
+    font-size: 0.78rem;
+    color: var(--semphn-slate);
+    line-height: 1.45;
+  }
+  .pf-footer {
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--semphn-rule);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 0.8rem;
+  }
+  .pf-grade-pill {
+    background: var(--semphn-safe-pale);
+    color: var(--semphn-safe);
+    padding: 0.35rem 0.7rem;
+    border-radius: 5px;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .pf-grade-label {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+  }
+  .pf-grade-label strong { color: var(--semphn-navy-deep); }
+</style>
+</head>
+<body>
+
+<header class="shell-nav">
+  <div class="shell-nav-inner">
+    <a href="/atlas/" class="shell-brand">
+      <img class="logo" src="/atlas/_assets/semphn-logo.svg" alt="SEMPHN" />
+      <div class="title">
+        Health Needs Assessment <em>workbench</em>
+        <small>2025–2028 · annual update</small>
+      </div>
+    </a>
+    <div class="shell-user" aria-label="Signed-in tenant">
+      <span class="shell-user-mark">S</span>
+      <span class="shell-user-meta">
+        <span class="name">SEMPHN</span>
+        <span class="sub">tenant</span>
+      </span>
+      <button type="button" class="shell-user-out" title="Sign out">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell-progress" data-step="12">
+  <div class="shell-progress-inner">
+    <div class="shell-progress-meta">Step 12 of 13<span class="step-name">Pre-flight check</span></div>
+    <div class="shell-progress-track"><div class="shell-progress-fill" style="width: 85%"></div></div>
+    <div class="shell-progress-nav">
+      <span class="shell-progress-pct">85%</span>
+      <a href="/atlas/11-recommendations/" data-nav="prev">← Back</a>
+      <a href="/atlas/13-lodgement/" data-nav="next">Skip →</a>
+    </div>
+  </div>
+</div>
+
+<main class="shell-main">
+  <div class="shell-grid">
+
+    <article>
+      <div class="step-kicker">Step 12 · DoH compliance check</div>
+      <h1 class="step-title">Pre-flight <em>check</em>.</h1>
+      <p class="step-deck">
+        Your draft HNA run through DoH's <strong>Compliance Checklist</strong> and
+        <strong>Performance Rubric</strong> before lodgement. Items below show what's
+        passing, what's warning (acceptable with rationale), and what's still to do.
+        Predicted DoH grade lands at the bottom.
+      </p>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>1. <em>Compliance</em> · across all 13 steps</h2>
+          <span class="meta">11 pass · 2 warnings (acceptable with rationale)</span>
+        </div>
+        <div class="pf-grid">
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>All 10 catchment LGAs disaggregated</strong> <small>Per ABS Census 2021 + ABS ERP 2024</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>Executive summary on every chapter</strong> <small>≥150 words, priorities bulleted</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>First Nations sub-cohort reported</strong> <small>Ch 4 + integrated into priority pop chapters</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>CALD sub-cohort reported</strong> <small>Ch 3 + cross-referenced in MH + AOD + screening</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>SDOH lens applied per chapter</strong> <small>Dahlgren–Whitehead model per HNA Ch 1 methodology</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>Bradshaw's Taxonomy of Need</strong> <small>4 lenses (comparative, felt, expressed, normative) applied</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>All data sources dated + sourced</strong> <small>Per-figure CSV manifest available</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>Acknowledgement of Country present</strong> <small>Bunurong + Wurundjeri cited in footer</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>Recommendations linked to data</strong> <small>Each Step 11 rec cites an in-chapter table</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>Geographic granularity declared</strong> <small>LGA + SA2 where data supports it; limitations named</small></div></div>
+          <div class="pf-item"><span class="pf-mark ok">✓</span><div class="pf-text"><strong>Funding schedule alignment present</strong> <small>11 SEMPHN schedules cross-referenced in Step 11</small></div></div>
+          <div class="pf-item"><span class="pf-mark warn">!</span><div class="pf-text"><strong>Consultation participants &lt; 50</strong> <small>34 organisations consulted (Jan–Apr 2026). DoH guidance prefers ≥50 for high-need chapters. Acceptable with rationale.</small></div></div>
+          <div class="pf-item"><span class="pf-mark warn">!</span><div class="pf-text"><strong>VAED extract over 30 days old</strong> <small>Last ingest 2 Apr 2026 (~55 days). VAHI refreshes quarterly — next due ~1 Jul 2026.</small></div></div>
+          <div class="pf-item"><span class="pf-mark todo">·</span><div class="pf-text"><strong>Sign-off from SEMPHN Executive</strong> <small>Pending review by SEMPHN Strategy &amp; Planning</small></div></div>
+        </div>
+        <div class="pf-footer">
+          <span class="pf-grade-label"><strong>Performance Rubric:</strong> 9 of 10 dimensions met</span>
+          <span class="pf-grade-pill">Predicted DoH grade · Fully addressed</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>2. Make a <em>decision</em></h2>
+          <span class="meta">How to handle the two warnings</span>
+        </div>
+        <ul class="decisions" data-slug="12-preflight">
+          <li>
+            <input type="checkbox" id="p1" value="rationale" />
+            <label for="p1" class="lbl">
+              <strong>Add a "Limitations and rationale" appendix.</strong>
+              <small>Documents the two warnings + why DoH should consider them acceptable. Pre-empts bounce-back.</small>
+            </label>
+          </li>
+          <li>
+            <input type="checkbox" id="p2" value="vahi-flag" />
+            <label for="p2" class="lbl">
+              <strong>Note VAED-data freshness in the data sources table.</strong>
+              <small>Caveat: figures may shift slightly at next VAHI quarterly refresh.</small>
+            </label>
+          </li>
+          <li>
+            <input type="checkbox" id="p3" value="more-consult" />
+            <label for="p3" class="lbl">
+              <strong>Defer 15 Nov lodgement to add more consultations.</strong>
+              <small>Pushes target to Q1 2027 to add 16+ organisations. DoH allows annual update late lodgement with written explanation.</small>
+            </label>
+          </li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>3. Add the <em>rationale note</em></h2>
+          <span class="meta">Submitted alongside the HNA as a cover note</span>
+        </div>
+        <p style="margin-bottom: 0.9rem;">Brief explanation for DoH covering the two warnings. The assist can draft a starting point.</p>
+        <textarea class="narrative" data-slug="12-preflight" placeholder="SEMPHN's 2026 HNA annual update reflects analysis of 34 stakeholder organisations consulted Jan–Apr 2026. Two pre-flight warnings are acknowledged..."></textarea>
+        <div class="narrative-meta">
+          <span>Saves automatically</span>
+          <span class="saved">Not yet saved</span>
+        </div>
+      </section>
+
+      <div class="cta-row">
+        <button type="button" class="btn-primary" data-action="mark-ready" data-slug="12-preflight" data-next="13-lodgement">
+          Mark ready &amp; continue to lodgement <span class="arrow">→</span>
+        </button>
+        <a href="/atlas/13-lodgement/" class="btn-secondary">Skip without marking ready</a>
+      </div>
+    </article>
+
+    <aside class="chat" data-replies="Both warnings carry DoH-acceptable rationale. The 'Limitations and rationale' appendix is the lowest-friction path — it pre-empts any DoH bounce-back without delaying lodgement.||Most PHNs cite stakeholder cohort &lt; 50 in their annual updates and it's accepted. The full triennial (Nov 2027) is when the 50+ threshold becomes more important.||VAED refresh cadence is outside SEMPHN's control. Footnote the table with 'as at 2 Apr 2026; will refresh ~1 Jul 2026'. DoH accepts this.||Predicted DoH grade of 'Fully addressed' with 9/10 rubric dimensions met is strong. Lodgement should proceed.">
+      <div class="chat-head">
+        <h3>Assist · Step 12</h3>
+        <span class="demo-pill">Demo</span>
+      </div>
+      <div class="chat-body">
+        <div class="chat-msg bot">
+          11 of 14 checks pass cleanly. 2 amber warnings carry rationale DoH accepts. 1 todo (executive sign-off) is workflow rather than content. Want me to draft the rationale note?
+        </div>
+      </div>
+      <div class="chat-prompts">
+        <span class="chat-prompts-label">Try a prompt</span>
+        <button type="button">Draft the rationale note</button>
+        <button type="button">What does "Fully addressed" mean for DoH?</button>
+        <button type="button">Show me the rubric dimension we missed</button>
+        <button type="button">What's the typical DoH turnaround?</button>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Ask anything about the pre-flight…" />
+        <button type="button">Send</button>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="shell-foot">
+  <div class="shell-foot-inner">
+    <div class="shell-foot-row">
+      <span>SEMPHN · PHN108 · Step 12 of 13 · 2025–28 HNA workbench</span>
+      <span class="shell-foot-built">Built by <strong>Domato AI</strong> · <a href="mailto:support@domato.ai">support@domato.ai</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/atlas/_assets/shell.js"></script>
+</body>
+</html>

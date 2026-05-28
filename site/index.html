@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Health Needs Assessment Workbench · SEMPHN</title>
+<meta name="description" content="South Eastern Melbourne Primary Health Network — Health Needs Assessment workbench. Walk the 13-step workflow to prepare your 2025–28 HNA update for PPERS lodgement." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..900;1,300..900&family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="/atlas/_assets/shell.css" rel="stylesheet" />
+
+<style>
+  /* Welcome-page-only flourishes */
+  .welcome-hero {
+    background: linear-gradient(180deg, var(--semphn-paper) 0%, var(--semphn-blue-grey) 100%);
+    padding: clamp(3rem, 6vw, 5rem) var(--gutter) clamp(2rem, 4vw, 3rem);
+    border-bottom: 1px solid var(--semphn-rule);
+  }
+  .welcome-hero-inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: end;
+  }
+  @media (max-width: 880px) { .welcome-hero-inner { grid-template-columns: 1fr; } }
+  .welcome-kicker {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--semphn-teal);
+    margin-bottom: 1.3rem;
+    display: inline-flex; align-items: center; gap: 0.6rem;
+  }
+  .welcome-kicker::before {
+    content: "";
+    width: 26px; height: 1px;
+    background: var(--semphn-teal);
+  }
+  .welcome-title {
+    font-family: var(--serif);
+    font-weight: 340;
+    font-size: clamp(2.6rem, 5.5vw, 4.4rem);
+    line-height: 1;
+    letter-spacing: -0.022em;
+    color: var(--semphn-navy-deep);
+    max-width: 18ch;
+    margin-bottom: 1.4rem;
+  }
+  .welcome-title em { font-style: italic; color: var(--semphn-teal); font-weight: 400; }
+  .welcome-lead {
+    font-family: var(--serif);
+    font-weight: 380;
+    font-size: clamp(1.15rem, 1.6vw, 1.4rem);
+    line-height: 1.55;
+    color: var(--semphn-slate);
+    max-width: 58ch;
+    margin-bottom: 1.8rem;
+  }
+  .welcome-lead strong { color: var(--semphn-navy-deep); font-weight: 500; }
+  .welcome-cta-row {
+    display: flex; align-items: center; gap: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .welcome-cta {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    padding: 1rem 1.6rem;
+    background: var(--semphn-navy-deep);
+    color: white;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.02rem;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.18s;
+  }
+  .welcome-cta:hover { background: var(--semphn-navy-mid); }
+  .welcome-cta .arrow {
+    font-family: var(--mono);
+    background: var(--semphn-teal);
+    color: var(--semphn-navy-deep);
+    width: 26px; height: 26px;
+    border-radius: 4px;
+    display: grid; place-items: center;
+    font-weight: 700;
+  }
+  .welcome-cta-sub {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+  }
+
+  /* Editorial meta strip on right */
+  .welcome-meta {
+    border-left: 2px solid var(--semphn-teal);
+    padding-left: 1.6rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1.2rem;
+    font-size: 0.86rem;
+    color: var(--semphn-slate);
+  }
+  .welcome-meta dt {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+    padding-top: 0.2rem;
+  }
+  .welcome-meta dd { color: var(--semphn-navy-deep); font-weight: 500; }
+  .welcome-meta dd em { font-family: var(--serif); font-style: italic; color: var(--semphn-teal); font-weight: 500; }
+
+  /* "How this works" — 3-up explanation */
+  .how {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: clamp(2.5rem, 5vw, 4rem) var(--gutter);
+  }
+  .how-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--semphn-navy-deep);
+    margin-bottom: 2rem;
+  }
+  .how-head h2 {
+    font-family: var(--serif);
+    font-weight: 340;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    color: var(--semphn-navy-deep);
+    letter-spacing: -0.012em;
+  }
+  .how-head h2 em { font-style: italic; color: var(--semphn-teal); }
+  .how-head .helper {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+  }
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 880px) { .how-grid { grid-template-columns: 1fr; } }
+  .how-card {
+    background: white;
+    border: 1px solid var(--semphn-rule);
+    border-radius: 8px;
+    padding: 1.6rem 1.7rem;
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .how-card .num {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--semphn-teal);
+  }
+  .how-card h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.4rem;
+    letter-spacing: -0.008em;
+    color: var(--semphn-navy-deep);
+  }
+  .how-card h3 em { font-style: italic; color: var(--semphn-teal); }
+  .how-card p {
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--semphn-slate);
+  }
+
+  /* The full 13-step roadmap */
+  .roadmap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 var(--gutter) clamp(3rem, 6vw, 4rem);
+  }
+  .roadmap-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--semphn-navy-deep);
+    margin-bottom: 1.4rem;
+  }
+  .roadmap-head h2 {
+    font-family: var(--serif);
+    font-weight: 340;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    color: var(--semphn-navy-deep);
+    letter-spacing: -0.012em;
+  }
+  .roadmap-head h2 em { font-style: italic; color: var(--semphn-teal); }
+  .roadmap-head .helper {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+  }
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 4px;
+  }
+  @media (max-width: 1080px) { .roadmap-grid { grid-template-columns: repeat(7, 1fr); } }
+  @media (max-width: 720px)  { .roadmap-grid { grid-template-columns: repeat(3, 1fr); } }
+  .roadmap-step {
+    background: white;
+    border: 1px solid var(--semphn-rule);
+    border-radius: 6px;
+    padding: 0.85rem 0.7rem;
+    display: flex; flex-direction: column; gap: 0.45rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s, transform 0.04s;
+  }
+  .roadmap-step:hover {
+    border-color: var(--semphn-teal);
+    background: var(--semphn-teal-pale);
+  }
+  .roadmap-step .num {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    color: var(--semphn-teal);
+    font-weight: 600;
+  }
+  .roadmap-step .name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    color: var(--semphn-navy-deep);
+  }
+  .roadmap-step .stage {
+    margin-top: auto;
+    font-family: var(--mono);
+    font-size: 0.54rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+  }
+</style>
+</head>
+<body>
+
+<header class="shell-nav">
+  <div class="shell-nav-inner">
+    <a href="/atlas/" class="shell-brand">
+      <img class="logo" src="/atlas/_assets/semphn-logo.svg" alt="SEMPHN" />
+      <div class="title">
+        Health Needs Assessment <em>workbench</em>
+        <small>2025–2028 · annual update</small>
+      </div>
+    </a>
+    <div class="shell-user" aria-label="Signed-in tenant">
+      <span class="shell-user-mark">S</span>
+      <span class="shell-user-meta">
+        <span class="name">SEMPHN</span>
+        <span class="sub">tenant</span>
+      </span>
+      <button type="button" class="shell-user-out" title="Sign out">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<section class="welcome-hero">
+  <div class="welcome-hero-inner">
+    <div>
+      <div class="welcome-kicker">Welcome · 2025–28 HNA annual update</div>
+      <h1 class="welcome-title">
+        Build the <em>15 November</em> Needs Assessment update, step by step.
+      </h1>
+      <p class="welcome-lead">
+        This workbench walks you through the <strong>13 stages</strong> of preparing
+        SEMPHN's next Health Needs Assessment update — from confirming your region,
+        through each priority population and priority health issue, all the way to
+        a PPERS-ready submission. Decide what's a priority, see the underlying data,
+        add your narrative, and finish each step before the next.
+      </p>
+      <div class="welcome-cta-row">
+        <a href="/atlas/01-introduction/" class="welcome-cta">
+          Start the workflow <span class="arrow">→</span>
+        </a>
+        <span class="welcome-cta-sub">Step 1 of 13 · 4 min to complete</span>
+      </div>
+    </div>
+    <dl class="welcome-meta">
+      <dt>Edition</dt><dd><em>2025–28 HNA · annual update v1.2 draft</em></dd>
+      <dt>Lodgement deadline</dt><dd>15 November 2026 · 6 months</dd>
+      <dt>Channel</dt><dd>PPERS · ppers.health.gov.au</dd>
+      <dt>Data refresh</dt><dd>21 May 2026 · 06:14 AEST</dd>
+      <dt>Sources</dt><dd>ABS · AIHW · DSS · ACARA · POLAR · rediCASE · HealthMap · SEMPHN CRM</dd>
+      <dt>Reading time</dt><dd>~45 min full walk · save and resume anywhere</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="how">
+  <div class="how-head">
+    <h2>How this <em>works</em>.</h2>
+    <div class="helper">Plain English · no PHN jargon required</div>
+  </div>
+  <div class="how-grid">
+    <div class="how-card">
+      <span class="num">01</span>
+      <h3>See the <em>data</em></h3>
+      <p>
+        Each step opens with the data we've already pulled for that topic —
+        catchment-level + each of your 10 LGAs. ABS, AIHW, plus what's in
+        your POLAR + rediCASE + CRM. Every figure dated and sourced.
+      </p>
+    </div>
+    <div class="how-card">
+      <span class="num">02</span>
+      <h3>Make a <em>decision</em></h3>
+      <p>
+        Choose which findings rise to the level of a priority for SEMPHN.
+        Talk it through with the assist on the right — ask it to summarise,
+        compare to last year, or suggest framing. Tick what matters.
+      </p>
+    </div>
+    <div class="how-card">
+      <span class="num">03</span>
+      <h3>Add the <em>narrative</em></h3>
+      <p>
+        Write the paragraph that will land in your HNA. The assist can draft
+        a starting point. Save automatically. Mark the step ready when you're
+        done — and the next step opens.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="roadmap">
+  <div class="roadmap-head">
+    <h2>The 13-step <em>roadmap</em>.</h2>
+    <div class="helper">Click any step to jump in · progress saves automatically</div>
+  </div>
+  <div class="roadmap-grid">
+    <a href="/atlas/01-introduction/"    class="roadmap-step"><span class="num">01</span><span class="name">About the assessment</span><span class="stage">Methodology</span></a>
+    <a href="/atlas/02-region/"          class="roadmap-step"><span class="num">02</span><span class="name">Our region</span><span class="stage">Overview</span></a>
+    <a href="/atlas/03-cald/"            class="roadmap-step"><span class="num">03</span><span class="name">CALD</span><span class="stage">Priority pop</span></a>
+    <a href="/atlas/04-first-nations/"   class="roadmap-step"><span class="num">04</span><span class="name">First Nations people</span><span class="stage">Priority pop</span></a>
+    <a href="/atlas/05-older-people/"    class="roadmap-step"><span class="num">05</span><span class="name">Older people (65+)</span><span class="stage">Priority pop</span></a>
+    <a href="/atlas/06-homelessness/"    class="roadmap-step"><span class="num">06</span><span class="name">Homelessness</span><span class="stage">Priority pop</span></a>
+    <a href="/atlas/07-mental-health/"   class="roadmap-step"><span class="num">07</span><span class="name">Mental health</span><span class="stage">Priority health</span></a>
+    <a href="/atlas/08-aod/"             class="roadmap-step"><span class="num">08</span><span class="name">Alcohol &amp; other drugs</span><span class="stage">Priority health</span></a>
+    <a href="/atlas/09-chronic-disease/" class="roadmap-step"><span class="num">09</span><span class="name">Chronic disease</span><span class="stage">Priority health</span></a>
+    <a href="/atlas/10-workforce/"       class="roadmap-step"><span class="num">10</span><span class="name">Health workforce</span><span class="stage">Capability</span></a>
+    <a href="/atlas/11-recommendations/" class="roadmap-step"><span class="num">11</span><span class="name">Recommendations</span><span class="stage">Synthesis</span></a>
+    <a href="/atlas/12-preflight/"       class="roadmap-step"><span class="num">12</span><span class="name">Pre-flight check</span><span class="stage">DoH rubric</span></a>
+    <a href="/atlas/13-lodgement/"       class="roadmap-step"><span class="num">13</span><span class="name">Lodge to PPERS</span><span class="stage">Submit</span></a>
+  </div>
+</section>
+
+<footer class="shell-foot">
+  <div class="shell-foot-inner">
+    <div class="shell-foot-ack">
+      We acknowledge the Bunurong and Wurundjeri peoples of the Kulin Nation, the Traditional
+      Owners and Custodians of the lands, waters and skies in which we work. We pay our respects
+      to their Elders past and present. Sovereignty was never ceded.
+    </div>
+    <div class="shell-foot-row">
+      <span>SEMPHN · PHN108 · 2025–28 HNA workbench</span>
+      <span class="shell-foot-built">Built by <strong>Domato AI</strong> · <a href="mailto:support@domato.ai">support@domato.ai</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/atlas/_assets/shell.js"></script>
+</body>
+</html>

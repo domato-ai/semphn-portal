@@ -1,0 +1,55 @@
+# SEMPHN HNA Workbench — Azure SWA CI/CD
+#
+# Build + deploy site/ (frontend) + api/ (Python Functions) on every push to main.
+# Pull request opens get a preview environment too.
+#
+# Required repo secret (set after the SWA resource is created):
+#   AZURE_STATIC_WEB_APPS_API_TOKEN
+#     — pulled from Azure portal → SWA → Overview → "Manage deployment token"
+#
+# The first deploy after Azure resource creation may take ~5 minutes as
+# the SWA provisions its build environment + installs api/requirements.txt.
+
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+
+jobs:
+  build_and_deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "site"
+          api_location: "api"
+          output_location: ""
+          skip_app_build: true     # frontend is plain HTML/CSS/JS — no build step
+
+  close_pull_request:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"

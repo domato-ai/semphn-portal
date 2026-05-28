@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sign in · SEMPHN Catchment Atlas · Domato PHN</title>
+<meta name="description" content="South Eastern Melbourne PHN sign-in for the catchment atlas. Tenant-only access." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..900;1,300..900&family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --ink:        oklch(20% 0.06 250);
+    --ink-soft:   oklch(34% 0.04 250);
+    --ink-mute:   oklch(50% 0.02 250);
+    --paper:      oklch(96% 0.012 80);
+    --paper-2:    oklch(93% 0.018 80);
+    --paper-3:    oklch(88% 0.025 70);
+    --rule:       oklch(82% 0.025 75);
+    --rule-soft:  oklch(87% 0.018 75);
+    --accent:     oklch(53% 0.105 195);
+    --accent-deep:oklch(38% 0.095 200);
+    --accent-soft:oklch(88% 0.045 195);
+    --elevated:   oklch(50% 0.165 30);
+
+    --serif: "Crimson Pro", ui-serif, Georgia, serif;
+    --sans:  "Sora", -apple-system, "Segoe UI", system-ui, sans-serif;
+    --mono:  "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+    --gutter: clamp(1.25rem, 4vw, 3rem);
+    --maxw:   1320px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 16px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  /* Nav */
+  .nav {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.95rem var(--gutter);
+  }
+  .nav-inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+  .brand {
+    font-family: var(--serif);
+    font-weight: 380;
+    font-size: 1.4rem;
+    letter-spacing: -0.005em;
+    color: var(--paper);
+    text-decoration: none;
+    display: inline-flex; align-items: baseline; gap: 0.55rem;
+  }
+  .brand em { font-style: italic; color: var(--accent-soft); font-weight: 360; }
+  .brand .sep { color: oklch(60% 0.06 200); font-weight: 200; }
+  .nav-tag {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: oklch(72% 0.06 200);
+    border-left: 1px solid oklch(45% 0.06 220);
+    padding-left: 1rem;
+    margin-left: 0.4rem;
+  }
+
+  /* Layout */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    max-width: var(--maxw);
+    width: 100%;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 5rem) var(--gutter);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: center;
+  }
+  @media (max-width: 880px) {
+    main { grid-template-columns: 1fr; padding-top: 2.5rem; padding-bottom: 2.5rem; }
+  }
+
+  /* Editorial side */
+  .editorial { max-width: 52ch; }
+  .editorial .kicker {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    margin-bottom: 1.4rem;
+  }
+  .editorial h1 {
+    font-family: var(--serif);
+    font-weight: 380;
+    font-size: clamp(2.1rem, 4.2vw, 3.2rem);
+    line-height: 1.07;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+    margin-bottom: 1.4rem;
+  }
+  .editorial h1 em {
+    font-style: italic;
+    color: var(--accent-deep);
+    font-weight: 380;
+  }
+  .editorial .lead {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 300;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin-bottom: 1.8rem;
+  }
+  .editorial .meta {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.4rem;
+    margin-top: 1.4rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.3rem 1.2rem;
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+  }
+  .editorial .meta dt {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding-top: 0.2rem;
+  }
+  .editorial .meta dd { color: var(--ink-soft); font-weight: 500; }
+
+  /* Card */
+  .card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: clamp(1.8rem, 3.5vw, 2.6rem);
+    box-shadow: 0 1px 0 rgba(20, 30, 60, 0.02), 0 24px 60px -32px rgba(20, 30, 60, 0.18);
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.8rem;
+  }
+  .card-head .tenant {
+    display: flex; align-items: center; gap: 0.7rem;
+  }
+  .tenant-mark {
+    width: 38px; height: 38px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--ink) 0%, var(--accent-deep) 100%);
+    color: var(--paper);
+    display: grid; place-items: center;
+    font-family: var(--serif);
+    font-weight: 500;
+    font-style: italic;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+  }
+  .tenant-name {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .tenant-name .small {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 400;
+    margin-top: 0.15rem;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    padding: 0.3rem 0.55rem;
+    border-radius: 3px;
+  }
+
+  h2.card-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.55rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.4rem;
+  }
+  h2.card-title em { font-style: italic; color: var(--accent-deep); }
+  .card-sub {
+    font-size: 0.85rem;
+    color: var(--ink-mute);
+    margin-bottom: 1.6rem;
+  }
+
+  label.field {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  label.field .lbl {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 0.45rem;
+    display: block;
+  }
+  label.field input {
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 0.7rem 0.85rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  label.field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 0.4rem 0 1.4rem;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .row label { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .row a { color: var(--accent-deep); text-decoration: none; font-weight: 500; }
+  .row a:hover { text-decoration: underline; }
+
+  .btn {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--ink);
+    border-radius: 5px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.04s;
+  }
+  .btn:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+  .btn:active { transform: translateY(1px); }
+
+  /* Auth mode toggle (Sign in / Create account) */
+  .auth-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 3px;
+    margin-bottom: 1.4rem;
+  }
+  .auth-tab {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--ink-mute);
+    padding: 0.55rem 0.8rem;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.15s, color 0.15s;
+  }
+  .auth-tab:hover { color: var(--ink); }
+  .auth-tab.is-active {
+    background: white;
+    color: var(--ink);
+    border-color: var(--rule);
+    box-shadow: 0 1px 0 rgba(20,30,60,0.04);
+  }
+
+  /* Code field: label + send-code button on one line */
+  .code-field { margin-bottom: 1rem; }
+  .code-lbl {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.6rem;
+  }
+  .send-code {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--accent-deep);
+    padding: 0.22rem 0.5rem;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .send-code:hover { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+  .code-field input {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 0.7rem 0.85rem;
+    letter-spacing: 0.4em;
+    text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .code-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .help-row {
+    font-size: 0.74rem;
+    color: var(--ink-mute);
+    margin-top: 0.4rem;
+  }
+
+  .help {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+  }
+  .help a { color: var(--accent-deep); text-decoration: none; font-weight: 500; }
+  .help a:hover { text-decoration: underline; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 1.4rem var(--gutter);
+    margin-top: 2rem;
+    font-size: 0.74rem;
+    color: var(--ink-mute);
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: var(--maxw);
+    width: 100%;
+    margin-left: auto; margin-right: auto;
+  }
+  footer .links { display: flex; gap: 1.2rem; }
+  footer a { color: var(--ink-mute); text-decoration: none; }
+  footer a:hover { color: var(--ink-soft); text-decoration: underline; }
+
+  /* Tenant chooser pill */
+  .tenant-switch {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    cursor: pointer;
+    background: white;
+  }
+  .tenant-switch:hover { color: var(--ink); border-color: var(--ink-mute); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div>
+      <a href="/" class="brand">
+        <span>Domato</span>
+        <span class="sep">·</span>
+        <em>PHN</em>
+      </a>
+      <span class="nav-tag">Tenant sign-in</span>
+    </div>
+    <a href="/" class="tenant-switch" aria-label="Switch tenant">Not SEMPHN? · switch tenant</a>
+  </div>
+</header>
+
+<main>
+  <section class="editorial">
+    <div class="kicker">South Eastern Melbourne PHN · Tenant access</div>
+    <h1>The catchment, the data and the <em>living</em> needs assessment — in one place.</h1>
+    <p class="lead">
+      Sign in to your SEMPHN tenant to view the 2025–2028 Health Needs Assessment
+      as a working atlas. Ten chapters. Ten LGAs. 1.6 million residents. Refreshed
+      when the source data is.
+    </p>
+    <dl class="meta">
+      <dt>Edition</dt><dd>2025–2028 HNA · living atlas v1</dd>
+      <dt>Last refresh</dt><dd>21 May 2026 · 06:14 AEST</dd>
+      <dt>Sources</dt><dd>ABS · AIHW · DSS · ACARA · POLAR · rediCASE · HealthMap</dd>
+      <dt>Reporting cycle</dt><dd>HNA 15 Nov annual · AWP per schedule · 12MPR annual</dd>
+      <dt>Account</dt><dd>Any email · password · emailed code verification</dd>
+    </dl>
+  </section>
+
+  <section>
+    <form class="card" autocomplete="off" onsubmit="event.preventDefault();">
+      <div class="card-head">
+        <div class="tenant">
+          <div class="tenant-mark">S</div>
+          <div class="tenant-name">
+            South Eastern Melbourne PHN
+            <span class="small">PHN108 · tenant</span>
+          </div>
+        </div>
+        <span class="badge">Live</span>
+      </div>
+
+      <div class="auth-toggle" role="tablist" aria-label="Sign in or create account">
+        <button type="button" class="auth-tab is-active" data-mode="signin" role="tab" aria-selected="true">Sign in</button>
+        <button type="button" class="auth-tab" data-mode="signup" role="tab" aria-selected="false">Create account</button>
+      </div>
+
+      <h2 class="card-title" data-signin>Sign in to your <em>tenant</em>.</h2>
+      <h2 class="card-title" data-signup hidden>Create your <em>account</em>.</h2>
+      <div class="card-sub" data-signin>Any email + password + an emailed verification code.</div>
+      <div class="card-sub" data-signup hidden>Any email is fine. You'll get a verification code on submit.</div>
+
+      <label class="field">
+        <span class="lbl">Email</span>
+        <input type="email" placeholder="you@example.com" autocomplete="email" required />
+      </label>
+      <label class="field">
+        <span class="lbl">Password</span>
+        <input type="password" placeholder="At least 10 characters" autocomplete="current-password" minlength="10" required />
+      </label>
+      <label class="field" data-signup hidden>
+        <span class="lbl">Confirm password</span>
+        <input type="password" placeholder="Re-enter password" autocomplete="new-password" minlength="10" />
+      </label>
+
+      <div class="field code-field">
+        <span class="lbl code-lbl">
+          Verification code
+          <button type="button" class="send-code">Send code to email</button>
+        </span>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="6-digit code emailed to you" />
+        <div class="help-row">Code expires after 10 minutes. Resend if you don't see it.</div>
+      </div>
+
+      <div class="row">
+        <label><input type="checkbox" /> Remember this device for 14 days</label>
+        <a href="#" data-signin>Forgot password?</a>
+        <a href="#" data-signup hidden>Already have one? Sign in</a>
+      </div>
+      <button type="submit" class="btn" data-signin>Sign in</button>
+      <button type="submit" class="btn" data-signup hidden>Create account &amp; verify</button>
+
+      <div class="help">
+        Trouble signing up? Contact <a href="mailto:support@domato.ai">support@domato.ai</a>.
+      </div>
+    </form>
+
+    <script>
+      // Tiny toggle: switches between sign-in and sign-up modes
+      (function () {
+        const card = document.querySelector('.card');
+        if (!card) return;
+        const tabs = card.querySelectorAll('.auth-tab');
+        const apply = (mode) => {
+          card.querySelectorAll('[data-signin]').forEach(el => {
+            el.hidden = mode !== 'signin';
+          });
+          card.querySelectorAll('[data-signup]').forEach(el => {
+            el.hidden = mode !== 'signup';
+          });
+          tabs.forEach(t => {
+            const active = t.dataset.mode === mode;
+            t.classList.toggle('is-active', active);
+            t.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+        };
+        tabs.forEach(t => t.addEventListener('click', () => apply(t.dataset.mode)));
+        apply('signin');
+
+        // Mock auth: on submit, set a localStorage session and redirect to the atlas.
+        // Real authentication (email/password verification, OTP delivery) is a follow-up
+        // requiring a backend — there is none in this repo yet. Frontend gate only.
+        const form = card.closest('form') || card.querySelector('form') || card;
+        const submit = (e) => {
+          e.preventDefault();
+          const emailInput = card.querySelector('input[type=email]');
+          const email = emailInput && emailInput.value.trim().toLowerCase();
+          if (!email) { emailInput && emailInput.focus(); return; }
+          try {
+            localStorage.setItem('domato.semphn.session', JSON.stringify({
+              email: email,
+              tenant: 'semphn',
+              tenantName: 'South Eastern Melbourne PHN',
+              tenantCode: 'PHN108',
+              signedInAt: new Date().toISOString(),
+            }));
+          } catch (_) { /* private mode: continue without persistence */ }
+          // Redirect to the atlas cover. Use a relative path so it works on any host.
+          window.location.href = '/atlas/';
+        };
+        if (form && form.tagName === 'FORM') form.addEventListener('submit', submit);
+      })();
+    </script>
+  </section>
+</main>
+
+<footer>
+  <div>Domato PHN · ABN 94 695 794 346 · Tenant: SEMPHN (PHN108)</div>
+  <div class="links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Status</a>
+    <a href="mailto:support@domato.ai">support@domato.ai</a>
+  </div>
+</footer>
+
+</body>
+</html>

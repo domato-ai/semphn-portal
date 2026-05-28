@@ -1,0 +1,625 @@
+/*
+ * SEMPHN HNA Workbench — shared shell stylesheet.
+ *
+ * Used by every page under /atlas/ — Welcome, the 13
+ * numbered step pages, and the Lodgement screen. Defines:
+ *   - SEMPHN brand variables (the real palette pulled from semphn.org.au)
+ *   - the dark navy header (SEMPHN logo left, page title centre, user pill right)
+ *   - the progress bar shown across every numbered step
+ *   - the 2-column layout (main content + sticky chat assist)
+ *   - form controls (radios, textareas, primary CTAs) matched to SEMPHN brand
+ *   - the footer with "Built by Domato AI" attribution + Acknowledgement
+ *
+ * Page-specific styles live inline in each step page so the shell stays small.
+ */
+
+:root {
+  /* SEMPHN brand — pulled from semphn.org.au stylesheet */
+  --semphn-navy-deep:   #04264E;   /* primary brand */
+  --semphn-navy-mid:    #003D69;   /* gradient top end */
+  --semphn-navy-soft:   #4C6582;   /* navy at 50% mix with white — for soft borders */
+  --semphn-teal:        #55BFAF;   /* primary accent */
+  --semphn-teal-mint:   #82D9C4;   /* soft accent */
+  --semphn-teal-pale:   #E5F4F0;   /* tint for backgrounds */
+  --semphn-slate:       #324354;   /* secondary text */
+  --semphn-blue-grey:   #EFF3F9;   /* page background */
+  --semphn-rule:        #D6DFEB;   /* subtle rules */
+  --semphn-rule-soft:   #E6EBF3;
+  --semphn-paper:       #FFFFFF;
+  --semphn-warn:        #C46A2E;
+  --semphn-warn-pale:   #FBEEDF;
+  --semphn-safe:        #2F8265;
+  --semphn-safe-pale:   #DBEEE5;
+
+  --serif: "Crimson Pro", Georgia, "Times New Roman", serif;
+  --sans:  "Sora", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --mono:  "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --maxw:   1280px;
+  --shellh: 64px;
+  --proghh: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--semphn-blue-grey);
+  color: var(--semphn-navy-deep);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+::selection { background: var(--semphn-teal-mint); color: var(--semphn-navy-deep); }
+
+/* ─────────────────── SEMPHN-BRANDED HEADER ─────────────────── */
+.shell-nav {
+  background: linear-gradient(90deg, var(--semphn-navy-deep) 0%, var(--semphn-navy-mid) 100%);
+  color: white;
+  height: var(--shellh);
+  display: flex; align-items: center;
+  padding: 0 var(--gutter);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 6px 18px -10px rgba(4,38,78,0.4);
+}
+.shell-nav-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 2rem;
+}
+.shell-brand {
+  display: inline-flex; align-items: center; gap: 1rem;
+  color: white;
+  text-decoration: none;
+}
+.shell-brand .logo {
+  height: 36px; width: auto;
+  display: block;
+}
+.shell-brand .title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.05rem;
+  letter-spacing: 0.005em;
+  color: rgba(255,255,255,0.9);
+  border-left: 1px solid rgba(255,255,255,0.25);
+  padding-left: 1rem;
+  line-height: 1.1;
+}
+.shell-brand .title small {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-style: normal;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--semphn-teal-mint);
+  margin-top: 0.18rem;
+}
+.shell-user {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.32rem 0.75rem 0.32rem 0.4rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+}
+.shell-user-mark {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  background: var(--semphn-teal);
+  color: var(--semphn-navy-deep);
+  display: grid; place-items: center;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+.shell-user-meta {
+  display: inline-flex; flex-direction: column;
+  line-height: 1.1;
+}
+.shell-user-meta .name {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: white;
+  font-weight: 600;
+}
+.shell-user-meta .sub {
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-top: 0.1rem;
+}
+.shell-user-out {
+  margin-left: 0.35rem;
+  padding-left: 0.65rem;
+  border-left: 1px solid rgba(255,255,255,0.2);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border-top: none; border-right: none; border-bottom: none;
+}
+.shell-user-out:hover { color: white; }
+@media (max-width: 760px) {
+  .shell-brand .title { display: none; }
+  .shell-user-meta { display: none; }
+}
+
+/* ─────────────────── PROGRESS BAR (numbered steps only) ─────────────────── */
+.shell-progress {
+  background: white;
+  border-bottom: 1px solid var(--semphn-rule);
+  padding: 0.85rem var(--gutter);
+  position: sticky; top: var(--shellh); z-index: 90;
+}
+.shell-progress-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.2rem;
+  align-items: center;
+}
+.shell-progress-meta {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+}
+.shell-progress-meta strong {
+  color: var(--semphn-navy-deep);
+  font-weight: 600;
+}
+.shell-progress-meta .step-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--semphn-navy-deep);
+  margin-left: 0.5rem;
+}
+.shell-progress-track {
+  height: 6px;
+  background: var(--semphn-rule-soft);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.shell-progress-fill {
+  position: absolute; inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--semphn-teal) 0%, var(--semphn-teal-mint) 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.shell-progress-pct {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--semphn-navy-deep);
+  letter-spacing: 0.08em;
+}
+.shell-progress-nav {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+}
+.shell-progress-nav a {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--semphn-rule);
+  border-radius: 4px;
+}
+.shell-progress-nav a:hover { color: var(--semphn-navy-deep); border-color: var(--semphn-navy-deep); }
+.shell-progress-nav a[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+@media (max-width: 880px) {
+  .shell-progress-inner { grid-template-columns: 1fr; row-gap: 0.6rem; }
+  .shell-progress-nav { justify-content: flex-end; }
+}
+
+/* ─────────────────── PAGE LAYOUT ─────────────────── */
+.shell-main {
+  flex: 1;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  width: 100%;
+  padding: clamp(2rem, 4vw, 3rem) var(--gutter) clamp(3rem, 6vw, 4rem);
+}
+.shell-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
+}
+@media (max-width: 1080px) { .shell-grid { grid-template-columns: 1fr; } }
+
+/* Step header */
+.step-kicker {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--semphn-teal);
+  margin-bottom: 1rem;
+  display: inline-flex; align-items: center; gap: 0.6rem;
+}
+.step-kicker::before {
+  content: "";
+  width: 22px; height: 1px;
+  background: var(--semphn-teal);
+}
+.step-title {
+  font-family: var(--serif);
+  font-weight: 380;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.018em;
+  color: var(--semphn-navy-deep);
+  margin-bottom: 1rem;
+}
+.step-title em { font-style: italic; color: var(--semphn-teal); font-weight: 400; }
+.step-deck {
+  font-family: var(--serif);
+  font-weight: 380;
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+  line-height: 1.55;
+  color: var(--semphn-slate);
+  max-width: 62ch;
+  margin-bottom: 2rem;
+}
+.step-deck strong { color: var(--semphn-navy-deep); font-weight: 500; }
+
+/* Generic card surface for sections */
+.card {
+  background: var(--semphn-paper);
+  border: 1px solid var(--semphn-rule);
+  border-radius: 8px;
+  padding: clamp(1.4rem, 2.5vw, 2rem);
+  margin-bottom: 1.4rem;
+}
+.card-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 0.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--semphn-rule);
+  margin-bottom: 1.2rem;
+}
+.card-head h2 {
+  font-family: var(--serif);
+  font-weight: 380;
+  font-size: clamp(1.35rem, 2vw, 1.65rem);
+  letter-spacing: -0.01em;
+  color: var(--semphn-navy-deep);
+}
+.card-head h2 em { font-style: italic; color: var(--semphn-teal); }
+.card-head .meta {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+}
+.card p {
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--semphn-slate);
+  max-width: 70ch;
+}
+.card p + p { margin-top: 0.7rem; }
+.card p strong { color: var(--semphn-navy-deep); font-weight: 500; }
+
+/* Decision panel: tick-box list of priority options */
+.decisions {
+  list-style: none; padding: 0;
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.decisions li {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--semphn-rule);
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.decisions li:hover { border-color: var(--semphn-teal); background: var(--semphn-teal-pale); }
+.decisions li.is-on { border-color: var(--semphn-teal); background: var(--semphn-teal-pale); }
+.decisions input { flex: none; margin-top: 0.25rem; accent-color: var(--semphn-teal); }
+.decisions .lbl { font-size: 0.94rem; color: var(--semphn-navy-deep); line-height: 1.45; }
+.decisions .lbl strong { font-weight: 600; }
+.decisions .lbl small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  color: var(--semphn-slate);
+  line-height: 1.45;
+}
+
+/* Narrative textarea */
+.narrative {
+  width: 100%;
+  min-height: 180px;
+  border: 1px solid var(--semphn-rule);
+  border-radius: 5px;
+  padding: 0.85rem 1rem;
+  background: white;
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: var(--semphn-navy-deep);
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.narrative:focus {
+  outline: none;
+  border-color: var(--semphn-teal);
+  box-shadow: 0 0 0 3px rgba(85,191,175,0.18);
+}
+.narrative-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 0.4rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+}
+.narrative-meta .saved { color: var(--semphn-safe); }
+
+/* Primary CTA + secondary controls */
+.cta-row {
+  display: flex; align-items: center; gap: 1rem;
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--semphn-rule);
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.85rem 1.4rem;
+  background: var(--semphn-navy-deep);
+  color: white;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--semphn-navy-deep);
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.18s;
+}
+.btn-primary:hover { background: var(--semphn-navy-mid); }
+.btn-primary .arrow { font-family: var(--mono); }
+.btn-secondary {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+  background: transparent;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0.5rem 0.6rem;
+}
+.btn-secondary:hover { color: var(--semphn-navy-deep); }
+
+/* ─────────────────── CHAT ASSIST PANEL (right rail) ─────────────────── */
+.chat {
+  position: sticky;
+  top: calc(var(--shellh) + var(--proghh) + 16px);
+  background: white;
+  border: 1px solid var(--semphn-rule);
+  border-radius: 8px;
+  display: flex; flex-direction: column;
+  height: calc(100vh - var(--shellh) - var(--proghh) - 48px);
+  max-height: 600px;
+  overflow: hidden;
+}
+.chat-head {
+  padding: 0.85rem 1.1rem 0.75rem;
+  background: var(--semphn-navy-deep);
+  color: white;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.chat-head h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 1rem;
+  color: white;
+}
+.chat-head .demo-pill {
+  font-family: var(--mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--semphn-navy-deep);
+  background: var(--semphn-teal);
+  padding: 0.18rem 0.45rem;
+  border-radius: 3px;
+}
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.1rem;
+  display: flex; flex-direction: column; gap: 0.7rem;
+  background: var(--semphn-blue-grey);
+}
+.chat-msg {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  max-width: 92%;
+}
+.chat-msg.bot {
+  background: white;
+  color: var(--semphn-navy-deep);
+  border: 1px solid var(--semphn-rule);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+.chat-msg.user {
+  background: var(--semphn-navy-deep);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+.chat-msg strong { font-weight: 600; }
+.chat-prompts {
+  padding: 0.7rem 1.1rem 1rem;
+  border-top: 1px solid var(--semphn-rule);
+  background: white;
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.chat-prompts-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+  margin-bottom: 0.15rem;
+}
+.chat-prompts button {
+  text-align: left;
+  font-family: var(--sans);
+  font-size: 0.84rem;
+  color: var(--semphn-navy-deep);
+  background: var(--semphn-blue-grey);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.chat-prompts button:hover {
+  background: var(--semphn-teal-pale);
+  border-color: var(--semphn-teal);
+}
+.chat-input {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1rem 0.9rem;
+  border-top: 1px solid var(--semphn-rule);
+  background: white;
+}
+.chat-input input {
+  flex: 1;
+  border: 1px solid var(--semphn-rule);
+  border-radius: 4px;
+  padding: 0.55rem 0.7rem;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  color: var(--semphn-navy-deep);
+}
+.chat-input input:focus { outline: none; border-color: var(--semphn-teal); }
+.chat-input button {
+  background: var(--semphn-teal);
+  color: var(--semphn-navy-deep);
+  border: none;
+  border-radius: 4px;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+}
+.chat-input button:hover { background: var(--semphn-teal-mint); }
+@media (max-width: 1080px) {
+  .chat { position: static; height: auto; max-height: none; margin-top: 1.5rem; }
+}
+
+/* ─────────────────── DATA TABLE ─────────────────── */
+.dt {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid var(--semphn-rule);
+  font-size: 0.9rem;
+}
+.dt thead th {
+  background: var(--semphn-blue-grey);
+  color: var(--semphn-navy-deep);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--semphn-rule);
+}
+.dt thead th.r { text-align: right; }
+.dt tbody tr { border-top: 1px solid var(--semphn-rule-soft); }
+.dt tbody tr:hover { background: var(--semphn-blue-grey); }
+.dt tbody td { padding: 0.65rem 0.85rem; color: var(--semphn-slate); }
+.dt tbody td.lga { color: var(--semphn-navy-deep); font-weight: 500; font-family: var(--serif); font-size: 1rem; }
+.dt tbody td.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--semphn-navy-deep); }
+.dt-source {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--semphn-slate);
+  margin-top: 0.45rem;
+}
+.dt-source a { color: var(--semphn-teal); text-decoration: none; border-bottom: 1px dotted var(--semphn-teal); }
+
+/* ─────────────────── FOOTER ─────────────────── */
+.shell-foot {
+  background: white;
+  border-top: 1px solid var(--semphn-rule);
+  padding: 1.4rem var(--gutter);
+}
+.shell-foot-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: flex; flex-direction: column; gap: 0.9rem;
+}
+.shell-foot-row {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+}
+.shell-foot-row a { color: var(--semphn-slate); text-decoration: none; border-bottom: 1px dotted var(--semphn-rule); }
+.shell-foot-row a:hover { color: var(--semphn-navy-deep); }
+.shell-foot-ack {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--semphn-slate);
+  max-width: 80ch;
+}
+.shell-foot-built {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--semphn-slate);
+}
+.shell-foot-built strong { color: var(--semphn-navy-deep); font-weight: 600; }

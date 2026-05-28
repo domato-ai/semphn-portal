@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Step 13 · Lodge to PPERS · SEMPHN HNA Workbench</title>
+<meta name="description" content="Step 13 of 13: Final lodgement. All 13 steps complete. Download the PPERS-ready artefact bundle, open ppers.health.gov.au, and submit your 2026 HNA annual update." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..900;1,300..900&family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="/atlas/_assets/shell.css" rel="stylesheet" />
+
+<style>
+  /* Final-step flourishes */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 4px;
+    margin: 1.4rem 0 0.7rem;
+  }
+  @media (max-width: 1080px) { .summary-grid { grid-template-columns: repeat(7, 1fr); } }
+  @media (max-width: 720px)  { .summary-grid { grid-template-columns: repeat(5, 1fr); } }
+  .summary-tile {
+    aspect-ratio: 1 / 1;
+    background: var(--semphn-safe-pale);
+    color: var(--semphn-safe);
+    border: 1px solid var(--semphn-safe);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .summary-tile.warn {
+    background: var(--semphn-warn-pale);
+    color: var(--semphn-warn);
+    border-color: var(--semphn-warn);
+  }
+  .summary-tile .step { font-size: 0.5rem; letter-spacing: 0.12em; color: inherit; opacity: 0.7; font-weight: 600; }
+  .summary-meta {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+    margin-top: 0.4rem;
+  }
+  .artefacts {
+    display: flex; flex-direction: column; gap: 0.55rem;
+  }
+  .artefact {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    background: var(--semphn-blue-grey);
+    border: 1px solid var(--semphn-rule);
+    border-radius: 5px;
+  }
+  .artefact .lbl { display: flex; flex-direction: column; gap: 0.15rem; }
+  .artefact .lbl strong { color: var(--semphn-navy-deep); font-weight: 600; font-size: 0.95rem; }
+  .artefact .lbl small {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--semphn-slate);
+  }
+  .artefact a {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: white;
+    background: var(--semphn-navy-deep);
+    padding: 0.5rem 0.85rem;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+  .artefact a:hover { background: var(--semphn-navy-mid); }
+  .ppers-handoff {
+    margin-top: 1.5rem;
+    background: linear-gradient(90deg, var(--semphn-navy-deep) 0%, var(--semphn-navy-mid) 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 1.8rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.8rem;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .ppers-handoff { grid-template-columns: 1fr; } }
+  .ppers-handoff h2 {
+    font-family: var(--serif);
+    font-weight: 380;
+    font-size: clamp(1.4rem, 2.4vw, 1.85rem);
+    color: white;
+    margin-bottom: 0.4rem;
+  }
+  .ppers-handoff h2 em { font-style: italic; color: var(--semphn-teal-mint); }
+  .ppers-handoff p { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.55; max-width: 60ch; }
+  .ppers-handoff p a { color: var(--semphn-teal-mint); text-decoration: none; border-bottom: 1px dotted var(--semphn-teal); font-family: var(--mono); font-size: 0.85rem; }
+  .ppers-handoff-cta {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    background: var(--semphn-teal);
+    color: var(--semphn-navy-deep);
+    padding: 1rem 1.4rem;
+    border-radius: 5px;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 0.98rem;
+    text-decoration: none;
+    transition: background 0.18s;
+  }
+  .ppers-handoff-cta:hover { background: var(--semphn-teal-mint); }
+  .ppers-handoff-cta .ico {
+    width: 24px; height: 24px;
+    border-radius: 4px;
+    background: var(--semphn-navy-deep);
+    color: white;
+    display: grid; place-items: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .lodge-log {
+    margin-top: 1.4rem;
+  }
+  .lodge-log table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  .lodge-log th, .lodge-log td { text-align: left; padding: 0.6rem 0.8rem; border-top: 1px dotted var(--semphn-rule); }
+  .lodge-log thead th {
+    border-top: none;
+    font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--semphn-slate); font-weight: 600;
+  }
+  .lodge-log td.who { color: var(--semphn-navy-deep); font-weight: 500; font-family: var(--serif); }
+  .lodge-log .pill {
+    display: inline-block;
+    font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 0.18rem 0.5rem; border-radius: 3px;
+  }
+  .pill.ok { background: var(--semphn-safe-pale); color: var(--semphn-safe); }
+  .pill.draft { background: var(--semphn-blue-grey); color: var(--semphn-slate); }
+</style>
+</head>
+<body>
+
+<header class="shell-nav">
+  <div class="shell-nav-inner">
+    <a href="/atlas/" class="shell-brand">
+      <img class="logo" src="/atlas/_assets/semphn-logo.svg" alt="SEMPHN" />
+      <div class="title">
+        Health Needs Assessment <em>workbench</em>
+        <small>2025–2028 · annual update</small>
+      </div>
+    </a>
+    <div class="shell-user" aria-label="Signed-in tenant">
+      <span class="shell-user-mark">S</span>
+      <span class="shell-user-meta">
+        <span class="name">SEMPHN</span>
+        <span class="sub">tenant</span>
+      </span>
+      <button type="button" class="shell-user-out" title="Sign out">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell-progress" data-step="13">
+  <div class="shell-progress-inner">
+    <div class="shell-progress-meta">Step 13 of 13<span class="step-name">Lodge to PPERS</span></div>
+    <div class="shell-progress-track"><div class="shell-progress-fill" style="width: 100%"></div></div>
+    <div class="shell-progress-nav">
+      <span class="shell-progress-pct">100%</span>
+      <a href="/atlas/12-preflight/" data-nav="prev">← Back</a>
+      <a href="#" data-nav="next" aria-disabled="true">Final step</a>
+    </div>
+  </div>
+</div>
+
+<main class="shell-main">
+  <div class="shell-grid">
+
+    <article>
+      <div class="step-kicker">Step 13 · Final lodgement</div>
+      <h1 class="step-title">Lodge to <em>PPERS</em>.</h1>
+      <p class="step-deck">
+        All 13 steps walked. <strong>11 marked ready</strong>; 2 carry pre-flight warnings that
+        DoH considers acceptable with rationale. Predicted Performance Rubric grade:
+        <strong>Fully addressed</strong>. Below — your PPERS-ready artefact bundle and the handoff to
+        <a href="https://ppers.health.gov.au/" target="_blank" rel="noopener noreferrer">ppers.health.gov.au</a>.
+      </p>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>Step-by-step <em>summary</em></h2>
+          <span class="meta">11 ready · 2 with rationale</span>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-tile">01<span class="step">About</span></div>
+          <div class="summary-tile">02<span class="step">Region</span></div>
+          <div class="summary-tile">03<span class="step">CALD</span></div>
+          <div class="summary-tile">04<span class="step">First Nations</span></div>
+          <div class="summary-tile">05<span class="step">Older</span></div>
+          <div class="summary-tile warn">06<span class="step">Homelessness</span></div>
+          <div class="summary-tile">07<span class="step">MH</span></div>
+          <div class="summary-tile">08<span class="step">AOD</span></div>
+          <div class="summary-tile warn">09<span class="step">Chronic</span></div>
+          <div class="summary-tile">10<span class="step">Workforce</span></div>
+          <div class="summary-tile">11<span class="step">Recs</span></div>
+          <div class="summary-tile">12<span class="step">Preflight</span></div>
+          <div class="summary-tile">13<span class="step">Lodge</span></div>
+        </div>
+        <div class="summary-meta">
+          Green ▪ ready · Amber ▪ warning with rationale. DoH's Compliance Checklist passes both warnings.
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>PPERS-ready <em>artefacts</em></h2>
+          <span class="meta">Generated from your 13-step work</span>
+        </div>
+        <div class="artefacts">
+          <div class="artefact">
+            <div class="lbl">
+              <strong>SEMPHN HNA 2025–28 · v1.2 annual update</strong>
+              <small>PDF · DoH HNA template · 84 pp · 3.2 MB</small>
+            </div>
+            <a href="#">Download</a>
+          </div>
+          <div class="artefact">
+            <div class="lbl">
+              <strong>SEMPHN HNA 2025–28 · editable</strong>
+              <small>Word DOCX · 1.8 MB</small>
+            </div>
+            <a href="#">Download</a>
+          </div>
+          <div class="artefact">
+            <div class="lbl">
+              <strong>All tables + sources (CSV bundle)</strong>
+              <small>ZIP · 47 files · 580 KB</small>
+            </div>
+            <a href="#">Download</a>
+          </div>
+          <div class="artefact">
+            <div class="lbl">
+              <strong>Charts at 300 dpi</strong>
+              <small>PNG ZIP · 32 charts · 4.6 MB</small>
+            </div>
+            <a href="#">Download</a>
+          </div>
+          <div class="artefact">
+            <div class="lbl">
+              <strong>Per-figure citation manifest</strong>
+              <small>JSON sidecar · 78 KB · for audit trail</small>
+            </div>
+            <a href="#">Download</a>
+          </div>
+        </div>
+
+        <div class="ppers-handoff">
+          <div>
+            <h2>Ready to <em>lodge</em>.</h2>
+            <p>
+              Opens <a href="https://ppers.health.gov.au/" target="_blank" rel="noopener noreferrer">ppers.health.gov.au</a>
+              in a new tab. Artefacts above download alongside. The PPERS field-mapping cheatsheet
+              opens in a side window — paste-by-paste guidance through the PPERS workflow.
+              <strong>The workbench doesn't lodge for you — you do the lodge.</strong>
+            </p>
+          </div>
+          <a href="https://ppers.health.gov.au/" target="_blank" rel="noopener noreferrer" class="ppers-handoff-cta">
+            <span class="ico">↗</span>
+            Open PPERS &amp; download all
+          </a>
+        </div>
+      </section>
+
+      <section class="card lodge-log">
+        <div class="card-head">
+          <h2>Lodgement <em>log</em></h2>
+          <span class="meta">Versioned. DoH feedback captured.</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Version</th><th>Lodged by</th><th>PPERS ref</th><th>DoH outcome</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>15 Nov 2025</td>
+              <td>v1.0 · 2025–28 inaugural</td>
+              <td class="who">SEMPHN Strategy &amp; Planning</td>
+              <td>PPERS-2025-NA-108-006</td>
+              <td><span class="pill ok">Approved · 04 Dec 2025</span></td>
+            </tr>
+            <tr>
+              <td>22 May 2026</td>
+              <td>v1.2 · this draft</td>
+              <td class="who">demo@semphn.org.au</td>
+              <td>—</td>
+              <td><span class="pill draft">Draft · ready to lodge</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </article>
+
+    <aside class="chat" data-replies="The two amber warnings (Ch 6 consultations &lt; 50 orgs and Ch 9 PIP-QI integration pending) are flagged as 'acceptable with rationale' by DoH's Performance Rubric. You don't need to fix them before lodgement.||If DoH bounces this back for amendment, the workbench captures the feedback against the affected step and re-opens it for editing. Version history preserved.||Want a one-line lodgement note to paste into PPERS? 'SEMPHN HNA 2025-28 annual update v1.2 — 11 chapters preflight-clean, 2 with documented rationale. Predicted Rubric: Fully addressed.'||DoH's typical turnaround on annual updates is 2–4 weeks. Plan accordingly.">
+      <div class="chat-head">
+        <h3>Assist · Lodgement</h3>
+        <span class="demo-pill">Demo</span>
+      </div>
+      <div class="chat-body">
+        <div class="chat-msg bot">
+          You're at the final step. All 13 stages are walked. Two amber warnings carry DoH-acceptable rationale. Want me to draft the PPERS submission note?
+        </div>
+      </div>
+      <div class="chat-prompts">
+        <span class="chat-prompts-label">Try a prompt</span>
+        <button type="button">Draft a one-line submission note for PPERS</button>
+        <button type="button">What happens after DoH receives this?</button>
+        <button type="button">Show me the two amber warnings</button>
+        <button type="button">Predicted DoH turnaround?</button>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Ask anything about lodgement…" />
+        <button type="button">Send</button>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="shell-foot">
+  <div class="shell-foot-inner">
+    <div class="shell-foot-row">
+      <span>SEMPHN · PHN108 · Step 13 of 13 · 2025–28 HNA workbench</span>
+      <span class="shell-foot-built">Built by <strong>Domato AI</strong> · <a href="mailto:support@domato.ai">support@domato.ai</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/atlas/_assets/shell.js"></script>
+</body>
+</html>
