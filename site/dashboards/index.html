@@ -154,6 +154,9 @@
       <a href="/dashboards/" class="nav-link" data-page="dashboards"><span class="dot"></span>Dashboards</a>
       <a href="/maps/"       class="nav-link" data-page="maps"><span class="dot"></span>Maps</a>
     </nav>
+    <button type="button" class="nav-cmdk" aria-label="Open command palette" title="Open command palette">
+      <span>Search</span> <kbd>⌘K</kbd>
+    </button>
     <div class="nav-user" aria-label="Signed-in tenant">
       <span class="av">D</span>
       <span class="meta">
@@ -169,6 +172,7 @@
 
   <!-- CHAT (LEFT) -->
   <section class="chat" aria-label="Workbench chat">
+    <button type="button" class="chat-collapse" aria-label="Collapse chat panel" title="Collapse chat panel">‹</button>
     <div class="chat-feed" id="chat-feed"></div>
     <footer class="composer">
       <div class="composer-prompt">Ask for changes</div>
@@ -190,6 +194,8 @@
       </div>
     </footer>
   </section>
+
+  <div class="split-handle" role="separator" aria-orientation="vertical" aria-label="Resize chat panel"></div>
 
   <!-- CANVAS (RIGHT) -->
   <section class="canvas" aria-label="Dashboards canvas">
@@ -379,6 +385,18 @@
   </section>
 </div>
 
+
+<footer class="statusbar" role="status">
+  <div class="statusbar-left">
+    <span class="statusbar-item live" data-status="ai"> AI · ready</span>
+    <span class="statusbar-item hide-mobile" data-status="saved">All changes synced</span>
+  </div>
+  <div class="statusbar-right">
+    <span class="statusbar-item hide-mobile">SEMPHN · PHN108</span>
+    <span class="statusbar-item"><kbd>⌘K</kbd> commands</span>
+    <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
+  </div>
+</footer>
 <script src="/_assets/shell.js"></script>
 </body>
 </html>
