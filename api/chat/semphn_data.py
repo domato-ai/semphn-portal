@@ -154,6 +154,22 @@ def _lookup_hna() -> Dict[str, Any]:
     }
 
 
+def _group_by_metric_sorted(rows: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Reshape a flat [{metric_code, lga_name, value, ...}] list into
+    {metric_code: [rows pre-sorted by value DESC, ...]}. This enforces
+    sort order through JSON structure — the model can't iterate the wrong
+    way because each metric_code key has its own pre-ordered array."""
+    grouped: Dict[str, List[Dict[str, Any]]] = {}
+    for r in rows:
+        grouped.setdefault(r["metric_code"], []).append(r)
+    for code, items in grouped.items():
+        items.sort(key=lambda x: float(x.get("value") or 0), reverse=True)
+        # Drop metric_code from each row inside its bucket — already in the key
+        for it in items:
+            it.pop("metric_code", None)
+    return grouped
+
+
 def _lookup_dashboards() -> Dict[str, Any]:
     """Catchment KPIs + per-LGA cuts for chart-worthy metrics + recent
     commissioning rows."""
@@ -177,14 +193,16 @@ def _lookup_dashboards() -> Dict[str, Any]:
         "       due_date, approved_at "
         "FROM semphn.v_recent_commissioning_30d"
     )
-    funding = _fetch(
-        "SELECT code, name, value_aud, awp_status FROM semphn.v_funding_schedule"
+    funding = sorted(
+        _fetch("SELECT code, name, value_aud, awp_status FROM semphn.v_funding_schedule"),
+        key=lambda r: -float(r.get("value_aud") or 0),
     )
     return {
         "catchment_kpis": catchment,
-        "kpis_by_lga": by_lga,
+        # Keyed by metric_code → pre-sorted desc by value. Iteration-order safe.
+        "by_lga_ranked": _group_by_metric_sorted(by_lga),
         "recent_commissioning": recent,
-        "funding_schedules": funding,
+        "funding_schedules_ranked": funding,
     }
 
 
@@ -203,11 +221,13 @@ def _lookup_maps() -> Dict[str, Any]:
     )
     providers = _fetch(
         "SELECT type, lga_name, COUNT(*) AS provider_count "
-        "FROM semphn.v_service_provider GROUP BY type, lga_name"
+        "FROM semphn.v_service_provider GROUP BY type, lga_name "
+        "ORDER BY type, provider_count DESC"
     )
     return {
         "lgas": lgas,
-        "kpis_by_lga": by_lga,
+        # Keyed by metric_code → pre-sorted desc by value
+        "by_lga_ranked": _group_by_metric_sorted(by_lga),
         "providers_by_lga": providers,
     }
 
