@@ -4,7 +4,6 @@
   "routes": [
     { "route": "/signin",  "rewrite": "/signin/index.html" },
     { "route": "/atlas",   "rewrite": "/index.html" },
-    { "route": "/atlas/",  "rewrite": "/index.html" },
     { "route": "/",        "rewrite": "/index.html" }
   ],
   "navigationFallback": {
