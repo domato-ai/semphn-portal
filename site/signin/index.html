@@ -3,34 +3,36 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sign in · SEMPHN Catchment Atlas · Domato PHN</title>
-<meta name="description" content="South Eastern Melbourne PHN sign-in for the catchment atlas. Tenant-only access." />
+<title>Sign in · SEMPHN Workbench</title>
+<meta name="description" content="Sign in to the South Eastern Melbourne PHN Health Needs Assessment workbench." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..900;1,300..900&family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200..900;1,200..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
 <style>
   :root {
-    --ink:        oklch(20% 0.06 250);
-    --ink-soft:   oklch(34% 0.04 250);
-    --ink-mute:   oklch(50% 0.02 250);
-    --paper:      oklch(96% 0.012 80);
-    --paper-2:    oklch(93% 0.018 80);
-    --paper-3:    oklch(88% 0.025 70);
-    --rule:       oklch(82% 0.025 75);
-    --rule-soft:  oklch(87% 0.018 75);
-    --accent:     oklch(53% 0.105 195);
-    --accent-deep:oklch(38% 0.095 200);
-    --accent-soft:oklch(88% 0.045 195);
-    --elevated:   oklch(50% 0.165 30);
+    --navy:         #04264E;
+    --navy-mid:     #003D69;
+    --navy-soft:    #4C6582;
+    --teal:         #55BFAF;
+    --teal-mint:    #82D9C4;
+    --teal-pale:    #E5F4F0;
+    --slate:        #324354;
+    --slate-soft:   #6B7B8C;
+    --blue-grey:    #EFF3F9;
+    --rule:         #D6DFEB;
+    --rule-soft:    #E6EBF3;
+    --paper:        #FFFFFF;
 
-    --serif: "Crimson Pro", ui-serif, Georgia, serif;
-    --sans:  "Sora", -apple-system, "Segoe UI", system-ui, sans-serif;
-    --mono:  "JetBrains Mono", ui-monospace, Menlo, monospace;
+    --sans:    "Jost", -apple-system, "Segoe UI", system-ui, sans-serif;
+    --display: "Newsreader", Georgia, serif;
+    --mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
 
-    --gutter: clamp(1.25rem, 4vw, 3rem);
-    --maxw:   1320px;
+    --gutter:  clamp(1.25rem, 4vw, 3rem);
+    --maxw:    1280px;
+    --r:       4px;
+    --navh:    64px;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [hidden] { display: none !important; }
@@ -38,394 +40,380 @@
   body {
     font-family: var(--sans);
     background: var(--paper);
-    color: var(--ink);
-    font-size: 16px; line-height: 1.55;
+    color: var(--navy);
+    font-size: 16px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01";
     min-height: 100vh;
     display: flex; flex-direction: column;
   }
+  ::selection { background: var(--teal-mint); color: var(--navy); }
+  button { font-family: inherit; }
+  button:focus-visible, a:focus-visible, input:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
 
-  /* Nav */
+  /* ─────────────────── TOP NAV (matches landing/build) ─────────────────── */
   .nav {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 0.95rem var(--gutter);
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    height: var(--navh);
+    display: flex; align-items: center;
+    padding: 0 var(--gutter);
+    flex: none;
   }
   .nav-inner {
-    max-width: var(--maxw);
-    margin: 0 auto;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+    max-width: var(--maxw); margin: 0 auto; width: 100%;
+    display: flex; align-items: center; justify-content: space-between;
     gap: 2rem;
   }
-  .brand {
-    font-family: var(--serif);
-    font-weight: 380;
-    font-size: 1.4rem;
-    letter-spacing: -0.005em;
-    color: var(--paper);
-    text-decoration: none;
-    display: inline-flex; align-items: baseline; gap: 0.55rem;
+  .nav-brand {
+    display: inline-flex; align-items: center; gap: 0.9rem;
+    color: var(--navy); text-decoration: none;
   }
-  .brand em { font-style: italic; color: var(--accent-soft); font-weight: 360; }
-  .brand .sep { color: oklch(60% 0.06 200); font-weight: 200; }
-  .nav-tag {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: oklch(72% 0.06 200);
-    border-left: 1px solid oklch(45% 0.06 220);
-    padding-left: 1rem;
-    margin-left: 0.4rem;
+  .nav-brand .mark {
+    width: 36px; height: 36px;
+    background: var(--navy);
+    border-radius: var(--r);
+    display: grid; place-items: center;
+    flex: none;
   }
+  .nav-brand .mark img { width: 22px; height: auto; display: block; }
+  .nav-brand .lockup { display: inline-flex; flex-direction: column; line-height: 1.05; }
+  .nav-brand .lockup .name { font-weight: 600; font-size: 0.92rem; letter-spacing: -0.005em; }
+  .nav-brand .lockup .sub {
+    font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate); margin-top: 0.18rem; font-weight: 500;
+  }
+  .nav-meta {
+    font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600;
+  }
+  @media (max-width: 720px) { .nav-brand .lockup .sub { display: none; } .nav-meta { display: none; } }
 
-  /* Layout */
+  /* ─────────────────── MAIN LAYOUT ─────────────────── */
   main {
     flex: 1;
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
+    grid-template-columns: 1.1fr 1fr;
     max-width: var(--maxw);
     width: 100%;
     margin: 0 auto;
     padding: clamp(2.5rem, 6vw, 5rem) var(--gutter);
-    gap: clamp(2rem, 6vw, 5rem);
+    gap: clamp(2.5rem, 6vw, 5rem);
     align-items: center;
   }
-  @media (max-width: 880px) {
-    main { grid-template-columns: 1fr; padding-top: 2.5rem; padding-bottom: 2.5rem; }
-  }
+  @media (max-width: 880px) { main { grid-template-columns: 1fr; padding-top: 2.5rem; padding-bottom: 2.5rem; } }
 
-  /* Editorial side */
-  .editorial { max-width: 52ch; }
+  /* ─────────────────── EDITORIAL SIDE ─────────────────── */
+  .editorial { max-width: 54ch; }
   .editorial .kicker {
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--accent-deep);
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--navy); background: var(--teal-pale);
+    border: 1px solid var(--teal);
+    padding: 0.4rem 0.75rem; border-radius: 999px;
+    font-weight: 600;
     margin-bottom: 1.4rem;
+  }
+  .editorial .kicker .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--teal);
   }
   .editorial h1 {
-    font-family: var(--serif);
-    font-weight: 380;
-    font-size: clamp(2.1rem, 4.2vw, 3.2rem);
-    line-height: 1.07;
-    letter-spacing: -0.018em;
-    color: var(--ink);
+    font-weight: 600;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+    color: var(--navy);
     margin-bottom: 1.4rem;
+    max-width: 18ch;
   }
   .editorial h1 em {
-    font-style: italic;
-    color: var(--accent-deep);
-    font-weight: 380;
+    font-family: var(--display);
+    font-style: italic; font-weight: 400;
+    color: var(--navy-mid);
   }
   .editorial .lead {
-    font-family: var(--serif);
-    font-size: 1.18rem;
-    font-weight: 300;
+    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
     line-height: 1.55;
-    color: var(--ink-soft);
-    margin-bottom: 1.8rem;
+    color: var(--slate);
+    margin-bottom: 1.9rem;
+    max-width: 50ch;
   }
-  .editorial .meta {
-    border-top: 1px solid var(--rule);
-    padding-top: 1.4rem;
-    margin-top: 1.4rem;
+  .editorial .lead strong { color: var(--navy); font-weight: 600; }
+  .editorial dl {
+    border-left: 2px solid var(--teal);
+    padding-left: 1.4rem;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 0.3rem 1.2rem;
-    font-size: 0.78rem;
-    color: var(--ink-mute);
+    gap: 0.45rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--slate);
   }
-  .editorial .meta dt {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    padding-top: 0.2rem;
+  .editorial dl dt {
+    font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--slate); padding-top: 0.18rem; font-weight: 600;
   }
-  .editorial .meta dd { color: var(--ink-soft); font-weight: 500; }
+  .editorial dl dd { color: var(--navy); font-weight: 500; }
+  .editorial dl dd em {
+    font-family: var(--display); font-style: italic;
+    color: var(--navy-mid); font-weight: 500;
+  }
 
-  /* Card */
+  /* ─────────────────── CARD ─────────────────── */
   .card {
-    background: white;
+    background: var(--paper);
     border: 1px solid var(--rule);
-    border-radius: 8px;
-    padding: clamp(1.8rem, 3.5vw, 2.6rem);
-    box-shadow: 0 1px 0 rgba(20, 30, 60, 0.02), 0 24px 60px -32px rgba(20, 30, 60, 0.18);
+    border-radius: var(--r);
+    padding: clamp(1.8rem, 3.5vw, 2.4rem);
+    box-shadow: 0 1px 0 rgba(4,30,60,0.02), 0 24px 60px -32px rgba(4,30,60,0.20);
   }
   .card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.8rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; margin-bottom: 1.6rem;
   }
-  .card-head .tenant {
-    display: flex; align-items: center; gap: 0.7rem;
+  .tenant {
+    display: flex; align-items: center; gap: 0.75rem;
   }
   .tenant-mark {
-    width: 38px; height: 38px;
-    border-radius: 6px;
-    background: linear-gradient(135deg, var(--ink) 0%, var(--accent-deep) 100%);
-    color: var(--paper);
+    width: 42px; height: 42px;
+    border-radius: var(--r);
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--teal-mint);
     display: grid; place-items: center;
-    font-family: var(--serif);
-    font-weight: 500;
-    font-style: italic;
-    font-size: 1.05rem;
-    letter-spacing: 0.02em;
+    font-family: var(--display);
+    font-style: italic; font-weight: 500;
+    font-size: 1.2rem;
   }
   .tenant-name {
     font-family: var(--sans);
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--ink);
+    font-weight: 600; font-size: 0.95rem;
+    color: var(--navy);
   }
   .tenant-name .small {
     display: block;
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-weight: 400;
-    margin-top: 0.15rem;
+    font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600;
+    margin-top: 0.18rem;
   }
-  .badge {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--accent-deep);
-    background: var(--accent-soft);
-    padding: 0.3rem 0.55rem;
+  .badge-live {
+    font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--navy); background: var(--teal-pale);
+    padding: 0.32rem 0.55rem; border-radius: 3px;
+    font-weight: 700;
+    border: 1px solid var(--teal);
+  }
+
+  /* Auth toggle (Sign in / Create account) */
+  .auth-toggle {
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--blue-grey);
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    padding: 3px;
+    margin-bottom: 1.4rem;
+  }
+  .auth-tab {
+    background: transparent; border: 1px solid transparent;
+    color: var(--slate);
+    padding: 0.55rem 0.8rem;
     border-radius: 3px;
+    font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer; font-weight: 600;
+    transition: background 0.15s, color 0.15s;
+  }
+  .auth-tab:hover { color: var(--navy); }
+  .auth-tab.is-active {
+    background: var(--paper); color: var(--navy);
+    border-color: var(--rule);
+    box-shadow: 0 1px 0 rgba(4,30,60,0.04);
   }
 
   h2.card-title {
-    font-family: var(--serif);
+    font-family: var(--display);
     font-weight: 400;
-    font-size: 1.55rem;
-    letter-spacing: -0.01em;
-    margin-bottom: 0.4rem;
+    font-size: 1.6rem;
+    color: var(--navy);
+    letter-spacing: -0.012em;
+    margin-bottom: 0.45rem;
   }
-  h2.card-title em { font-style: italic; color: var(--accent-deep); }
+  h2.card-title em { font-style: italic; color: var(--navy-mid); }
   .card-sub {
-    font-size: 0.85rem;
-    color: var(--ink-mute);
+    font-size: 0.88rem;
+    color: var(--slate);
     margin-bottom: 1.6rem;
+    line-height: 1.5;
   }
 
-  label.field {
-    display: block;
-    margin-bottom: 1rem;
-  }
+  label.field { display: block; margin-bottom: 1rem; }
   label.field .lbl {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin-bottom: 0.45rem;
-    display: block;
+    font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600;
+    margin-bottom: 0.45rem; display: block;
   }
   label.field input {
     width: 100%;
     font-family: var(--sans);
     font-size: 0.95rem;
-    color: var(--ink);
+    color: var(--navy);
     background: var(--paper);
     border: 1px solid var(--rule);
-    border-radius: 5px;
-    padding: 0.7rem 0.85rem;
+    border-radius: var(--r);
+    padding: 0.75rem 0.9rem;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
   label.field input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(85,191,175,0.18);
   }
-  .row {
-    display: flex; align-items: center; justify-content: space-between;
-    margin: 0.4rem 0 1.4rem;
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-  }
-  .row label { display: inline-flex; align-items: center; gap: 0.4rem; }
-  .row a { color: var(--accent-deep); text-decoration: none; font-weight: 500; }
-  .row a:hover { text-decoration: underline; }
+  label.field input::placeholder { color: var(--slate-soft); }
 
-  .btn {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    background: var(--ink);
-    color: var(--paper);
-    border: 1px solid var(--ink);
-    border-radius: 5px;
-    font-family: var(--sans);
-    font-weight: 600;
-    font-size: 0.92rem;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: background 0.18s, transform 0.04s;
-  }
-  .btn:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
-  .btn:active { transform: translateY(1px); }
-
-  /* Auth mode toggle (Sign in / Create account) */
-  .auth-toggle {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: 5px;
-    padding: 3px;
-    margin-bottom: 1.4rem;
-  }
-  .auth-tab {
-    background: transparent;
-    border: 1px solid transparent;
-    color: var(--ink-mute);
-    padding: 0.55rem 0.8rem;
-    border-radius: 4px;
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.15s, color 0.15s;
-  }
-  .auth-tab:hover { color: var(--ink); }
-  .auth-tab.is-active {
-    background: white;
-    color: var(--ink);
-    border-color: var(--rule);
-    box-shadow: 0 1px 0 rgba(20,30,60,0.04);
-  }
-
-  /* Code field: label + send-code button on one line */
+  /* Code field with inline send button */
   .code-field { margin-bottom: 1rem; }
   .code-lbl {
     display: flex; align-items: center; justify-content: space-between;
     gap: 0.6rem;
+    font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600;
+    margin-bottom: 0.45rem;
   }
   .send-code {
     background: var(--paper);
     border: 1px solid var(--rule);
-    color: var(--accent-deep);
-    padding: 0.22rem 0.5rem;
+    color: var(--navy-mid);
+    padding: 0.22rem 0.55rem;
     border-radius: 3px;
-    font-family: var(--mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-weight: 600;
+    font-family: var(--sans);
+    font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+    font-weight: 700;
     cursor: pointer;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
   }
-  .send-code:hover { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+  .send-code:hover { background: var(--navy); color: white; border-color: var(--navy); }
   .code-field input {
     width: 100%;
     font-family: var(--mono);
-    font-size: 1rem;
-    color: var(--ink);
-    background: var(--paper);
+    font-size: 1.05rem;
+    color: var(--navy);
+    background: var(--blue-grey);
     border: 1px solid var(--rule);
-    border-radius: 5px;
-    padding: 0.7rem 0.85rem;
-    letter-spacing: 0.4em;
+    border-radius: var(--r);
+    padding: 0.75rem 0.9rem;
+    letter-spacing: 0.5em;
     text-align: center;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
+  .code-field input::placeholder {
+    letter-spacing: 0.08em; color: var(--slate-soft);
+    font-family: var(--sans); font-size: 0.88rem;
+  }
   .code-field input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
+    border-color: var(--teal); background: var(--paper);
+    box-shadow: 0 0 0 3px rgba(85,191,175,0.18);
   }
   .help-row {
     font-size: 0.74rem;
-    color: var(--ink-mute);
+    color: var(--slate);
     margin-top: 0.4rem;
   }
 
-  .help {
-    margin-top: 1.5rem;
-    text-align: center;
-    font-size: 0.78rem;
-    color: var(--ink-mute);
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 0.4rem 0 1.4rem;
+    font-size: 0.84rem;
+    color: var(--slate);
+    flex-wrap: wrap; gap: 0.5rem;
   }
-  .help a { color: var(--accent-deep); text-decoration: none; font-weight: 500; }
+  .row label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+  .row label input { accent-color: var(--teal); }
+  .row a { color: var(--navy-mid); text-decoration: none; font-weight: 600; }
+  .row a:hover { text-decoration: underline; }
+
+  .btn {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    background: var(--navy);
+    color: white;
+    border: 1px solid var(--navy);
+    border-radius: var(--r);
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.98rem;
+    letter-spacing: 0.005em;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.04s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
+  }
+  .btn:hover { background: var(--navy-mid); }
+  .btn:active { transform: translateY(1px); }
+  .btn .arrow {
+    width: 22px; height: 22px;
+    background: var(--teal); color: var(--navy);
+    border-radius: 3px;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 0.85rem;
+  }
+
+  .help {
+    margin-top: 1.4rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--slate);
+  }
+  .help a { color: var(--navy-mid); text-decoration: none; font-weight: 600; }
   .help a:hover { text-decoration: underline; }
 
-  /* Footer */
-  footer {
+  /* ─────────────────── FOOTER ─────────────────── */
+  .foot {
     border-top: 1px solid var(--rule);
-    padding: 1.4rem var(--gutter);
-    margin-top: 2rem;
-    font-size: 0.74rem;
-    color: var(--ink-mute);
+    padding: 1.3rem var(--gutter);
+    font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate); font-weight: 500;
     display: flex; align-items: center; justify-content: space-between;
     max-width: var(--maxw);
-    width: 100%;
-    margin-left: auto; margin-right: auto;
+    width: 100%; margin: 0 auto;
+    flex-wrap: wrap; gap: 1rem;
   }
-  footer .links { display: flex; gap: 1.2rem; }
-  footer a { color: var(--ink-mute); text-decoration: none; }
-  footer a:hover { color: var(--ink-soft); text-decoration: underline; }
-
-  /* Tenant chooser pill */
-  .tenant-switch {
-    display: inline-flex; align-items: center; gap: 0.45rem;
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    padding: 0.35rem 0.6rem;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    cursor: pointer;
-    background: white;
-  }
-  .tenant-switch:hover { color: var(--ink); border-color: var(--ink-mute); }
+  .foot a { color: var(--slate); text-decoration: none; }
+  .foot a:hover { color: var(--navy); }
+  .foot .built strong { color: var(--navy); font-weight: 700; }
 </style>
 </head>
 <body>
 
 <header class="nav">
   <div class="nav-inner">
-    <div>
-      <a href="/" class="brand">
-        <span>Domato</span>
-        <span class="sep">·</span>
-        <em>PHN</em>
-      </a>
-      <span class="nav-tag">Tenant sign-in</span>
-    </div>
-    <a href="/" class="tenant-switch" aria-label="Switch tenant">Not SEMPHN? · switch tenant</a>
+    <a href="/" class="nav-brand">
+      <span class="mark"><img src="/atlas/_assets/semphn-logo.svg" alt="" /></span>
+      <span class="lockup">
+        <span class="name">South Eastern Melbourne PHN</span>
+        <span class="sub">Workbench</span>
+      </span>
+    </a>
+    <span class="nav-meta">Tenant sign-in</span>
   </div>
 </header>
 
 <main>
   <section class="editorial">
-    <div class="kicker">South Eastern Melbourne PHN · Tenant access</div>
-    <h1>The catchment, the data and the <em>living</em> needs assessment — in one place.</h1>
+    <div class="kicker"><span class="dot"></span>2025–28 HNA · annual update</div>
+    <h1>Sign in to the SEMPHN <em>workbench</em>.</h1>
     <p class="lead">
-      Sign in to your SEMPHN tenant to view the 2025–2028 Health Needs Assessment
-      as a working atlas. Ten chapters. Ten LGAs. 1.6 million residents. Refreshed
-      when the source data is.
+      Chat-build your <strong>Needs Assessment chapters</strong>, <strong>dashboards</strong>
+      and <strong>catchment maps</strong> — grounded in your data, ready for PPERS lodgement on
+      15 November.
     </p>
-    <dl class="meta">
-      <dt>Edition</dt><dd>2025–2028 HNA · living atlas v1</dd>
-      <dt>Last refresh</dt><dd>21 May 2026 · 06:14 AEST</dd>
-      <dt>Sources</dt><dd>ABS · AIHW · DSS · ACARA · POLAR · rediCASE · HealthMap</dd>
-      <dt>Reporting cycle</dt><dd>HNA 15 Nov annual · AWP per schedule · 12MPR annual</dd>
+    <dl>
+      <dt>Tenant</dt><dd>SEMPHN <em>· PHN108</em></dd>
+      <dt>Edition</dt><dd>HNA <em>v1.2 draft</em></dd>
+      <dt>Next lodgement</dt><dd>15 November 2026</dd>
+      <dt>Data refresh</dt><dd>28 May 2026 · 06:14 AEST</dd>
+      <dt>Sources</dt><dd>ABS · AIHW · POLAR · rediCASE · HealthMap · SEMPHN CRM</dd>
       <dt>Account</dt><dd>Any email · password · emailed code verification</dd>
     </dl>
   </section>
@@ -437,10 +425,10 @@
           <div class="tenant-mark">S</div>
           <div class="tenant-name">
             South Eastern Melbourne PHN
-            <span class="small">PHN108 · tenant</span>
+            <span class="small">tenant · PHN108</span>
           </div>
         </div>
-        <span class="badge">Live</span>
+        <span class="badge-live">Live</span>
       </div>
 
       <div class="auth-toggle" role="tablist" aria-label="Sign in or create account">
@@ -467,7 +455,7 @@
       </label>
 
       <div class="field code-field">
-        <span class="lbl code-lbl">
+        <span class="code-lbl">
           Verification code
           <button type="button" class="send-code">Send code to email</button>
         </span>
@@ -480,8 +468,12 @@
         <a href="#" data-signin>Forgot password?</a>
         <a href="#" data-signup hidden>Already have one? Sign in</a>
       </div>
-      <button type="submit" class="btn" data-signin>Sign in</button>
-      <button type="submit" class="btn" data-signup hidden>Create account &amp; verify</button>
+      <button type="submit" class="btn" data-signin>
+        Sign in <span class="arrow">→</span>
+      </button>
+      <button type="submit" class="btn" data-signup hidden>
+        Create account &amp; verify <span class="arrow">→</span>
+      </button>
 
       <div class="help">
         Trouble signing up? Contact <a href="mailto:support@domato.ai">support@domato.ai</a>.
@@ -489,47 +481,46 @@
     </form>
 
     <script>
-      // Tiny toggle: switches between sign-in and sign-up modes
+      // Sign-in / sign-up toggle + mock auth submit (frontend-only).
       (function () {
-        const card = document.querySelector('.card');
+        var card = document.querySelector('.card');
         if (!card) return;
-        const tabs = card.querySelectorAll('.auth-tab');
-        const apply = (mode) => {
-          card.querySelectorAll('[data-signin]').forEach(el => {
-            el.hidden = mode !== 'signin';
-          });
-          card.querySelectorAll('[data-signup]').forEach(el => {
-            el.hidden = mode !== 'signup';
-          });
-          tabs.forEach(t => {
-            const active = t.dataset.mode === mode;
+
+        var tabs = card.querySelectorAll('.auth-tab');
+        var apply = function (mode) {
+          card.querySelectorAll('[data-signin]').forEach(function (el) { el.hidden = mode !== 'signin'; });
+          card.querySelectorAll('[data-signup]').forEach(function (el) { el.hidden = mode !== 'signup'; });
+          tabs.forEach(function (t) {
+            var active = t.dataset.mode === mode;
             t.classList.toggle('is-active', active);
             t.setAttribute('aria-selected', active ? 'true' : 'false');
           });
         };
-        tabs.forEach(t => t.addEventListener('click', () => apply(t.dataset.mode)));
+        tabs.forEach(function (t) { t.addEventListener('click', function () { apply(t.dataset.mode); }); });
         apply('signin');
 
-        // Mock auth: on submit, set a localStorage session and redirect to the atlas.
-        // Real authentication (email/password verification, OTP delivery) is a follow-up
-        // requiring a backend — there is none in this repo yet. Frontend gate only.
-        const form = card.closest('form') || card.querySelector('form') || card;
-        const submit = (e) => {
+        // Mock auth: on submit set localStorage + redirect to /build/ (the new workbench).
+        // Real backend auth (email-OTP delivery + JWT) is the Phase 1.5 follow-up.
+        var form = card.tagName === 'FORM' ? card : card.querySelector('form');
+        var submit = function (e) {
           e.preventDefault();
-          const emailInput = card.querySelector('input[type=email]');
-          const email = emailInput && emailInput.value.trim().toLowerCase();
-          if (!email) { emailInput && emailInput.focus(); return; }
+          var emailInput = card.querySelector('input[type=email]');
+          var email = emailInput && emailInput.value.trim().toLowerCase();
+          if (!email) { if (emailInput) emailInput.focus(); return; }
           try {
             localStorage.setItem('domato.semphn.session', JSON.stringify({
               email: email,
               tenant: 'semphn',
-              tenantName: 'South Eastern Melbourne PHN',
+              tenantName: 'SEMPHN',
               tenantCode: 'PHN108',
               signedInAt: new Date().toISOString(),
             }));
-          } catch (_) { /* private mode: continue without persistence */ }
-          // Redirect to the atlas cover. Use a relative path so it works on any host.
-          window.location.href = '/atlas/';
+          } catch (_) {}
+
+          // Honour ?next= if present, otherwise land on /build/
+          var nextParam = new URLSearchParams(location.search).get('next');
+          var safeNext = nextParam && nextParam.indexOf('/') === 0 ? nextParam : '/build/';
+          window.location.href = safeNext;
         };
         if (form && form.tagName === 'FORM') form.addEventListener('submit', submit);
       })();
@@ -537,14 +528,9 @@
   </section>
 </main>
 
-<footer>
-  <div>Domato PHN · ABN 94 695 794 346 · Tenant: SEMPHN (PHN108)</div>
-  <div class="links">
-    <a href="#">Privacy</a>
-    <a href="#">Terms</a>
-    <a href="#">Status</a>
-    <a href="mailto:support@domato.ai">support@domato.ai</a>
-  </div>
+<footer class="foot">
+  <div>SEMPHN · PHN108 · 2025–28 HNA workbench</div>
+  <div class="built">Built by <strong>Domato AI</strong> · ABN 94 695 794 346 · <a href="mailto:support@domato.ai">support@domato.ai</a></div>
 </footer>
 
 </body>

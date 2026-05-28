@@ -481,23 +481,8 @@
       </div>
     </header>
 
-    <div class="chat-body" id="chat-body">
-      <div class="chat-empty" id="chat-empty">
-        <span class="badge"><span class="dot"></span>Workbench · ready</span>
-        <h2>What do you want to <em>build</em> right now?</h2>
-        <p>
-          Ask in plain English. The right side will fill in as we go —
-          your HNA chapter, a dashboard chart, or a catchment map.
-        </p>
-        <div class="suggestions">
-          <span>Try these</span>
-          <button class="sug" data-prompt="Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong."><span class="pill">HNA</span>Draft Chapter 4 opening paragraph</button>
-          <button class="sug" data-prompt="Show me bowel cancer screening participation by LGA across the SEMPHN catchment, ranked lowest to highest. Highlight the three LGAs below 40%."><span class="pill">Dash</span>Bowel cancer screening by LGA</button>
-          <button class="sug" data-prompt="Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1."><span class="pill">Map</span>Map MH conditions by LGA</button>
-          <button class="sug" data-prompt="Summarise the strongest cross-chapter finding in 3 sentences I can drop into the executive summary."><span class="pill">HNA</span>Strongest cross-chapter finding</button>
-        </div>
-      </div>
-    </div>
+    <!-- chat-body is rendered by JS per active tab — each tab keeps its own conversation -->
+    <div class="chat-body" id="chat-body" data-tab=""></div>
 
     <footer class="chat-input">
       <div class="chat-input-wrap">
@@ -674,26 +659,206 @@
   })();
 
   /* ============================================================
-   * Chat — calls /api/chat (existing Function → Azure Foundry).
-   * Builds all DOM via createElement (no innerHTML on dynamic
-   * content) to keep XSS surface zero.
+   * Tab-scoped chat
+   *
+   * Each canvas tab (HNA / Dashboards / Maps) keeps its OWN conversation.
+   * Switching tabs swaps the chat panel to that tab's history — so you can
+   * be drafting an HNA paragraph in one tab and asking for a dashboard
+   * chart in another, in parallel.
+   *
+   * State shape (per session, persisted to localStorage):
+   *   STATE.byTab = { hna: [...messages], dashboards: [...], maps: [...] }
+   *   STATE.busy  = { hna: bool, dashboards: bool, maps: bool }
+   *
+   * Each message: { role: 'user' | 'assistant', content: string }
+   *
+   * /api/chat is called with ONLY the active tab's history + a tab-specific
+   * system context. Backend never sees cross-tab data.
+   *
+   * All DOM updates use createElement/textContent — no innerHTML on
+   * dynamic content (XSS surface zero).
    * ============================================================ */
-  var STATE = { messages: [], busy: false };
+  var TABS = ['hna', 'dashboards', 'maps'];
+  var TAB_META = {
+    hna:        { name: 'Health Needs Assessment co-author', context: 'HNA · Chapter 4 First Nations' },
+    dashboards: { name: 'Dashboards',                         context: 'Dashboards · pinning to your board' },
+    maps:       { name: 'Catchment maps',                     context: 'Maps · SEMPHN 10 LGA catchment' },
+  };
+  var TAB_SUGGESTIONS = {
+    hna: [
+      { pill: 'HNA',  label: 'Draft Chapter 4 opening paragraph',
+        prompt: 'Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong.' },
+      { pill: 'HNA',  label: 'Strongest cross-chapter finding',
+        prompt: 'Summarise the strongest cross-chapter finding in 3 sentences I can drop into the executive summary.' },
+      { pill: 'HNA',  label: 'Soften the Greater Dandenong wording',
+        prompt: 'Rewrite the Greater Dandenong housing-strain paragraph in a more strengths-based voice while keeping every figure.' },
+      { pill: 'HNA',  label: 'What is missing from this chapter?',
+        prompt: 'Looking at Chapter 4, what data or narrative is the DoH Performance Rubric most likely to flag as missing or thin?' },
+    ],
+    dashboards: [
+      { pill: 'Dash', label: 'Bowel cancer screening by LGA',
+        prompt: 'Show me bowel cancer screening participation by LGA across the SEMPHN catchment, ranked lowest to highest. Highlight the three LGAs below 40%.' },
+      { pill: 'Dash', label: 'headspace wait time over the year',
+        prompt: 'Plot average headspace wait time across the 9 catchment centres month-by-month for the last year. Annotate the July-August 2022 peak.' },
+      { pill: 'Dash', label: 'Multi-chronic vs 65+ share',
+        prompt: 'Scatter plot — multi-chronic conditions per 1k vs 65+ population share, by LGA. Should reveal Mornington Peninsula as the outlier.' },
+      { pill: 'Dash', label: 'AOD treatment activity by LGA',
+        prompt: 'Stacked bar of alcohol care episodes + illicit-drug care episodes per 100k, by LGA. Sort by total.' },
+    ],
+    maps: [
+      { pill: 'Map',  label: 'MH conditions choropleth',
+        prompt: 'Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1.' },
+      { pill: 'Map',  label: 'Locate every ACCHS',
+        prompt: 'Plot the 2 ACCHS in the SEMPHN catchment as points on a map. Add the catchment LGA outlines for context.' },
+      { pill: 'Map',  label: 'Disadvantage gradient',
+        prompt: 'Choropleth of SEIFA disadvantage by LGA. Annotate Greater Dandenong, Casey, Frankston as the top three disadvantaged.' },
+      { pill: 'Map',  label: 'Growth corridor',
+        prompt: 'Highlight the South East Growth Corridor — Cardinia, Casey, Greater Dandenong — with their projected 2030 population overlaid.' },
+    ],
+  };
+
+  var STORE_KEY = 'semphn.workbench.chats.v1';
+  var STATE = { byTab: { hna: [], dashboards: [], maps: [] }, busy: { hna: false, dashboards: false, maps: false } };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (saved && saved.byTab) {
+      TABS.forEach(function (t) {
+        if (Array.isArray(saved.byTab[t])) STATE.byTab[t] = saved.byTab[t];
+      });
+    }
+  } catch (_) {}
+  function persist() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ byTab: STATE.byTab })); } catch (_) {}
+  }
+
   var body  = document.getElementById('chat-body');
-  var empty = document.getElementById('chat-empty');
   var input = document.getElementById('chat-input');
   var send  = document.getElementById('chat-send');
   var clear = document.getElementById('chat-clear');
+  var ctxLabel = document.getElementById('chat-context-label');
 
-  function setBusy(b) {
-    STATE.busy = b;
-    send.disabled = b || !input.value.trim();
+  function activeTab() {
+    var on = document.querySelector('.canvas-tab.is-active');
+    return on ? on.dataset.tab : 'hna';
   }
+
+  function setBusy(tab, busy) {
+    STATE.busy[tab] = busy;
+    // Disable send only if the CURRENT tab is busy or input empty
+    if (activeTab() === tab) {
+      send.disabled = busy || !input.value.trim();
+    }
+  }
+
+  function buildEmptyState(tab) {
+    // Per-tab empty state: badge + heading + intro + 4 suggestions.
+    var wrap = document.createElement('div');
+    wrap.className = 'chat-empty';
+    var badge = document.createElement('span');
+    badge.className = 'badge';
+    var dot = document.createElement('span'); dot.className = 'dot';
+    badge.appendChild(dot);
+    badge.appendChild(document.createTextNode('Workbench · ' + tab.toUpperCase() + ' · ready'));
+    wrap.appendChild(badge);
+
+    var h2 = document.createElement('h2');
+    var heads = {
+      hna:        'What do you want to write next?',
+      dashboards: 'What chart should we build?',
+      maps:       'What should we map?',
+    };
+    h2.appendChild(document.createTextNode(heads[tab] || 'What do you want to build?'));
+    wrap.appendChild(h2);
+
+    var p = document.createElement('p');
+    var leads = {
+      hna:        'Ask the workbench to draft, revise or critique an HNA chapter. The document on the right updates as you go.',
+      dashboards: 'Ask in plain English. A SEMPHN-themed chart lands on the right. Pin it, restyle it, or drop it into the HNA.',
+      maps:       'Choropleth, point-overlay, or heat — all rendered against the SEMPHN 10-LGA catchment. Export as PNG.',
+    };
+    p.textContent = leads[tab] || '';
+    wrap.appendChild(p);
+
+    var sugs = document.createElement('div'); sugs.className = 'suggestions';
+    var sugsLabel = document.createElement('span'); sugsLabel.textContent = 'Try these for ' + tab.toUpperCase();
+    sugs.appendChild(sugsLabel);
+    (TAB_SUGGESTIONS[tab] || []).forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.className = 'sug';
+      btn.dataset.prompt = s.prompt;
+      var pill = document.createElement('span'); pill.className = 'pill'; pill.textContent = s.pill;
+      btn.appendChild(pill);
+      btn.appendChild(document.createTextNode(s.label));
+      btn.addEventListener('click', function () {
+        input.value = s.prompt;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        handleSend();
+      });
+      sugs.appendChild(btn);
+    });
+    wrap.appendChild(sugs);
+
+    return wrap;
+  }
+
+  function buildMessageNode(role, text, streaming) {
+    var w = document.createElement('div'); w.className = 'msg ' + role;
+    var who = document.createElement('div'); who.className = 'who';
+    var dot = document.createElement('span'); dot.className = 'dot';
+    who.appendChild(dot);
+    who.appendChild(document.createTextNode(role === 'user' ? 'You' : 'Workbench'));
+    var bub = document.createElement('div');
+    bub.className = 'bubble' + (streaming ? ' streaming' : '');
+    bub.textContent = text;
+    w.appendChild(who); w.appendChild(bub);
+    return { wrap: w, bubble: bub };
+  }
+
+  function renderTab(tab) {
+    // Tear down + rebuild chat panel from saved messages for this tab.
+    while (body.firstChild) body.removeChild(body.firstChild);
+    body.dataset.tab = tab;
+    var msgs = STATE.byTab[tab] || [];
+    if (msgs.length === 0) {
+      body.appendChild(buildEmptyState(tab));
+    } else {
+      msgs.forEach(function (m) {
+        body.appendChild(buildMessageNode(m.role, m.content, false).wrap);
+      });
+    }
+    body.scrollTop = body.scrollHeight;
+    // Sync context label + send-button enable state
+    if (ctxLabel) ctxLabel.textContent = 'Context: ' + (TAB_META[tab] ? TAB_META[tab].context : tab);
+    send.disabled = STATE.busy[tab] || !input.value.trim();
+  }
+
+  /* Hook the tab switcher: when the canvas tab changes, swap chat too. */
+  var prevSetActiveTab = window._setActiveTab || setActiveTab;
+  window._setActiveTab = function (tab) {
+    prevSetActiveTab(tab);
+    renderTab(tab);
+  };
+  // Replace global wired listeners to point at our wrapped version
+  document.querySelectorAll('.canvas-tab').forEach(function (b) {
+    var clone = b.cloneNode(true);
+    b.parentNode.replaceChild(clone, b);
+    clone.addEventListener('click', function () { window._setActiveTab(clone.dataset.tab); });
+  });
+  document.querySelectorAll('[data-nav-tab]').forEach(function (a) {
+    var clone = a.cloneNode(true);
+    a.parentNode.replaceChild(clone, a);
+    clone.addEventListener('click', function (e) {
+      e.preventDefault();
+      window._setActiveTab(clone.dataset.navTab);
+    });
+  });
 
   input.addEventListener('input', function () {
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 144) + 'px';
-    send.disabled = STATE.busy || !input.value.trim();
+    send.disabled = STATE.busy[activeTab()] || !input.value.trim();
   });
   input.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -704,88 +869,91 @@
   send.addEventListener('click', handleSend);
 
   clear.addEventListener('click', function () {
-    STATE.messages = [];
-    // Safe DOM teardown — remove every node except the empty-state element
-    while (body.firstChild) body.removeChild(body.firstChild);
-    body.appendChild(empty);
+    var tab = activeTab();
+    STATE.byTab[tab] = [];
+    persist();
+    renderTab(tab);
   });
 
-  document.querySelectorAll('.sug').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      input.value = btn.dataset.prompt;
-      input.dispatchEvent(new Event('input'));
-      handleSend();
-    });
-  });
-
-  function addMessage(role, text, opts) {
-    if (empty.parentNode === body) body.removeChild(empty);
-    var wrap = document.createElement('div');
-    wrap.className = 'msg ' + role;
-    var who = document.createElement('div'); who.className = 'who';
-    var dot = document.createElement('span'); dot.className = 'dot';
-    var lbl = document.createTextNode(role === 'user' ? 'You' : 'Workbench');
-    who.appendChild(dot); who.appendChild(lbl);
-    var bub = document.createElement('div');
-    bub.className = 'bubble' + ((opts && opts.streaming) ? ' streaming' : '');
-    bub.textContent = text;
-    wrap.appendChild(who); wrap.appendChild(bub);
-    body.appendChild(wrap);
-    body.scrollTop = body.scrollHeight;
-    return bub;
-  }
-
-  function activeTab() {
-    var on = document.querySelector('.canvas-tab.is-active');
-    return on ? on.dataset.tab : 'hna';
+  function appendMessage(tab, role, text, streaming) {
+    var n = buildMessageNode(role, text, streaming);
+    // Only mutate the visible body if THIS message is for the active tab
+    if (activeTab() === tab) {
+      // If empty state is showing, remove it before appending
+      var emptyState = body.querySelector('.chat-empty');
+      if (emptyState) body.removeChild(emptyState);
+      body.appendChild(n.wrap);
+      body.scrollTop = body.scrollHeight;
+    }
+    return n.bubble;
   }
 
   async function handleSend() {
+    var tab = activeTab();
     var text = input.value.trim();
-    if (!text || STATE.busy) return;
+    if (!text || STATE.busy[tab]) return;
     input.value = ''; input.style.height = 'auto';
-    addMessage('user', text);
-    STATE.messages.push({ role: 'user', content: text });
-    setBusy(true);
-    var bubble = addMessage('bot', '', { streaming: true });
+
+    // Append user msg to state + DOM
+    STATE.byTab[tab].push({ role: 'user', content: text });
+    persist();
+    appendMessage(tab, 'user', text, false);
+
+    setBusy(tab, true);
+    var bubble = appendMessage(tab, 'bot', '', true);
 
     try {
       var res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          step_slug: 'build-' + activeTab(),
-          step_name: activeTab() === 'hna' ? 'Health Needs Assessment co-author'
-                    : activeTab() === 'maps' ? 'Catchment maps'
-                    : 'Dashboards',
-          messages: STATE.messages,
-          context_summary: 'SEMPHN catchment: 1.56M residents across 10 LGAs. 24% of Victoria. First Nations IRSEO 25 vs Vic 14. MH prevalence above 18.3% in Port Phillip (23.3), Frankston (22.0), Greater Dandenong (21.4). Lowest bowel screening: Casey South 35.9%, Dandenong 38.3%, Frankston 39.3%. Frankston highest MH conditions at 116.1/1k. headspace wait 8.6 days avg across 9 centres.',
+          step_slug: 'build-' + tab,
+          step_name: TAB_META[tab] ? TAB_META[tab].name : tab,
+          messages: STATE.byTab[tab],
+          context_summary: 'SEMPHN catchment: 1.56M residents across 10 LGAs (Bayside, Cardinia, Casey, Frankston, Glen Eira, Greater Dandenong, Kingston, Mornington Peninsula, Port Phillip, Stonnington). 24% of Victoria. First Nations IRSEO 25 vs Vic 14. MH prevalence above 18.3% in Port Phillip (23.3), Frankston (22.0), Greater Dandenong (21.4). Lowest bowel screening: Casey South 35.9%, Dandenong 38.3%, Frankston 39.3%. Frankston highest MH conditions at 116.1/1k. headspace 9 centres, 8.6-day average wait. 11 funding schedules totalling ~$76M FY26.',
         }),
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var data = await res.json();
       var reply = (data && data.reply) || (data && data.error) || 'No response.';
 
+      // Save assistant turn to state once final
+      STATE.byTab[tab].push({ role: 'assistant', content: reply });
+      persist();
+
+      // Stream the reply into the bubble char-by-char IF this tab is still visible.
+      // If user switched tabs mid-flight, the bubble is detached — drop the animation
+      // and just rely on renderTab(tab) to show the final state when user comes back.
+      if (activeTab() !== tab || !bubble.isConnected) {
+        setBusy(tab, false);
+        return;
+      }
       bubble.textContent = '';
       bubble.classList.add('streaming');
       var i = 0;
       var tick = setInterval(function () {
+        if (!bubble.isConnected) { clearInterval(tick); setBusy(tab, false); return; }
         bubble.textContent += reply.slice(i, i + 4);
         i += 4;
-        body.scrollTop = body.scrollHeight;
+        if (activeTab() === tab) body.scrollTop = body.scrollHeight;
         if (i >= reply.length) {
           clearInterval(tick);
           bubble.classList.remove('streaming');
-          STATE.messages.push({ role: 'assistant', content: reply });
-          setBusy(false);
+          setBusy(tab, false);
         }
       }, 16);
     } catch (err) {
-      bubble.classList.remove('streaming');
-      bubble.textContent = 'Sorry — the assist is unreachable right now. Please retry.';
-      setBusy(false);
+      // Roll back: leave the user message, replace failed bot bubble with an apology.
+      if (bubble.isConnected) {
+        bubble.classList.remove('streaming');
+        bubble.textContent = 'Sorry — the assist is unreachable right now. Please retry.';
+      }
+      setBusy(tab, false);
     }
   }
+
+  /* Initial render — figure out the active tab and paint its conversation. */
+  renderTab(activeTab());
 </script>
 
 </body>
