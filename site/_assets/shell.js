@@ -48,37 +48,34 @@
     },
   };
 
-  var SEED = {
-    dashboards: {
-      prompt: 'Build a simple catchment dashboard with the headline SEMPHN metrics.',
-      avatar: 'D',
-      reasoning: "I'll build a 4-card KPI strip plus two charts (monthly GP consultations + bowel screening trend) plus a recent commissioning table. All anchored on real catchment data.",
-      filesLabel: 'Worked with 4 files',
-      files: ['site/dashboards/index.html', 'data/snapshot.json', 'lga/concordance.csv', 'crm/commissioning_30d.json'],
-      summary: "I've built a catchment dashboard featuring four **KPI cards** (catchment population, active MH referrals, bowel screening rate, HNA chapters complete), a *monthly GP consultations* bar chart, a bowel cancer screening trend line, and a table of recent commissioning activity. Everything's themed in SEMPHN navy and teal and uses SVG so it renders instantly with no external chart library.",
-      version: { title: 'Catchment dashboard', tag: 'Version 1' },
-      warnings: { count: 3, label: '3 warnings · sample data only' },
-    },
-    hna: {
-      prompt: 'Draft Chapter 4 (First Nations) opening — anchor on IRSEO and MH prevalence.',
-      avatar: 'D',
-      reasoning: 'I read the Ch 4 source bullets from SEMPHN HNA 2025-28. The two strongest cross-LGA findings are IRSEO 25 vs Vic 14, and MH prevalence > 18.3% in three LGAs. I anchored the deck on those two and wrote one supporting paragraph for each.',
-      filesLabel: 'Worked with 3 files',
-      files: ['site/hna/index.html', 'data/hna/ch04-spec.json', 'sources/abs-census-2021.csv'],
-      summary: "I've drafted the **Chapter 4 opening** — a deck paragraph plus two H2 subsections (Socioeconomic determinants, Mental health). All figures are sourced from `ABS Census 2021`, `AIHW IRSEO by IARE`, and `POLAR`. Three chip-highlighted LGAs flag where MH prevalence exceeds the Victorian average.",
-      version: { title: 'Chapter 4 opening', tag: 'Version 1' },
-      warnings: null,
-    },
-    maps: {
-      prompt: 'Map MH conditions per 1,000 residents by LGA — choropleth, navy-to-teal scale.',
-      avatar: 'D',
-      reasoning: 'Built as a schematic tile grid first (not geographically accurate but data-faithful). Frankston is the standout at 116.1 — flagged with the darkest tile and a teal-mint number for emphasis. Real GeoJSON choropleth ships in the next iteration.',
-      filesLabel: 'Worked with 2 files',
-      files: ['site/maps/index.html', 'data/polar/mh-conditions-by-lga.csv'],
-      summary: 'Schematic catchment map rendered as SVG tiles. **Frankston** (116.1) is the deepest navy, **Stonnington** (76.9) the palest. Scale legend below. Real ABS LGA boundaries pending the GeoJSON loader.',
-      version: { title: 'MH choropleth · schematic', tag: 'Version 1' },
-      warnings: { count: 1, label: 'Schematic — not geographically accurate' },
-    },
+  /* Per-page suggested starters shown in the empty state.
+   * Each chat starts CLEAN — no pre-seeded "I built this..." turns.
+   * Click a chip → fills the composer + auto-sends. */
+  var SUGGESTIONS = {
+    hna: [
+      { icon: '✎', label: 'Draft Chapter 4 opening',     prompt: 'Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong.' },
+      { icon: '✎', label: 'Summarise strongest finding', prompt: 'In 3 sentences I can drop into the executive summary, what is the strongest cross-chapter finding for SEMPHN this cycle?' },
+      { icon: '⟳', label: 'Soften a paragraph',          prompt: 'Rewrite the Greater Dandenong housing-strain paragraph in a more strengths-based voice while keeping every figure.' },
+      { icon: '⚑', label: 'Compliance critique',         prompt: 'Looking at the current Chapter 4 draft, what data or framing is the DoH Performance Rubric most likely to flag as missing or thin?' },
+      { icon: '↔', label: 'Cross-reference chapters',    prompt: 'Where does the First Nations chapter (4) need a cross-reference to the Mental health chapter (7) for coherence?' },
+      { icon: '◉', label: 'Pre-flight check',            prompt: 'Run the DoH Compliance Checklist + Performance Rubric on the current Chapter 4 draft. Flag warnings.' },
+    ],
+    dashboards: [
+      { icon: '▮', label: 'Bowel screening by LGA',       prompt: 'Show bowel cancer screening participation by LGA across the SEMPHN catchment, ranked lowest to highest. Highlight the three LGAs below 40%.' },
+      { icon: '◉', label: 'headspace wait time',          prompt: 'Plot average headspace wait time across the 9 catchment centres month-by-month for the last year. Annotate the July-August 2022 peak.' },
+      { icon: '◯', label: 'Multi-chronic scatter',        prompt: 'Scatter plot — multi-chronic conditions per 1k vs 65+ population share, by LGA. Should reveal Mornington Peninsula as the outlier.' },
+      { icon: '▦', label: 'AOD treatment activity',       prompt: 'Stacked bar of alcohol care episodes + illicit-drug care episodes per 100k, by LGA. Sort by total.' },
+      { icon: '↗', label: 'GP density gap',               prompt: 'Compare GP FTE per 100k by LGA against the Victorian benchmark of 116.3. Show the gap in either direction.' },
+      { icon: '↻', label: 'Refresh from latest data',     prompt: 'Refresh every KPI on this dashboard with the latest data extract. Tell me what changed since the last view.' },
+    ],
+    maps: [
+      { icon: '◐', label: 'MH choropleth',                prompt: 'Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1.' },
+      { icon: '◉', label: 'Locate every ACCHS',           prompt: 'Plot the 2 ACCHS in the SEMPHN catchment as points on a map. Add the catchment LGA outlines for context.' },
+      { icon: '▦', label: 'SEIFA disadvantage',           prompt: 'Choropleth of SEIFA disadvantage by LGA. Annotate Greater Dandenong, Casey, Frankston as the top three disadvantaged.' },
+      { icon: '↗', label: 'Growth corridor',              prompt: 'Highlight the South East Growth Corridor — Cardinia, Casey, Greater Dandenong — with their projected 2030 population overlaid.' },
+      { icon: '●', label: 'Service points overlay',       prompt: 'Plot all 9 headspace centres + 2 ACCHS + 155 RACFs on the catchment map. Colour-code by service type.' },
+      { icon: '◌', label: 'Refugee settlement density',   prompt: 'Heat-map the humanitarian-arrival settlement density across the catchment. Casey + Greater Dandenong should dominate.' },
+    ],
   };
 
   /* ============================================================
@@ -320,7 +317,7 @@
    * ============================================================ */
   function getPageTurns(page) {
     var s = readState();
-    if (!s.byPage[page]) s.byPage[page] = SEED[page] ? [JSON.parse(JSON.stringify(SEED[page]))] : [];
+    if (!s.byPage[page]) s.byPage[page] = [];   // CLEAN START — no seed turn
     return s.byPage[page];
   }
   function setPageTurns(page, turns) {
@@ -439,11 +436,89 @@
     return wrap;
   }
 
+  function buildEmptyState() {
+    var page = pageId();
+    var meta = PAGE_META[page] || PAGE_META.dashboards;
+    var sugs = SUGGESTIONS[page] || [];
+
+    var wrap = document.createElement('div');
+    wrap.className = 'chat-empty';
+
+    var badge = document.createElement('span');
+    badge.className = 'chat-empty-badge';
+    var dot = document.createElement('span'); dot.className = 'dot';
+    badge.appendChild(dot);
+    badge.appendChild(document.createTextNode('Workbench · ' + page.toUpperCase() + ' · ready'));
+    wrap.appendChild(badge);
+
+    var h2 = document.createElement('h2');
+    h2.className = 'chat-empty-h';
+    var heads = {
+      hna:        'What chapter shall we work on?',
+      dashboards: 'What metric shall we visualise?',
+      maps:       'What should we map?',
+    };
+    h2.textContent = heads[page] || 'How can I help?';
+    wrap.appendChild(h2);
+
+    var p = document.createElement('p');
+    p.className = 'chat-empty-lead';
+    var leads = {
+      hna:        'Ask the workbench to draft, revise or critique any HNA chapter. The document on the right updates as you go.',
+      dashboards: 'Ask in plain English. A SEMPHN-themed chart lands on the right. Pin it, restyle it, or drop it into the HNA.',
+      maps:       'Choropleth, point-overlay or heat — all rendered against the SEMPHN 10-LGA catchment. Export as PNG.',
+    };
+    p.textContent = leads[page] || meta.placeholder;
+    wrap.appendChild(p);
+
+    var sugsLabel = document.createElement('div');
+    sugsLabel.className = 'chat-empty-suglabel';
+    sugsLabel.textContent = 'Try one of these';
+    wrap.appendChild(sugsLabel);
+
+    var grid = document.createElement('div'); grid.className = 'chat-empty-sugs';
+    sugs.forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chat-empty-sug';
+      var ic = document.createElement('span'); ic.className = 'ico'; ic.textContent = s.icon;
+      var lab = document.createElement('span'); lab.className = 'label'; lab.textContent = s.label;
+      btn.appendChild(ic); btn.appendChild(lab);
+      btn.addEventListener('click', function () {
+        var input = document.getElementById('chat-input');
+        if (!input) return;
+        input.value = s.prompt;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        // Auto-send the suggestion (same behaviour as Send button)
+        var send = document.getElementById('chat-send');
+        if (send && !send.disabled) send.click();
+      });
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+
+    var hint = document.createElement('div');
+    hint.className = 'chat-empty-hint';
+    hint.appendChild(document.createTextNode('Or write your own — press '));
+    var k1 = document.createElement('kbd'); k1.textContent = '⌘K'; hint.appendChild(k1);
+    hint.appendChild(document.createTextNode(' for commands · '));
+    var k2 = document.createElement('kbd'); k2.textContent = '⌘/'; hint.appendChild(k2);
+    hint.appendChild(document.createTextNode(' to focus the composer'));
+    wrap.appendChild(hint);
+
+    return wrap;
+  }
+
   function renderFeed() {
     var feed = document.getElementById('chat-feed');
     if (!feed) return;
     while (feed.firstChild) feed.removeChild(feed.firstChild);
     var turns = getPageTurns(pageId());
+    if (turns.length === 0) {
+      feed.appendChild(buildEmptyState());
+      return;
+    }
     turns.forEach(function (t) { feed.appendChild(buildTurnNode(t)); });
     feed.scrollTop = feed.scrollHeight;
   }
