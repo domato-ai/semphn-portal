@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Workbench · SEMPHN · Chat &amp; build</title>
+<meta name="description" content="SEMPHN HNA Workbench. Chat on the left. Your Needs Assessment, dashboards and maps build on the right as you go." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200..900;1,200..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --navy:         #04264E;
+    --navy-mid:     #003D69;
+    --navy-soft:    #4C6582;
+    --teal:         #55BFAF;
+    --teal-mint:    #82D9C4;
+    --teal-pale:    #E5F4F0;
+    --slate:        #324354;
+    --slate-soft:   #6B7B8C;
+    --blue-grey:    #EFF3F9;
+    --rule:         #D6DFEB;
+    --rule-soft:    #E6EBF3;
+    --paper:        #FFFFFF;
+
+    --sans:    "Jost", -apple-system, "Segoe UI", system-ui, sans-serif;
+    --display: "Newsreader", Georgia, serif;
+    --mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+    --gutter:  clamp(1rem, 3vw, 2rem);
+    --maxw:    100%;
+    --r:       4px;
+    --navh:    64px;
+    --chatw:   440px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--sans);
+    background: var(--blue-grey);
+    color: var(--navy);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01";
+    display: flex; flex-direction: column;
+  }
+  ::selection { background: var(--teal-mint); color: var(--navy); }
+  button { font-family: inherit; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+
+  /* ─────────────────── TOP NAV (same as landing) ─────────────────── */
+  .nav {
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    height: var(--navh);
+    display: flex; align-items: center;
+    padding: 0 var(--gutter);
+    flex: none;
+  }
+  .nav-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+  .nav-brand { display: inline-flex; align-items: center; gap: 0.85rem; color: var(--navy); text-decoration: none; }
+  .nav-brand .mark {
+    width: 34px; height: 34px;
+    background: var(--navy);
+    border-radius: var(--r);
+    display: grid; place-items: center;
+  }
+  .nav-brand .mark img { width: 21px; height: auto; }
+  .nav-brand .lockup { display: inline-flex; flex-direction: column; line-height: 1.05; }
+  .nav-brand .lockup .name { font-weight: 600; font-size: 0.88rem; }
+  .nav-brand .lockup .sub {
+    font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate); margin-top: 0.15rem; font-weight: 500;
+  }
+  .nav-links { display: flex; align-items: center; gap: 0.3rem; margin-left: auto; margin-right: 1rem; }
+  .nav-link {
+    padding: 0.5rem 0.9rem;
+    color: var(--slate); text-decoration: none;
+    font-size: 0.88rem; font-weight: 500;
+    border-radius: var(--r);
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-link:hover { background: var(--blue-grey); color: var(--navy); }
+  .nav-link.is-active { background: var(--navy); color: white; }
+  .nav-user {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    padding: 0.3rem 0.75rem 0.3rem 0.4rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--paper);
+  }
+  .nav-user .av {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--teal); color: var(--navy);
+    display: grid; place-items: center;
+    font-size: 0.72rem; font-weight: 700;
+  }
+  .nav-user .meta { display: inline-flex; flex-direction: column; line-height: 1.05; }
+  .nav-user .meta .who { font-size: 0.78rem; font-weight: 600; color: var(--navy); }
+  .nav-user .meta .sub {
+    font-size: 0.54rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate); margin-top: 0.1rem;
+  }
+  .nav-user button {
+    margin-left: 0.4rem; padding-left: 0.6rem;
+    border-left: 1px solid var(--rule);
+    background: none; border-top: none; border-right: none; border-bottom: none;
+    font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate); cursor: pointer; font-weight: 600;
+  }
+  .nav-user button:hover { color: var(--navy); }
+  @media (max-width: 720px) {
+    .nav-brand .lockup .sub { display: none; }
+    .nav-user .meta { display: none; }
+  }
+
+  /* ─────────────────── SPLIT: CHAT LEFT + CANVAS RIGHT ─────────────────── */
+  .split {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-columns: var(--chatw) 1fr;
+  }
+  @media (max-width: 960px) {
+    .split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  }
+
+  /* ─────────────────── CHAT PANEL (LEFT) ─────────────────── */
+  .chat { background: var(--paper); border-right: 1px solid var(--rule); display: flex; flex-direction: column; min-height: 0; }
+  .chat-head {
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex: none;
+  }
+  .chat-head .title { display: flex; flex-direction: column; line-height: 1.1; }
+  .chat-head .title .h {
+    font-family: var(--display); font-style: italic; font-weight: 400;
+    font-size: 1.05rem; color: var(--navy);
+  }
+  .chat-head .title .s {
+    font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--slate); margin-top: 0.18rem; font-weight: 600;
+  }
+  .chat-head .menu { display: flex; align-items: center; gap: 0.3rem; }
+  .chat-head .menu button {
+    background: transparent; border: 1px solid var(--rule);
+    color: var(--slate); padding: 0.32rem 0.55rem;
+    border-radius: var(--r);
+    font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+    cursor: pointer; font-weight: 600;
+  }
+  .chat-head .menu button:hover { color: var(--navy); border-color: var(--navy); }
+
+  .chat-body {
+    flex: 1; min-height: 0; overflow-y: auto;
+    padding: 1.4rem 1.1rem;
+    display: flex; flex-direction: column; gap: 1.1rem;
+    scrollbar-width: thin; scrollbar-color: var(--rule) transparent;
+  }
+  .chat-body::-webkit-scrollbar { width: 6px; }
+  .chat-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 999px; }
+
+  .chat-empty { display: flex; flex-direction: column; gap: 1.2rem; margin: auto 0; }
+  .chat-empty .badge {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.32rem 0.6rem;
+    background: var(--teal-pale); border: 1px solid var(--teal);
+    border-radius: 999px;
+    font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--navy); font-weight: 600;
+  }
+  .chat-empty .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+  .chat-empty h2 {
+    font-family: var(--display); font-weight: 400;
+    font-size: 1.6rem; letter-spacing: -0.012em;
+    line-height: 1.15; color: var(--navy); max-width: 24ch;
+  }
+  .chat-empty h2 em { font-style: italic; color: var(--navy-mid); }
+  .chat-empty p {
+    color: var(--slate); font-size: 0.94rem; line-height: 1.55; max-width: 38ch;
+  }
+  .chat-empty .suggestions { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.4rem; }
+  .chat-empty .suggestions span {
+    font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600; margin-bottom: 0.15rem;
+  }
+  .chat-empty .sug {
+    text-align: left;
+    background: var(--blue-grey);
+    border: 1px solid transparent;
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--r);
+    font-size: 0.9rem; color: var(--navy);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.04s;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .chat-empty .sug:hover { background: var(--teal-pale); border-color: var(--teal); }
+  .chat-empty .sug:active { transform: translateY(1px); }
+  .chat-empty .sug .pill {
+    font-family: var(--mono);
+    font-size: 0.54rem; letter-spacing: 0.14em;
+    color: var(--navy); background: white;
+    padding: 0.18rem 0.4rem; border-radius: 3px; border: 1px solid var(--rule-soft);
+    text-transform: uppercase; flex: none;
+  }
+
+  .msg { display: flex; flex-direction: column; gap: 0.35rem; max-width: 95%; }
+  .msg .who {
+    font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .msg .who .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .msg .bubble {
+    padding: 0.75rem 0.95rem;
+    border-radius: var(--r);
+    font-size: 0.93rem; line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .msg.bot { align-self: flex-start; }
+  .msg.bot .who { color: var(--teal); }
+  .msg.bot .bubble {
+    background: var(--blue-grey); color: var(--navy);
+    border: 1px solid var(--rule-soft);
+    border-bottom-left-radius: 0;
+  }
+  .msg.user { align-self: flex-end; }
+  .msg.user .who { color: var(--navy-soft); justify-content: flex-end; }
+  .msg.user .bubble { background: var(--navy); color: white; border-bottom-right-radius: 0; }
+  .msg .bubble.streaming::after {
+    content: "▍";
+    color: var(--teal);
+    animation: blink 0.8s infinite;
+    margin-left: 0.2rem;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Input */
+  .chat-input { flex: none; padding: 0.85rem 1.1rem 1.1rem; border-top: 1px solid var(--rule); background: var(--paper); }
+  .chat-input-wrap {
+    border: 1px solid var(--rule); border-radius: var(--r);
+    background: var(--paper);
+    padding: 0.6rem 0.6rem 0.55rem 0.85rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .chat-input-wrap:focus-within {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(85,191,175,0.18);
+  }
+  .chat-input textarea {
+    width: 100%; border: none; outline: none; background: transparent;
+    resize: none;
+    font-family: var(--sans);
+    font-size: 0.95rem; color: var(--navy);
+    line-height: 1.5;
+    min-height: 1.5em; max-height: 9em;
+    overflow-y: auto;
+  }
+  .chat-input textarea::placeholder { color: var(--slate-soft); }
+  .chat-input-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 0.45rem; gap: 0.6rem;
+  }
+  .chat-input-foot .hint {
+    font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600;
+  }
+  .chat-input-foot .hint kbd {
+    font-family: var(--mono); font-size: 0.6rem;
+    background: var(--blue-grey);
+    padding: 0.1rem 0.35rem; border-radius: 3px;
+    border: 1px solid var(--rule-soft);
+    color: var(--navy); margin-right: 0.15rem;
+  }
+  .chat-input-send {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--navy); color: white;
+    border: none; padding: 0.45rem 0.85rem 0.45rem 0.65rem;
+    border-radius: var(--r);
+    font-size: 0.78rem; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .chat-input-send:hover { background: var(--navy-mid); }
+  .chat-input-send:disabled { opacity: 0.4; cursor: not-allowed; }
+  .chat-input-send .arr {
+    width: 18px; height: 18px;
+    background: var(--teal); color: var(--navy);
+    border-radius: 3px;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 0.78rem;
+  }
+
+  /* ─────────────────── CANVAS (RIGHT) ─────────────────── */
+  .canvas { background: var(--blue-grey); display: flex; flex-direction: column; min-height: 0; }
+  .canvas-head {
+    padding: 0 var(--gutter);
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    height: 54px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex: none;
+  }
+  .canvas-tabs { display: flex; align-items: center; gap: 0.15rem; }
+  .canvas-tab {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    background: transparent; border: none;
+    font-family: var(--sans);
+    font-size: 0.88rem; font-weight: 500;
+    color: var(--slate); cursor: pointer;
+    border-radius: var(--r);
+    position: relative;
+  }
+  .canvas-tab:hover { color: var(--navy); background: var(--blue-grey); }
+  .canvas-tab.is-active { color: var(--navy); font-weight: 600; }
+  .canvas-tab.is-active::after {
+    content: "";
+    position: absolute; left: 0.9rem; right: 0.9rem; bottom: -1px;
+    height: 2px; background: var(--teal);
+  }
+  .canvas-tab .ico {
+    width: 18px; height: 18px;
+    border-radius: 3px;
+    display: grid; place-items: center;
+    background: var(--blue-grey); color: var(--navy);
+    font-family: var(--display); font-style: italic;
+    font-size: 0.7rem; font-weight: 500;
+  }
+  .canvas-tab.is-active .ico { background: var(--teal); color: var(--navy); }
+  .canvas-actions { display: flex; align-items: center; gap: 0.4rem; }
+  .canvas-actions button {
+    background: var(--paper); border: 1px solid var(--rule);
+    color: var(--slate);
+    padding: 0.4rem 0.7rem;
+    border-radius: var(--r);
+    font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+    cursor: pointer; font-weight: 600;
+  }
+  .canvas-actions button:hover { color: var(--navy); border-color: var(--navy); }
+  .canvas-actions .primary { background: var(--navy); color: white; border-color: var(--navy); }
+  .canvas-actions .primary:hover { background: var(--navy-mid); color: white; }
+
+  .canvas-body {
+    flex: 1; min-height: 0; overflow-y: auto;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+  .canvas-body::-webkit-scrollbar { width: 8px; }
+  .canvas-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 999px; }
+
+  .canvas-empty {
+    max-width: 580px;
+    margin: clamp(2rem, 6vw, 5rem) auto 0;
+    padding: 2rem 2.2rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .canvas-empty .num {
+    font-family: var(--display); font-style: italic;
+    font-size: 2.6rem; font-weight: 300;
+    color: var(--teal); line-height: 1;
+  }
+  .canvas-empty h3 {
+    font-family: var(--display); font-style: italic; font-weight: 400;
+    font-size: 1.5rem; color: var(--navy); line-height: 1.15;
+  }
+  .canvas-empty p { color: var(--slate); font-size: 0.96rem; line-height: 1.55; }
+  .canvas-empty p strong { color: var(--navy); font-weight: 600; }
+  .canvas-empty .pointer {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin-top: 0.3rem;
+    font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--teal); font-weight: 600;
+  }
+  .canvas-empty .pointer::before { content: "←"; font-size: 1rem; }
+
+  /* HNA preview document */
+  .hna-doc {
+    max-width: 780px; margin: 0 auto;
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: var(--r);
+    padding: clamp(2rem, 4vw, 3.5rem);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 16px 40px -24px rgba(4,38,78,0.18);
+  }
+  .hna-doc .doc-kicker {
+    font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--teal); font-weight: 700; margin-bottom: 0.7rem;
+  }
+  .hna-doc h1 {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+    line-height: 1.05; letter-spacing: -0.014em;
+    color: var(--navy); margin-bottom: 1rem;
+  }
+  .hna-doc h1 em { font-style: italic; color: var(--navy-mid); }
+  .hna-doc h2 {
+    font-weight: 600; font-size: 1.18rem;
+    color: var(--navy);
+    margin: 1.8rem 0 0.6rem;
+    letter-spacing: -0.008em;
+  }
+  .hna-doc .deck {
+    font-size: 1.02rem; color: var(--slate); line-height: 1.6;
+    padding-bottom: 1.4rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 1.6rem;
+  }
+  .hna-doc .deck strong { color: var(--navy); font-weight: 600; }
+  .hna-doc p { font-size: 1rem; line-height: 1.7; color: var(--slate); margin-bottom: 0.85rem; }
+  .hna-doc p strong { color: var(--navy); font-weight: 600; }
+  .hna-doc .footnote {
+    margin-top: 2.2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--rule);
+    font-size: 0.78rem; color: var(--slate);
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+  }
+  .hna-doc .chip {
+    display: inline-block;
+    background: var(--teal-pale);
+    color: var(--navy-mid);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.86em; font-weight: 500;
+    border: 1px solid var(--teal);
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">
+      <span class="mark"><img src="/atlas/_assets/semphn-logo.svg" alt="" /></span>
+      <span class="lockup">
+        <span class="name">South Eastern Melbourne PHN</span>
+        <span class="sub">Workbench</span>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="/build/?tab=dashboards" class="nav-link" data-nav-tab="dashboards">Dashboards</a>
+      <a href="/build/?tab=maps"       class="nav-link" data-nav-tab="maps">Maps</a>
+    </nav>
+    <div class="nav-user" aria-label="Signed-in tenant">
+      <span class="av">D</span>
+      <span class="meta">
+        <span class="who">demo@semphn.org.au</span>
+        <span class="sub">SEMPHN · PHN108</span>
+      </span>
+      <button type="button" data-signout>Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="split">
+
+  <!-- ─────────────────── CHAT (LEFT) ─────────────────── -->
+  <section class="chat" aria-label="Chat with the workbench">
+    <header class="chat-head">
+      <div class="title">
+        <span class="h">New conversation</span>
+        <span class="s" id="chat-context-label">Context: HNA · Chapter 4 First Nations</span>
+      </div>
+      <div class="menu">
+        <button type="button" id="chat-clear">Clear</button>
+      </div>
+    </header>
+
+    <div class="chat-body" id="chat-body">
+      <div class="chat-empty" id="chat-empty">
+        <span class="badge"><span class="dot"></span>Workbench · ready</span>
+        <h2>What do you want to <em>build</em> right now?</h2>
+        <p>
+          Ask in plain English. The right side will fill in as we go —
+          your HNA chapter, a dashboard chart, or a catchment map.
+        </p>
+        <div class="suggestions">
+          <span>Try these</span>
+          <button class="sug" data-prompt="Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong."><span class="pill">HNA</span>Draft Chapter 4 opening paragraph</button>
+          <button class="sug" data-prompt="Show me bowel cancer screening participation by LGA across the SEMPHN catchment, ranked lowest to highest. Highlight the three LGAs below 40%."><span class="pill">Dash</span>Bowel cancer screening by LGA</button>
+          <button class="sug" data-prompt="Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1."><span class="pill">Map</span>Map MH conditions by LGA</button>
+          <button class="sug" data-prompt="Summarise the strongest cross-chapter finding in 3 sentences I can drop into the executive summary."><span class="pill">HNA</span>Strongest cross-chapter finding</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="chat-input">
+      <div class="chat-input-wrap">
+        <textarea id="chat-input" rows="1" placeholder="Ask the workbench…" aria-label="Type your message"></textarea>
+        <div class="chat-input-foot">
+          <span class="hint"><kbd>Enter</kbd>send · <kbd>Shift+Enter</kbd>newline</span>
+          <button type="button" class="chat-input-send" id="chat-send" disabled>
+            Send <span class="arr">↑</span>
+          </button>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ─────────────────── CANVAS (RIGHT) ─────────────────── -->
+  <section class="canvas" aria-label="Workbench canvas">
+    <header class="canvas-head">
+      <div class="canvas-tabs" role="tablist">
+        <button class="canvas-tab is-active" data-tab="hna" role="tab" aria-selected="true">
+          <span class="ico">H</span>HNA
+        </button>
+        <button class="canvas-tab" data-tab="dashboards" role="tab" aria-selected="false">
+          <span class="ico">D</span>Dashboards
+        </button>
+        <button class="canvas-tab" data-tab="maps" role="tab" aria-selected="false">
+          <span class="ico">M</span>Maps
+        </button>
+      </div>
+      <div class="canvas-actions">
+        <button type="button">Download</button>
+        <button type="button" class="primary">Lodge to PPERS</button>
+      </div>
+    </header>
+
+    <div class="canvas-body" id="canvas-body">
+      <!-- HNA TAB -->
+      <div class="canvas-pane" data-pane="hna">
+        <article class="hna-doc" id="hna-doc">
+          <div class="doc-kicker">2025–28 HNA · v1.2 draft · 28 May 2026</div>
+          <h1>Chapter 4 · First Nations <em>people</em></h1>
+          <p class="deck">
+            The South Eastern Melbourne PHN catchment is home to approximately
+            <strong>7,500 First Nations residents</strong>. The largest populations sit in
+            <strong>Casey (23.4%)</strong>, <strong>Frankston (18.4%)</strong> and
+            <strong>Mornington Peninsula (17.5%)</strong>. Median age <strong>25</strong>; one in three is under 15.
+          </p>
+          <h2>Socioeconomic determinants</h2>
+          <p>
+            The catchment IRSEO of <strong>25</strong> for First Nations residents is meaningfully
+            above the Victorian average of <strong>14</strong>. The lowest IRSEO scores sit in
+            Greater Dandenong, Cranbourne-Narre Warren (Casey), Cardinia and Mornington Peninsula —
+            confirming a sharp east-west gradient in disadvantage across the catchment.
+          </p>
+          <h2>Mental health · the standout finding</h2>
+          <p>
+            Mental health is the most common chronic condition reported by SEMPHN First Nations
+            residents. Three LGAs sit above the Victorian average of <strong>18.3%</strong>:
+            <span class="chip">Port Phillip 23.3%</span>,
+            <span class="chip">Frankston 22.0%</span>, and
+            <span class="chip">Greater Dandenong 21.4%</span>.
+            Together these account for ~28% of the catchment's First Nations population but a
+            disproportionate share of MH-related primary care contact.
+          </p>
+          <p>
+            <em>The chat on the left can extend, soften, or restructure this paragraph. Ask it.</em>
+          </p>
+          <div class="footnote">
+            Source · ABS Census 2021 + AIHW IRSEO by IARE + POLAR · last ingest 21 May 2026 · figures dated to source
+          </div>
+        </article>
+      </div>
+
+      <!-- DASHBOARDS TAB -->
+      <div class="canvas-pane" data-pane="dashboards" hidden>
+        <div class="canvas-empty">
+          <span class="num">01</span>
+          <h3>Your <em>dashboards</em> build here.</h3>
+          <p>
+            Ask in the chat — "<strong>bowel cancer screening by LGA</strong>" or
+            "<strong>headspace wait time over the last year</strong>" — and a SEMPHN-themed
+            chart lands here. Pin it, restyle it, export PNG, or drop it straight into the HNA tab.
+          </p>
+          <span class="pointer">Type in the chat to begin</span>
+        </div>
+      </div>
+
+      <!-- MAPS TAB -->
+      <div class="canvas-pane" data-pane="maps" hidden>
+        <div class="canvas-empty">
+          <span class="num">02</span>
+          <h3>Catchment <em>maps</em> build here.</h3>
+          <p>
+            "<strong>MH prevalence by LGA, choropleth</strong>" or
+            "<strong>locate every ACCHS in catchment</strong>." Maps render against
+            the SEMPHN 10-LGA catchment. Export as PNG or paste into an HNA chapter.
+          </p>
+          <span class="pointer">Type in the chat to begin</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  /* ============================================================
+   * Auth gate (frontend-only mock) — bounce to /signin/ without
+   * a session. Same key as the existing shell.
+   * ============================================================ */
+  (function authGate() {
+    var key = 'domato.semphn.session';
+    try {
+      var raw = localStorage.getItem(key);
+      var sess = raw ? JSON.parse(raw) : null;
+      if (!sess || !sess.email) {
+        var next = location.pathname + location.search + location.hash;
+        location.replace('/signin/?next=' + encodeURIComponent(next));
+        return;
+      }
+      var av  = document.querySelector('.nav-user .av');
+      var who = document.querySelector('.nav-user .meta .who');
+      var sub = document.querySelector('.nav-user .meta .sub');
+      if (av  && sess.email) av.textContent = sess.email.charAt(0).toUpperCase();
+      if (who && sess.email) who.textContent = sess.email;
+      if (sub) sub.textContent = (sess.tenantName || 'SEMPHN') + ' · ' + (sess.tenantCode || 'PHN108');
+    } catch (e) {}
+  })();
+  var signoutBtn = document.querySelector('[data-signout]');
+  if (signoutBtn) signoutBtn.addEventListener('click', function () {
+    try { localStorage.removeItem('domato.semphn.session'); } catch (e) {}
+    location.href = '/signin/';
+  });
+
+  /* ============================================================
+   * Tab routing — switch canvas pane + sync nav highlight + URL.
+   * ============================================================ */
+  function setActiveTab(tab) {
+    document.querySelectorAll('.canvas-tab').forEach(function (b) {
+      var on = b.dataset.tab === tab;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('.canvas-pane').forEach(function (p) {
+      p.hidden = p.dataset.pane !== tab;
+    });
+    document.querySelectorAll('[data-nav-tab]').forEach(function (a) {
+      a.classList.toggle('is-active', a.dataset.navTab === tab);
+    });
+    var label = document.getElementById('chat-context-label');
+    if (label) {
+      var contexts = {
+        hna:        'Context: HNA · Chapter 4 First Nations',
+        dashboards: 'Context: Dashboards · pinning to your board',
+        maps:       'Context: Maps · SEMPHN 10 LGA catchment',
+      };
+      label.textContent = contexts[tab] || 'Workbench';
+    }
+    var url = new URL(location.href);
+    url.searchParams.set('tab', tab);
+    history.replaceState(null, '', url.toString());
+  }
+  document.querySelectorAll('.canvas-tab').forEach(function (b) {
+    b.addEventListener('click', function () { setActiveTab(b.dataset.tab); });
+  });
+  document.querySelectorAll('[data-nav-tab]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      setActiveTab(a.dataset.navTab);
+    });
+  });
+  (function () {
+    var t = new URLSearchParams(location.search).get('tab');
+    if (t && ['hna', 'dashboards', 'maps'].indexOf(t) >= 0) setActiveTab(t);
+  })();
+
+  /* ============================================================
+   * Chat — calls /api/chat (existing Function → Azure Foundry).
+   * Builds all DOM via createElement (no innerHTML on dynamic
+   * content) to keep XSS surface zero.
+   * ============================================================ */
+  var STATE = { messages: [], busy: false };
+  var body  = document.getElementById('chat-body');
+  var empty = document.getElementById('chat-empty');
+  var input = document.getElementById('chat-input');
+  var send  = document.getElementById('chat-send');
+  var clear = document.getElementById('chat-clear');
+
+  function setBusy(b) {
+    STATE.busy = b;
+    send.disabled = b || !input.value.trim();
+  }
+
+  input.addEventListener('input', function () {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 144) + 'px';
+    send.disabled = STATE.busy || !input.value.trim();
+  });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+  send.addEventListener('click', handleSend);
+
+  clear.addEventListener('click', function () {
+    STATE.messages = [];
+    // Safe DOM teardown — remove every node except the empty-state element
+    while (body.firstChild) body.removeChild(body.firstChild);
+    body.appendChild(empty);
+  });
+
+  document.querySelectorAll('.sug').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      input.value = btn.dataset.prompt;
+      input.dispatchEvent(new Event('input'));
+      handleSend();
+    });
+  });
+
+  function addMessage(role, text, opts) {
+    if (empty.parentNode === body) body.removeChild(empty);
+    var wrap = document.createElement('div');
+    wrap.className = 'msg ' + role;
+    var who = document.createElement('div'); who.className = 'who';
+    var dot = document.createElement('span'); dot.className = 'dot';
+    var lbl = document.createTextNode(role === 'user' ? 'You' : 'Workbench');
+    who.appendChild(dot); who.appendChild(lbl);
+    var bub = document.createElement('div');
+    bub.className = 'bubble' + ((opts && opts.streaming) ? ' streaming' : '');
+    bub.textContent = text;
+    wrap.appendChild(who); wrap.appendChild(bub);
+    body.appendChild(wrap);
+    body.scrollTop = body.scrollHeight;
+    return bub;
+  }
+
+  function activeTab() {
+    var on = document.querySelector('.canvas-tab.is-active');
+    return on ? on.dataset.tab : 'hna';
+  }
+
+  async function handleSend() {
+    var text = input.value.trim();
+    if (!text || STATE.busy) return;
+    input.value = ''; input.style.height = 'auto';
+    addMessage('user', text);
+    STATE.messages.push({ role: 'user', content: text });
+    setBusy(true);
+    var bubble = addMessage('bot', '', { streaming: true });
+
+    try {
+      var res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step_slug: 'build-' + activeTab(),
+          step_name: activeTab() === 'hna' ? 'Health Needs Assessment co-author'
+                    : activeTab() === 'maps' ? 'Catchment maps'
+                    : 'Dashboards',
+          messages: STATE.messages,
+          context_summary: 'SEMPHN catchment: 1.56M residents across 10 LGAs. 24% of Victoria. First Nations IRSEO 25 vs Vic 14. MH prevalence above 18.3% in Port Phillip (23.3), Frankston (22.0), Greater Dandenong (21.4). Lowest bowel screening: Casey South 35.9%, Dandenong 38.3%, Frankston 39.3%. Frankston highest MH conditions at 116.1/1k. headspace wait 8.6 days avg across 9 centres.',
+        }),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      var reply = (data && data.reply) || (data && data.error) || 'No response.';
+
+      bubble.textContent = '';
+      bubble.classList.add('streaming');
+      var i = 0;
+      var tick = setInterval(function () {
+        bubble.textContent += reply.slice(i, i + 4);
+        i += 4;
+        body.scrollTop = body.scrollHeight;
+        if (i >= reply.length) {
+          clearInterval(tick);
+          bubble.classList.remove('streaming');
+          STATE.messages.push({ role: 'assistant', content: reply });
+          setBusy(false);
+        }
+      }, 16);
+    } catch (err) {
+      bubble.classList.remove('streaming');
+      bubble.textContent = 'Sorry — the assist is unreachable right now. Please retry.';
+      setBusy(false);
+    }
+  }
+</script>
+
+</body>
+</html>

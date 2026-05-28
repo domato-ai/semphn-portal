@@ -29,9 +29,9 @@ Thumbs.db
 *.pem
 *.key
 
-# Build artefacts
-dist/
-build/
+# Build artefacts (root-only — don't shadow site/build/ workbench page)
+/dist/
+/build/
 
 # Bicep compile output
 *.bicep.json
