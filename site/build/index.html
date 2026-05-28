@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Workbench · SEMPHN · Chat &amp; build</title>
-<meta name="description" content="SEMPHN HNA Workbench. Chat on the left. Your Needs Assessment, dashboards and maps build on the right as you go." />
+<title>Workbench · SEMPHN</title>
+<meta name="description" content="SEMPHN HNA Workbench. Chat-build your Needs Assessment, dashboards and catchment maps." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,28 +12,32 @@
 
 <style>
   :root {
-    --navy:         #04264E;
-    --navy-mid:     #003D69;
-    --navy-soft:    #4C6582;
-    --teal:         #55BFAF;
-    --teal-mint:    #82D9C4;
-    --teal-pale:    #E5F4F0;
-    --slate:        #324354;
-    --slate-soft:   #6B7B8C;
-    --blue-grey:    #EFF3F9;
-    --rule:         #D6DFEB;
-    --rule-soft:    #E6EBF3;
-    --paper:        #FFFFFF;
+    --navy:        #04264E;
+    --navy-mid:    #003D69;
+    --navy-soft:   #4C6582;
+    --teal:        #55BFAF;
+    --teal-mint:   #82D9C4;
+    --teal-pale:   #E5F4F0;
+    --slate:       #324354;
+    --slate-soft:  #6B7B8C;
+    --blue-grey:   #EFF3F9;
+    --rule:        #D6DFEB;
+    --rule-soft:   #E6EBF3;
+    --paper:       #FFFFFF;
+    --accent-purple: #7E5BEF;
+    --accent-amber:  #F09137;
+    --accent-rose:   #E84A6B;
+    --accent-green:  #2F8265;
 
     --sans:    "Jost", -apple-system, "Segoe UI", system-ui, sans-serif;
     --display: "Newsreader", Georgia, serif;
     --mono:    "JetBrains Mono", ui-monospace, Menlo, monospace;
 
     --gutter:  clamp(1rem, 3vw, 2rem);
-    --maxw:    100%;
-    --r:       4px;
-    --navh:    64px;
-    --chatw:   440px;
+    --r:       8px;
+    --r-sm:    4px;
+    --navh:    56px;
+    --chatw:   400px;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   [hidden] { display: none !important; }
@@ -42,7 +46,7 @@
     font-family: var(--sans);
     background: var(--blue-grey);
     color: var(--navy);
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -50,13 +54,12 @@
     display: flex; flex-direction: column;
   }
   ::selection { background: var(--teal-mint); color: var(--navy); }
-  button { font-family: inherit; }
+  button, input, textarea { font-family: inherit; }
   button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
-    outline: 2px solid var(--teal);
-    outline-offset: 2px;
+    outline: 2px solid var(--teal); outline-offset: 2px;
   }
 
-  /* ─────────────────── TOP NAV (same as landing) ─────────────────── */
+  /* ─────────────────── TOP NAV ─────────────────── */
   .nav {
     background: var(--paper);
     border-bottom: 1px solid var(--rule);
@@ -66,63 +69,62 @@
     flex: none;
   }
   .nav-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
-  .nav-brand { display: inline-flex; align-items: center; gap: 0.85rem; color: var(--navy); text-decoration: none; }
+  .nav-brand { display: inline-flex; align-items: center; gap: 0.7rem; color: var(--navy); text-decoration: none; }
   .nav-brand .mark {
-    width: 34px; height: 34px;
-    background: var(--navy);
-    border-radius: var(--r);
+    width: 30px; height: 30px;
+    background: var(--navy); border-radius: var(--r-sm);
     display: grid; place-items: center;
   }
-  .nav-brand .mark img { width: 21px; height: auto; }
+  .nav-brand .mark img { width: 19px; height: auto; }
   .nav-brand .lockup { display: inline-flex; flex-direction: column; line-height: 1.05; }
-  .nav-brand .lockup .name { font-weight: 600; font-size: 0.88rem; }
+  .nav-brand .lockup .name { font-weight: 600; font-size: 0.86rem; }
   .nav-brand .lockup .sub {
-    font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--slate); margin-top: 0.15rem; font-weight: 500;
+    font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--slate); margin-top: 0.12rem; font-weight: 500;
   }
-  .nav-links { display: flex; align-items: center; gap: 0.3rem; margin-left: auto; margin-right: 1rem; }
+  .nav-links { display: flex; align-items: center; gap: 0.2rem; margin-left: auto; margin-right: 1rem; }
   .nav-link {
-    padding: 0.5rem 0.9rem;
+    padding: 0.42rem 0.85rem;
     color: var(--slate); text-decoration: none;
-    font-size: 0.88rem; font-weight: 500;
-    border-radius: var(--r);
+    font-size: 0.85rem; font-weight: 500;
+    border-radius: var(--r-sm);
     transition: background 0.15s, color 0.15s;
   }
   .nav-link:hover { background: var(--blue-grey); color: var(--navy); }
   .nav-link.is-active { background: var(--navy); color: white; }
   .nav-user {
-    display: inline-flex; align-items: center; gap: 0.55rem;
-    padding: 0.3rem 0.75rem 0.3rem 0.4rem;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.28rem 0.7rem 0.28rem 0.36rem;
     border: 1px solid var(--rule);
     border-radius: 999px;
     background: var(--paper);
   }
   .nav-user .av {
-    width: 24px; height: 24px; border-radius: 50%;
+    width: 22px; height: 22px; border-radius: 50%;
     background: var(--teal); color: var(--navy);
     display: grid; place-items: center;
-    font-size: 0.72rem; font-weight: 700;
+    font-size: 0.68rem; font-weight: 700;
   }
   .nav-user .meta { display: inline-flex; flex-direction: column; line-height: 1.05; }
-  .nav-user .meta .who { font-size: 0.78rem; font-weight: 600; color: var(--navy); }
+  .nav-user .meta .who { font-size: 0.74rem; font-weight: 600; color: var(--navy); }
   .nav-user .meta .sub {
-    font-size: 0.54rem; letter-spacing: 0.16em; text-transform: uppercase;
+    font-size: 0.5rem; letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--slate); margin-top: 0.1rem;
   }
   .nav-user button {
-    margin-left: 0.4rem; padding-left: 0.6rem;
+    margin-left: 0.35rem; padding-left: 0.55rem;
     border-left: 1px solid var(--rule);
     background: none; border-top: none; border-right: none; border-bottom: none;
-    font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+    font-size: 0.54rem; letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--slate); cursor: pointer; font-weight: 600;
   }
   .nav-user button:hover { color: var(--navy); }
-  @media (max-width: 720px) {
+  @media (max-width: 760px) {
     .nav-brand .lockup .sub { display: none; }
     .nav-user .meta { display: none; }
   }
 
-  /* ─────────────────── SPLIT: CHAT LEFT + CANVAS RIGHT ─────────────────── */
+  /* ─────────────────── SPLIT ─────────────────── */
   .split {
     flex: 1; min-height: 0;
     display: grid;
@@ -132,112 +134,287 @@
     .split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
   }
 
-  /* ─────────────────── CHAT PANEL (LEFT) ─────────────────── */
-  .chat { background: var(--paper); border-right: 1px solid var(--rule); display: flex; flex-direction: column; min-height: 0; }
-  .chat-head {
-    padding: 0.85rem 1.1rem;
-    border-bottom: 1px solid var(--rule);
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 1rem; flex: none;
+  /* ═══════════════════════════════════════════════════════════════════
+   * CHAT PANEL — FIGMA MAKE STYLE
+   * Pinned user prompt → Reasoning → response text → Worked-with files
+   * → summary → Version card → feedback → warnings → composer
+   * ═══════════════════════════════════════════════════════════════════ */
+  .chat {
+    background: var(--paper);
+    border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column;
+    min-height: 0;
   }
-  .chat-head .title { display: flex; flex-direction: column; line-height: 1.1; }
-  .chat-head .title .h {
-    font-family: var(--display); font-style: italic; font-weight: 400;
-    font-size: 1.05rem; color: var(--navy);
+  .chat-feed {
+    flex: 1; min-height: 0;
+    overflow-y: auto;
+    padding: 1.1rem 1rem 1.4rem;
+    display: flex; flex-direction: column; gap: 1.3rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
   }
-  .chat-head .title .s {
-    font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--slate); margin-top: 0.18rem; font-weight: 600;
-  }
-  .chat-head .menu { display: flex; align-items: center; gap: 0.3rem; }
-  .chat-head .menu button {
-    background: transparent; border: 1px solid var(--rule);
-    color: var(--slate); padding: 0.32rem 0.55rem;
-    border-radius: var(--r);
-    font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
-    cursor: pointer; font-weight: 600;
-  }
-  .chat-head .menu button:hover { color: var(--navy); border-color: var(--navy); }
+  .chat-feed::-webkit-scrollbar { width: 6px; }
+  .chat-feed::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 999px; }
 
-  .chat-body {
-    flex: 1; min-height: 0; overflow-y: auto;
-    padding: 1.4rem 1.1rem;
-    display: flex; flex-direction: column; gap: 1.1rem;
-    scrollbar-width: thin; scrollbar-color: var(--rule) transparent;
-  }
-  .chat-body::-webkit-scrollbar { width: 6px; }
-  .chat-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 999px; }
+  /* Per-turn block */
+  .turn { display: flex; flex-direction: column; gap: 0.75rem; }
 
-  .chat-empty { display: flex; flex-direction: column; gap: 1.2rem; margin: auto 0; }
-  .chat-empty .badge {
-    align-self: flex-start;
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.32rem 0.6rem;
-    background: var(--teal-pale); border: 1px solid var(--teal);
-    border-radius: 999px;
-    font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--navy); font-weight: 600;
-  }
-  .chat-empty .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
-  .chat-empty h2 {
-    font-family: var(--display); font-weight: 400;
-    font-size: 1.6rem; letter-spacing: -0.012em;
-    line-height: 1.15; color: var(--navy); max-width: 24ch;
-  }
-  .chat-empty h2 em { font-style: italic; color: var(--navy-mid); }
-  .chat-empty p {
-    color: var(--slate); font-size: 0.94rem; line-height: 1.55; max-width: 38ch;
-  }
-  .chat-empty .suggestions { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.4rem; }
-  .chat-empty .suggestions span {
-    font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--slate); font-weight: 600; margin-bottom: 0.15rem;
-  }
-  .chat-empty .sug {
-    text-align: left;
-    background: var(--blue-grey);
-    border: 1px solid transparent;
+  /* User prompt chip — pinned card with avatar */
+  .turn-prompt {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.6rem;
+    align-items: start;
     padding: 0.7rem 0.85rem;
+    background: var(--blue-grey);
+    border: 1px solid var(--rule-soft);
     border-radius: var(--r);
-    font-size: 0.9rem; color: var(--navy);
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, transform 0.04s;
-    display: flex; align-items: center; gap: 0.6rem;
   }
-  .chat-empty .sug:hover { background: var(--teal-pale); border-color: var(--teal); }
-  .chat-empty .sug:active { transform: translateY(1px); }
-  .chat-empty .sug .pill {
-    font-family: var(--mono);
-    font-size: 0.54rem; letter-spacing: 0.14em;
-    color: var(--navy); background: white;
-    padding: 0.18rem 0.4rem; border-radius: 3px; border: 1px solid var(--rule-soft);
-    text-transform: uppercase; flex: none;
+  .turn-prompt .text {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--navy);
+    font-weight: 500;
+  }
+  .turn-prompt .avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent-purple);
+    color: white;
+    display: grid; place-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex: none;
   }
 
-  .msg { display: flex; flex-direction: column; gap: 0.35rem; max-width: 95%; }
-  .msg .who {
-    font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--slate); font-weight: 600;
-    display: flex; align-items: center; gap: 0.4rem;
+  /* Section header: "Reasoning ▾" / "Worked with N files ▾" */
+  .turn-section {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: none; border: none;
+    color: var(--slate);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.15rem 0;
+    align-self: flex-start;
   }
-  .msg .who .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .msg .bubble {
-    padding: 0.75rem 0.95rem;
+  .turn-section:hover { color: var(--navy); }
+  .turn-section .caret {
+    font-size: 0.75rem;
+    transition: transform 0.15s;
+    color: var(--slate-soft);
+  }
+  .turn-section[aria-expanded="false"] .caret { transform: rotate(-90deg); }
+
+  .turn-reasoning, .turn-files {
+    padding: 0 0 0 0.1rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--slate);
+    border-left: 2px solid var(--rule);
+    padding-left: 0.75rem;
+    margin-top: -0.3rem;
+  }
+  .turn-files-list {
+    list-style: none; padding: 0;
+    display: flex; flex-direction: column; gap: 0.25rem;
+    margin-top: 0.2rem;
+  }
+  .turn-files-list li {
+    display: flex; align-items: center; gap: 0.45rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--slate);
+  }
+  .turn-files-list li::before {
+    content: "·";
+    color: var(--teal);
+    font-weight: 700;
+  }
+
+  /* Response body — plain text, not a bubble */
+  .turn-body {
+    font-size: 0.93rem;
+    line-height: 1.6;
+    color: var(--navy);
+  }
+  .turn-body p + p { margin-top: 0.6rem; }
+  .turn-body strong { font-weight: 600; }
+  .turn-body em { font-style: italic; color: var(--navy-mid); }
+
+  /* Version card */
+  .turn-version {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.6rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
     border-radius: var(--r);
-    font-size: 0.93rem; line-height: 1.55;
-    white-space: pre-wrap;
+    padding: 0.7rem 0.85rem;
   }
-  .msg.bot { align-self: flex-start; }
-  .msg.bot .who { color: var(--teal); }
-  .msg.bot .bubble {
-    background: var(--blue-grey); color: var(--navy);
-    border: 1px solid var(--rule-soft);
-    border-bottom-left-radius: 0;
+  .turn-version .meta { display: flex; flex-direction: column; gap: 0.15rem; line-height: 1.2; }
+  .turn-version .meta .h { font-size: 0.86rem; font-weight: 600; color: var(--navy); }
+  .turn-version .meta .v {
+    font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent-green); font-weight: 700;
+    display: inline-flex; align-items: center; gap: 0.35rem;
   }
-  .msg.user { align-self: flex-end; }
-  .msg.user .who { color: var(--navy-soft); justify-content: flex-end; }
-  .msg.user .bubble { background: var(--navy); color: white; border-bottom-right-radius: 0; }
-  .msg .bubble.streaming::after {
+  .turn-version .meta .v::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-green);
+  }
+  .turn-version .kebab {
+    background: none; border: none;
+    color: var(--slate-soft); cursor: pointer;
+    padding: 0.3rem 0.5rem;
+    font-size: 1.1rem;
+    border-radius: var(--r-sm);
+  }
+  .turn-version .kebab:hover { background: var(--blue-grey); color: var(--navy); }
+
+  /* Feedback chips */
+  .turn-feedback {
+    display: flex; align-items: center; gap: 0.15rem;
+    margin-left: -0.4rem;
+  }
+  .turn-feedback button {
+    background: none; border: none;
+    color: var(--slate-soft); cursor: pointer;
+    width: 30px; height: 30px;
+    border-radius: var(--r-sm);
+    display: grid; place-items: center;
+    font-size: 0.95rem;
+    transition: background 0.12s, color 0.12s;
+  }
+  .turn-feedback button:hover { background: var(--blue-grey); color: var(--navy); }
+  .turn-feedback button.is-on { color: var(--teal); }
+
+  /* Warnings bar */
+  .turn-warnings {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.55rem 0.7rem 0.55rem 0.85rem;
+    background: oklch(96% 0.04 70);
+    border: 1px solid oklch(86% 0.08 70);
+    border-radius: var(--r);
+    color: oklch(38% 0.13 50);
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .turn-warnings .label {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+  }
+  .turn-warnings .label::before {
+    content: "⚠"; font-size: 0.9rem;
+  }
+  .turn-warnings .right { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .turn-warnings .fix {
+    background: var(--paper);
+    border: 1px solid oklch(80% 0.1 60);
+    color: oklch(38% 0.13 50);
+    padding: 0.28rem 0.55rem;
+    border-radius: var(--r-sm);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .turn-warnings .fix:hover { background: oklch(94% 0.06 70); }
+  .turn-warnings .close {
+    background: none; border: none;
+    color: oklch(40% 0.1 60); cursor: pointer;
+    width: 22px; height: 22px;
+    border-radius: var(--r-sm);
+    display: grid; place-items: center;
+    font-size: 1.1rem;
+  }
+  .turn-warnings .close:hover { background: oklch(94% 0.06 70); }
+
+  /* Composer */
+  .composer {
+    flex: none;
+    border-top: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 0.7rem 0.8rem 0.85rem;
+  }
+  .composer-prompt {
+    font-size: 0.75rem;
+    color: var(--slate-soft);
+    font-weight: 500;
+    margin-bottom: 0.45rem;
+    margin-left: 0.1rem;
+  }
+  .composer-wrap {
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    background: var(--paper);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .composer-wrap:focus-within {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(85,191,175,0.16);
+  }
+  .composer textarea {
+    width: 100%;
+    border: none; outline: none; background: transparent;
+    resize: none;
+    padding: 0.7rem 0.85rem 0.55rem;
+    font-family: var(--sans);
+    font-size: 0.92rem; color: var(--navy);
+    line-height: 1.45;
+    min-height: 2.5em; max-height: 9em;
+    overflow-y: auto;
+  }
+  .composer textarea::placeholder { color: var(--slate-soft); }
+  .composer-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0.45rem 0.4rem 0.55rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .composer-foot-left,
+  .composer-foot-right { display: inline-flex; align-items: center; gap: 0.1rem; }
+  .composer-foot button.icon {
+    background: none; border: none;
+    color: var(--slate-soft); cursor: pointer;
+    width: 30px; height: 30px;
+    border-radius: var(--r-sm);
+    display: grid; place-items: center;
+    font-size: 1rem;
+    transition: background 0.12s, color 0.12s;
+  }
+  .composer-foot button.icon:hover { background: var(--blue-grey); color: var(--navy); }
+  .composer-foot .mode {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    background: none; border: none;
+    color: var(--slate); font-size: 0.74rem; font-weight: 600;
+    padding: 0.3rem 0.55rem;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+  }
+  .composer-foot .mode:hover { background: var(--blue-grey); color: var(--navy); }
+  .composer-foot .mode .caret { font-size: 0.65rem; color: var(--slate-soft); }
+  .composer-foot .send {
+    background: var(--navy); color: white;
+    border: none;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--r-sm);
+    font-size: 0.74rem; font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    margin-left: 0.3rem;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .composer-foot .send:hover { background: var(--navy-mid); }
+  .composer-foot .send:disabled { opacity: 0.45; cursor: not-allowed; }
+  .composer-foot .send .arr {
+    background: var(--teal); color: var(--navy);
+    width: 16px; height: 16px;
+    border-radius: 3px;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 0.7rem;
+  }
+
+  /* Streaming dots inside turn-body */
+  .turn-body.streaming::after {
     content: "▍";
     color: var(--teal);
     animation: blink 0.8s infinite;
@@ -245,105 +422,44 @@
   }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* Input */
-  .chat-input { flex: none; padding: 0.85rem 1.1rem 1.1rem; border-top: 1px solid var(--rule); background: var(--paper); }
-  .chat-input-wrap {
-    border: 1px solid var(--rule); border-radius: var(--r);
-    background: var(--paper);
-    padding: 0.6rem 0.6rem 0.55rem 0.85rem;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .chat-input-wrap:focus-within {
-    border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(85,191,175,0.18);
-  }
-  .chat-input textarea {
-    width: 100%; border: none; outline: none; background: transparent;
-    resize: none;
-    font-family: var(--sans);
-    font-size: 0.95rem; color: var(--navy);
-    line-height: 1.5;
-    min-height: 1.5em; max-height: 9em;
-    overflow-y: auto;
-  }
-  .chat-input textarea::placeholder { color: var(--slate-soft); }
-  .chat-input-foot {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 0.45rem; gap: 0.6rem;
-  }
-  .chat-input-foot .hint {
-    font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--slate); font-weight: 600;
-  }
-  .chat-input-foot .hint kbd {
-    font-family: var(--mono); font-size: 0.6rem;
-    background: var(--blue-grey);
-    padding: 0.1rem 0.35rem; border-radius: 3px;
-    border: 1px solid var(--rule-soft);
-    color: var(--navy); margin-right: 0.15rem;
-  }
-  .chat-input-send {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    background: var(--navy); color: white;
-    border: none; padding: 0.45rem 0.85rem 0.45rem 0.65rem;
-    border-radius: var(--r);
-    font-size: 0.78rem; font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, opacity 0.15s;
-  }
-  .chat-input-send:hover { background: var(--navy-mid); }
-  .chat-input-send:disabled { opacity: 0.4; cursor: not-allowed; }
-  .chat-input-send .arr {
-    width: 18px; height: 18px;
-    background: var(--teal); color: var(--navy);
-    border-radius: 3px;
-    display: grid; place-items: center;
-    font-weight: 700; font-size: 0.78rem;
-  }
-
-  /* ─────────────────── CANVAS (RIGHT) ─────────────────── */
+  /* ═══════════════════════════════════════════════════════════════════
+   * CANVAS (RIGHT) — TABS + RENDERED ARTIFACT
+   * ═══════════════════════════════════════════════════════════════════ */
   .canvas { background: var(--blue-grey); display: flex; flex-direction: column; min-height: 0; }
   .canvas-head {
     padding: 0 var(--gutter);
     background: var(--paper);
     border-bottom: 1px solid var(--rule);
-    height: 54px;
+    height: 50px;
     display: flex; align-items: center; justify-content: space-between;
     gap: 1rem; flex: none;
   }
-  .canvas-tabs { display: flex; align-items: center; gap: 0.15rem; }
+  .canvas-tabs { display: flex; align-items: center; gap: 0.1rem; }
   .canvas-tab {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.5rem 0.9rem;
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
     background: transparent; border: none;
     font-family: var(--sans);
-    font-size: 0.88rem; font-weight: 500;
+    font-size: 0.86rem; font-weight: 500;
     color: var(--slate); cursor: pointer;
-    border-radius: var(--r);
+    border-radius: var(--r-sm);
     position: relative;
   }
   .canvas-tab:hover { color: var(--navy); background: var(--blue-grey); }
   .canvas-tab.is-active { color: var(--navy); font-weight: 600; }
   .canvas-tab.is-active::after {
     content: "";
-    position: absolute; left: 0.9rem; right: 0.9rem; bottom: -1px;
+    position: absolute; left: 0.85rem; right: 0.85rem; bottom: -1px;
     height: 2px; background: var(--teal);
   }
-  .canvas-tab .ico {
-    width: 18px; height: 18px;
-    border-radius: 3px;
-    display: grid; place-items: center;
-    background: var(--blue-grey); color: var(--navy);
-    font-family: var(--display); font-style: italic;
-    font-size: 0.7rem; font-weight: 500;
-  }
-  .canvas-tab.is-active .ico { background: var(--teal); color: var(--navy); }
-  .canvas-actions { display: flex; align-items: center; gap: 0.4rem; }
+  .canvas-tab .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rule); }
+  .canvas-tab.is-active .dot { background: var(--teal); }
+  .canvas-actions { display: flex; align-items: center; gap: 0.35rem; }
   .canvas-actions button {
     background: var(--paper); border: 1px solid var(--rule);
     color: var(--slate);
-    padding: 0.4rem 0.7rem;
-    border-radius: var(--r);
+    padding: 0.38rem 0.7rem;
+    border-radius: var(--r-sm);
     font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
     cursor: pointer; font-weight: 600;
   }
@@ -352,46 +468,183 @@
   .canvas-actions .primary:hover { background: var(--navy-mid); color: white; }
 
   .canvas-body {
-    flex: 1; min-height: 0; overflow-y: auto;
-    padding: clamp(1.5rem, 3vw, 2.5rem);
+    flex: 1; min-height: 0;
+    overflow-y: auto;
+    background: var(--blue-grey);
     scrollbar-width: thin;
     scrollbar-color: var(--rule) transparent;
   }
   .canvas-body::-webkit-scrollbar { width: 8px; }
   .canvas-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 999px; }
+  .canvas-pane { padding: clamp(1.5rem, 3vw, 2.5rem); max-width: 1280px; margin: 0 auto; }
 
-  .canvas-empty {
-    max-width: 580px;
-    margin: clamp(2rem, 6vw, 5rem) auto 0;
-    padding: 2rem 2.2rem;
+  /* ═══════════════════════════════════════════════════════════════════
+   * DASHBOARD ARTIFACT (the rendered output)
+   * Matches the Figma Make screenshot pattern:
+   *   H1 + subtitle → 4 KPI cards (icon, label, value, % delta)
+   *   → 2 charts row (bar + line, SVG)
+   *   → recent items table
+   * ═══════════════════════════════════════════════════════════════════ */
+  .dash-head { margin-bottom: 1.8rem; }
+  .dash-head h1 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.018em;
+    margin-bottom: 0.3rem;
+  }
+  .dash-head p { color: var(--slate); font-size: 1rem; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 1.4rem;
+  }
+  @media (max-width: 1080px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .kpi-row { grid-template-columns: 1fr; } }
+  .kpi {
     background: var(--paper);
-    border: 1px solid var(--rule);
     border-radius: var(--r);
+    padding: 1.3rem 1.4rem;
     display: flex; flex-direction: column; gap: 1rem;
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
   }
-  .canvas-empty .num {
-    font-family: var(--display); font-style: italic;
-    font-size: 2.6rem; font-weight: 300;
-    color: var(--teal); line-height: 1;
+  .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
+  .kpi-ico {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    color: white;
+    flex: none;
   }
-  .canvas-empty h3 {
-    font-family: var(--display); font-style: italic; font-weight: 400;
-    font-size: 1.5rem; color: var(--navy); line-height: 1.15;
+  .kpi-ico svg { width: 22px; height: 22px; stroke: currentColor; }
+  .kpi-ico.navy   { background: var(--navy); }
+  .kpi-ico.teal   { background: var(--teal); color: var(--navy); }
+  .kpi-ico.purple { background: var(--accent-purple); }
+  .kpi-ico.amber  { background: var(--accent-amber); }
+  .kpi-delta {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent-green);
   }
-  .canvas-empty p { color: var(--slate); font-size: 0.96rem; line-height: 1.55; }
-  .canvas-empty p strong { color: var(--navy); font-weight: 600; }
-  .canvas-empty .pointer {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    margin-top: 0.3rem;
-    font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--teal); font-weight: 600;
+  .kpi-delta.down { color: var(--accent-rose); }
+  .kpi-delta::before {
+    font-size: 0.78rem;
+    content: "↗";
   }
-  .canvas-empty .pointer::before { content: "←"; font-size: 1rem; }
+  .kpi-delta.down::before { content: "↘"; }
+  .kpi-label {
+    color: var(--slate);
+    font-size: 0.88rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+  }
+  .kpi-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
 
-  /* HNA preview document */
+  .chart-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 1.4rem;
+  }
+  @media (max-width: 1080px) { .chart-row { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--paper);
+    border-radius: var(--r);
+    padding: 1.3rem 1.4rem 1.4rem;
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+  }
+  .chart-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.2rem;
+    letter-spacing: -0.005em;
+  }
+  .chart-card .sub {
+    font-size: 0.78rem;
+    color: var(--slate);
+    margin-bottom: 1rem;
+  }
+  .chart-svg { width: 100%; height: 260px; display: block; }
+  .chart-legend {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    margin-top: 0.7rem;
+    font-size: 0.78rem;
+    color: var(--slate);
+    font-weight: 500;
+  }
+  .chart-legend .swatch {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+  }
+
+  /* Data table */
+  .table-card {
+    background: var(--paper);
+    border-radius: var(--r);
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+    overflow: hidden;
+  }
+  .table-card-head {
+    padding: 1.1rem 1.4rem 0.4rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  .table-card-head h3 { font-size: 1rem; font-weight: 600; color: var(--navy); }
+  .table-card-head .sub { font-size: 0.76rem; color: var(--slate); }
+  .table-card table { width: 100%; border-collapse: collapse; }
+  .table-card thead th {
+    text-align: left;
+    background: var(--paper);
+    color: var(--slate);
+    font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+    font-weight: 600;
+    padding: 0.85rem 1.4rem;
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .table-card thead th.r { text-align: right; }
+  .table-card tbody td {
+    padding: 0.85rem 1.4rem;
+    border-top: 1px solid var(--rule-soft);
+    color: var(--navy);
+    font-size: 0.88rem;
+  }
+  .table-card tbody td.r { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .table-card tbody tr:hover td { background: var(--blue-grey); }
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .status-chip::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+  }
+  .status-chip.ok   { background: oklch(94% 0.04 155); color: oklch(35% 0.12 155); }
+  .status-chip.warn { background: oklch(96% 0.05 70);  color: oklch(40% 0.15 60); }
+  .status-chip.due  { background: var(--teal-pale);    color: var(--navy-mid); }
+  .status-chip.draft{ background: var(--blue-grey);    color: var(--slate); }
+
+  /* HNA preview document (Page 1 tab) — kept compact */
   .hna-doc {
     max-width: 780px; margin: 0 auto;
-    background: var(--paper); border: 1px solid var(--rule);
+    background: var(--paper); border: 1px solid var(--rule-soft);
     border-radius: var(--r);
     padding: clamp(2rem, 4vw, 3.5rem);
     box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 16px 40px -24px rgba(4,38,78,0.18);
@@ -408,36 +661,46 @@
   }
   .hna-doc h1 em { font-style: italic; color: var(--navy-mid); }
   .hna-doc h2 {
-    font-weight: 600; font-size: 1.18rem;
-    color: var(--navy);
-    margin: 1.8rem 0 0.6rem;
-    letter-spacing: -0.008em;
+    font-weight: 600; font-size: 1.05rem;
+    color: var(--navy); margin: 1.6rem 0 0.5rem;
   }
   .hna-doc .deck {
-    font-size: 1.02rem; color: var(--slate); line-height: 1.6;
-    padding-bottom: 1.4rem;
-    border-bottom: 1px solid var(--rule);
-    margin-bottom: 1.6rem;
+    font-size: 0.98rem; color: var(--slate); line-height: 1.6;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--rule-soft);
+    margin-bottom: 1.4rem;
   }
   .hna-doc .deck strong { color: var(--navy); font-weight: 600; }
-  .hna-doc p { font-size: 1rem; line-height: 1.7; color: var(--slate); margin-bottom: 0.85rem; }
+  .hna-doc p { font-size: 0.95rem; line-height: 1.7; color: var(--slate); margin-bottom: 0.8rem; }
   .hna-doc p strong { color: var(--navy); font-weight: 600; }
-  .hna-doc .footnote {
-    margin-top: 2.2rem;
-    padding-top: 1rem;
-    border-top: 1px dashed var(--rule);
-    font-size: 0.78rem; color: var(--slate);
-    font-family: var(--mono);
-    letter-spacing: 0.04em;
-  }
   .hna-doc .chip {
     display: inline-block;
-    background: var(--teal-pale);
-    color: var(--navy-mid);
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
+    background: var(--teal-pale); color: var(--navy-mid);
+    padding: 0.1rem 0.4rem; border-radius: 3px;
     font-size: 0.86em; font-weight: 500;
     border: 1px solid var(--teal);
+  }
+
+  /* Map artifact */
+  .map-card {
+    background: var(--paper);
+    border-radius: var(--r);
+    border: 1px solid var(--rule-soft);
+    padding: 1.4rem;
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+  }
+  .map-card h3 { font-size: 1rem; font-weight: 600; color: var(--navy); margin-bottom: 0.2rem; }
+  .map-card .sub { font-size: 0.78rem; color: var(--slate); margin-bottom: 1rem; }
+  .map-svg { width: 100%; height: 360px; display: block; background: var(--blue-grey); border-radius: var(--r-sm); }
+  .map-legend {
+    margin-top: 0.85rem;
+    display: flex; align-items: center; gap: 0.7rem;
+    font-size: 0.74rem; color: var(--slate); font-weight: 500;
+  }
+  .map-legend .scale {
+    width: 180px; height: 8px;
+    background: linear-gradient(90deg, var(--teal-pale), var(--teal), var(--navy));
+    border-radius: 999px;
   }
 </style>
 </head>
@@ -469,58 +732,239 @@
 
 <div class="split">
 
-  <!-- ─────────────────── CHAT (LEFT) ─────────────────── -->
-  <section class="chat" aria-label="Chat with the workbench">
-    <header class="chat-head">
-      <div class="title">
-        <span class="h">New conversation</span>
-        <span class="s" id="chat-context-label">Context: HNA · Chapter 4 First Nations</span>
-      </div>
-      <div class="menu">
-        <button type="button" id="chat-clear">Clear</button>
-      </div>
-    </header>
+  <!-- ═══════════════════════════════════════════════════════════════════
+       CHAT PANEL (LEFT) — FIGMA MAKE STYLE
+       ═══════════════════════════════════════════════════════════════════ -->
+  <section class="chat" aria-label="Workbench chat">
+    <div class="chat-feed" id="chat-feed">
+      <!-- Per-turn blocks rendered by JS -->
+    </div>
 
-    <!-- chat-body is rendered by JS per active tab — each tab keeps its own conversation -->
-    <div class="chat-body" id="chat-body" data-tab=""></div>
-
-    <footer class="chat-input">
-      <div class="chat-input-wrap">
-        <textarea id="chat-input" rows="1" placeholder="Ask the workbench…" aria-label="Type your message"></textarea>
-        <div class="chat-input-foot">
-          <span class="hint"><kbd>Enter</kbd>send · <kbd>Shift+Enter</kbd>newline</span>
-          <button type="button" class="chat-input-send" id="chat-send" disabled>
-            Send <span class="arr">↑</span>
-          </button>
+    <footer class="composer">
+      <div class="composer-prompt">Ask for changes</div>
+      <div class="composer-wrap">
+        <textarea id="chat-input" rows="1" placeholder="Type a change, request, or new build…" aria-label="Ask for changes"></textarea>
+        <div class="composer-foot">
+          <div class="composer-foot-left">
+            <button type="button" class="icon" title="Add attachment">+</button>
+            <button type="button" class="icon" title="More options">⋯</button>
+          </div>
+          <div class="composer-foot-right">
+            <button type="button" class="mode">Default <span class="caret">▾</span></button>
+            <button type="button" class="icon" title="Voice input">🎤</button>
+            <button type="button" class="send" id="chat-send" disabled>
+              Send <span class="arr">↑</span>
+            </button>
+          </div>
         </div>
       </div>
     </footer>
   </section>
 
-  <!-- ─────────────────── CANVAS (RIGHT) ─────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════
+       CANVAS (RIGHT)
+       ═══════════════════════════════════════════════════════════════════ -->
   <section class="canvas" aria-label="Workbench canvas">
     <header class="canvas-head">
       <div class="canvas-tabs" role="tablist">
-        <button class="canvas-tab is-active" data-tab="hna" role="tab" aria-selected="true">
-          <span class="ico">H</span>HNA
+        <button class="canvas-tab" data-tab="hna" role="tab" aria-selected="false">
+          <span class="dot"></span>HNA
         </button>
-        <button class="canvas-tab" data-tab="dashboards" role="tab" aria-selected="false">
-          <span class="ico">D</span>Dashboards
+        <button class="canvas-tab is-active" data-tab="dashboards" role="tab" aria-selected="true">
+          <span class="dot"></span>Dashboards
         </button>
         <button class="canvas-tab" data-tab="maps" role="tab" aria-selected="false">
-          <span class="ico">M</span>Maps
+          <span class="dot"></span>Maps
         </button>
       </div>
       <div class="canvas-actions">
         <button type="button">Download</button>
-        <button type="button" class="primary">Lodge to PPERS</button>
+        <button type="button" class="primary">Publish</button>
       </div>
     </header>
 
     <div class="canvas-body" id="canvas-body">
-      <!-- HNA TAB -->
-      <div class="canvas-pane" data-pane="hna">
-        <article class="hna-doc" id="hna-doc">
+
+      <!-- ──────── DASHBOARDS PANE (default) ──────── -->
+      <div class="canvas-pane" data-pane="dashboards">
+        <div class="dash-head">
+          <h1>Catchment Dashboard</h1>
+          <p>Welcome back. Here's what's happening across South Eastern Melbourne today.</p>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico navy">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9 12h6M12 9v6"></path></svg>
+              </div>
+              <span class="kpi-delta">+3.1%</span>
+            </div>
+            <div>
+              <div class="kpi-label">Catchment population</div>
+              <div class="kpi-value">1,638,200</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M3 20c0-3 3-5 6-5s6 2 6 5"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M14 17c0-1.7 1.5-3 3-3s4 1 4 3"></path></svg>
+              </div>
+              <span class="kpi-delta">+8.6%</span>
+            </div>
+            <div>
+              <div class="kpi-label">Active MH referrals</div>
+              <div class="kpi-value">12,408</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M6 7l1.5 11h9L18 7M9 11v4M15 11v4"></path></svg>
+              </div>
+              <span class="kpi-delta down">-2.4%</span>
+            </div>
+            <div>
+              <div class="kpi-label">Bowel screening rate</div>
+              <div class="kpi-value">47.5%</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"></path></svg>
+              </div>
+              <span class="kpi-delta">+5.1%</span>
+            </div>
+            <div>
+              <div class="kpi-label">HNA chapters complete</div>
+              <div class="kpi-value">6 / 10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+
+          <!-- BAR CHART · Monthly GP consultations -->
+          <div class="chart-card">
+            <h3>Monthly GP consultations</h3>
+            <div class="sub">Active patients across 493 SEMPHN practices · last 6 months</div>
+            <svg class="chart-svg" viewBox="0 0 520 260" preserveAspectRatio="none" aria-label="Bar chart">
+              <!-- gridlines + labels -->
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C">
+                <line x1="40" y1="40"  x2="510" y2="40"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="90"  x2="510" y2="90"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="140" x2="510" y2="140" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="190" x2="510" y2="190" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="220" x2="510" y2="220" stroke="#D6DFEB"/>
+                <text x="30" y="44"  text-anchor="end">240k</text>
+                <text x="30" y="94"  text-anchor="end">180k</text>
+                <text x="30" y="144" text-anchor="end">120k</text>
+                <text x="30" y="194" text-anchor="end">60k</text>
+                <text x="30" y="224" text-anchor="end">0</text>
+              </g>
+              <!-- bars (navy → teal gradient via individual fills for browser support) -->
+              <g>
+                <rect x="65"  y="120" width="50" height="100" rx="3" fill="#04264E"/>
+                <rect x="140" y="100" width="50" height="120" rx="3" fill="#003D69"/>
+                <rect x="215" y="70"  width="50" height="150" rx="3" fill="#0E4775"/>
+                <rect x="290" y="90"  width="50" height="130" rx="3" fill="#1C5B85"/>
+                <rect x="365" y="60"  width="50" height="160" rx="3" fill="#2C7995"/>
+                <rect x="440" y="50"  width="50" height="170" rx="3" fill="#55BFAF"/>
+              </g>
+              <!-- x labels -->
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C" text-anchor="middle">
+                <text x="90"  y="240">Dec</text>
+                <text x="165" y="240">Jan</text>
+                <text x="240" y="240">Feb</text>
+                <text x="315" y="240">Mar</text>
+                <text x="390" y="240">Apr</text>
+                <text x="465" y="240">May</text>
+              </g>
+            </svg>
+            <span class="chart-legend"><span class="swatch" style="background:#04264E"></span>GP consultations</span>
+          </div>
+
+          <!-- LINE CHART · Bowel cancer screening rate trend -->
+          <div class="chart-card">
+            <h3>Bowel cancer screening rate</h3>
+            <div class="sub">% of eligible 50–74 yo screened · catchment average · 6 quarters</div>
+            <svg class="chart-svg" viewBox="0 0 520 260" preserveAspectRatio="none" aria-label="Line chart">
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C">
+                <line x1="40" y1="40"  x2="510" y2="40"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="90"  x2="510" y2="90"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="140" x2="510" y2="140" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="190" x2="510" y2="190" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="220" x2="510" y2="220" stroke="#D6DFEB"/>
+                <text x="30" y="44"  text-anchor="end">55%</text>
+                <text x="30" y="94"  text-anchor="end">50%</text>
+                <text x="30" y="144" text-anchor="end">45%</text>
+                <text x="30" y="194" text-anchor="end">40%</text>
+                <text x="30" y="224" text-anchor="end">35%</text>
+              </g>
+              <!-- area + line -->
+              <path d="M 70,150 L 160,135 L 250,118 L 340,105 L 430,95 L 500,85 L 500,220 L 70,220 Z" fill="url(#g1)" opacity="0.25"/>
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"  stop-color="#55BFAF" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#55BFAF" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <polyline points="70,150 160,135 250,118 340,105 430,95 500,85"
+                        fill="none" stroke="#55BFAF" stroke-width="2.5" stroke-linejoin="round"/>
+              <g fill="#FFFFFF" stroke="#55BFAF" stroke-width="2.5">
+                <circle cx="70"  cy="150" r="4"/>
+                <circle cx="160" cy="135" r="4"/>
+                <circle cx="250" cy="118" r="4"/>
+                <circle cx="340" cy="105" r="4"/>
+                <circle cx="430" cy="95"  r="4"/>
+                <circle cx="500" cy="85"  r="4"/>
+              </g>
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C" text-anchor="middle">
+                <text x="70"  y="240">Q4'24</text>
+                <text x="160" y="240">Q1'25</text>
+                <text x="250" y="240">Q2'25</text>
+                <text x="340" y="240">Q3'25</text>
+                <text x="430" y="240">Q4'25</text>
+                <text x="500" y="240">Q1'26</text>
+              </g>
+            </svg>
+            <span class="chart-legend"><span class="swatch" style="background:#55BFAF"></span>Screening participation</span>
+          </div>
+        </div>
+
+        <!-- Recent items table -->
+        <div class="table-card">
+          <div class="table-card-head">
+            <div>
+              <h3>Recent commissioning activity</h3>
+              <div class="sub">Last 30 days · SEMPHN CRM extract</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>LGA</th>
+                <th>Schedule</th>
+                <th class="r">Value (AUD)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Refugee health navigator pilot</td>      <td>Greater Dandenong</td><td>Core</td>          <td class="r">$182,400</td><td><span class="status-chip ok">Approved</span></td></tr>
+              <tr><td>Headspace intake redesign</td>          <td>Frankston</td>        <td>Primary MH</td>    <td class="r">$96,800</td> <td><span class="status-chip ok">Approved</span></td></tr>
+              <tr><td>Bowel screening recall campaign</td>    <td>Casey</td>            <td>Pop Health</td>    <td class="r">$54,200</td> <td><span class="status-chip warn">In review</span></td></tr>
+              <tr><td>ACCHS partnership MOU renewal</td>      <td>Frankston</td>        <td>ITC</td>           <td class="r">$120,000</td><td><span class="status-chip due">Due 14 Jun</span></td></tr>
+              <tr><td>RACF medication review pilot</td>       <td>Mornington Peninsula</td><td>Aged Care</td>  <td class="r">$78,500</td> <td><span class="status-chip draft">Draft</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ──────── HNA PANE ──────── -->
+      <div class="canvas-pane" data-pane="hna" hidden>
+        <article class="hna-doc">
           <div class="doc-kicker">2025–28 HNA · v1.2 draft · 28 May 2026</div>
           <h1>Chapter 4 · First Nations <em>people</em></h1>
           <p class="deck">
@@ -533,55 +977,88 @@
           <p>
             The catchment IRSEO of <strong>25</strong> for First Nations residents is meaningfully
             above the Victorian average of <strong>14</strong>. The lowest IRSEO scores sit in
-            Greater Dandenong, Cranbourne-Narre Warren (Casey), Cardinia and Mornington Peninsula —
-            confirming a sharp east-west gradient in disadvantage across the catchment.
+            Greater Dandenong, Cranbourne-Narre Warren (Casey), Cardinia and Mornington Peninsula.
           </p>
           <h2>Mental health · the standout finding</h2>
           <p>
             Mental health is the most common chronic condition reported by SEMPHN First Nations
             residents. Three LGAs sit above the Victorian average of <strong>18.3%</strong>:
             <span class="chip">Port Phillip 23.3%</span>,
-            <span class="chip">Frankston 22.0%</span>, and
+            <span class="chip">Frankston 22.0%</span>,
             <span class="chip">Greater Dandenong 21.4%</span>.
-            Together these account for ~28% of the catchment's First Nations population but a
-            disproportionate share of MH-related primary care contact.
           </p>
-          <p>
-            <em>The chat on the left can extend, soften, or restructure this paragraph. Ask it.</em>
-          </p>
-          <div class="footnote">
-            Source · ABS Census 2021 + AIHW IRSEO by IARE + POLAR · last ingest 21 May 2026 · figures dated to source
-          </div>
         </article>
       </div>
 
-      <!-- DASHBOARDS TAB -->
-      <div class="canvas-pane" data-pane="dashboards" hidden>
-        <div class="canvas-empty">
-          <span class="num">01</span>
-          <h3>Your <em>dashboards</em> build here.</h3>
-          <p>
-            Ask in the chat — "<strong>bowel cancer screening by LGA</strong>" or
-            "<strong>headspace wait time over the last year</strong>" — and a SEMPHN-themed
-            chart lands here. Pin it, restyle it, export PNG, or drop it straight into the HNA tab.
-          </p>
-          <span class="pointer">Type in the chat to begin</span>
+      <!-- ──────── MAPS PANE ──────── -->
+      <div class="canvas-pane" data-pane="maps" hidden>
+        <div class="dash-head">
+          <h1>Catchment Map</h1>
+          <p>10 LGAs across 2,935 km² · choropleth of MH conditions per 1,000 residents</p>
+        </div>
+        <div class="map-card">
+          <h3>MH conditions per 1,000 residents · by LGA</h3>
+          <div class="sub">Source · POLAR · last ingest 21 May 2026</div>
+          <svg class="map-svg" viewBox="0 0 600 360" preserveAspectRatio="xMidYMid meet" aria-label="Schematic SEMPHN catchment map">
+            <!-- Schematic LGA tiles (representational, not geographic) -->
+            <g font-family="Jost, sans-serif" font-size="10" fill="#04264E">
+              <!-- Top row -->
+              <rect x="30"  y="40"  width="100" height="80" rx="6" fill="#E5F4F0" stroke="#55BFAF"/>
+              <text x="80" y="75" text-anchor="middle" font-weight="600">Port Phillip</text>
+              <text x="80" y="92" text-anchor="middle" font-size="11" fill="#04264E">91.8</text>
+
+              <rect x="140" y="40"  width="110" height="80" rx="6" fill="#E5F4F0" stroke="#55BFAF"/>
+              <text x="195" y="75" text-anchor="middle" font-weight="600">Stonnington</text>
+              <text x="195" y="92" text-anchor="middle" font-size="11" fill="#04264E">76.9</text>
+
+              <rect x="260" y="40"  width="100" height="80" rx="6" fill="#82D9C4" stroke="#55BFAF"/>
+              <text x="310" y="75" text-anchor="middle" font-weight="600">Glen Eira</text>
+              <text x="310" y="92" text-anchor="middle" font-size="11" fill="#04264E">78.3</text>
+
+              <rect x="370" y="40"  width="100" height="80" rx="6" fill="#55BFAF" stroke="#04264E"/>
+              <text x="420" y="75" text-anchor="middle" font-weight="600" fill="#04264E">Bayside</text>
+              <text x="420" y="92" text-anchor="middle" font-size="11" fill="#04264E">82.5</text>
+
+              <rect x="480" y="40"  width="90"  height="80" rx="6" fill="#82D9C4" stroke="#55BFAF"/>
+              <text x="525" y="75" text-anchor="middle" font-weight="600">Kingston</text>
+              <text x="525" y="92" text-anchor="middle" font-size="11" fill="#04264E">83.7</text>
+
+              <!-- Middle row -->
+              <rect x="30"  y="140" width="140" height="100" rx="6" fill="#0E4775" stroke="#04264E"/>
+              <text x="100" y="180" text-anchor="middle" font-weight="600" fill="#FFFFFF">Greater Dandenong</text>
+              <text x="100" y="200" text-anchor="middle" font-size="13" fill="#FFFFFF">97.4</text>
+
+              <rect x="180" y="140" width="170" height="100" rx="6" fill="#1C5B85" stroke="#04264E"/>
+              <text x="265" y="180" text-anchor="middle" font-weight="600" fill="#FFFFFF">Casey</text>
+              <text x="265" y="200" text-anchor="middle" font-size="13" fill="#FFFFFF">94.1</text>
+
+              <rect x="360" y="140" width="130" height="100" rx="6" fill="#003D69" stroke="#04264E"/>
+              <text x="425" y="180" text-anchor="middle" font-weight="600" fill="#FFFFFF">Frankston</text>
+              <text x="425" y="200" text-anchor="middle" font-size="15" fill="#82D9C4" font-weight="700">116.1</text>
+
+              <rect x="500" y="140" width="70"  height="100" rx="6" fill="#2C7995" stroke="#04264E"/>
+              <text x="535" y="180" text-anchor="middle" font-weight="600" fill="#FFFFFF" font-size="9">Cardinia</text>
+              <text x="535" y="200" text-anchor="middle" font-size="12" fill="#FFFFFF">88.4</text>
+
+              <!-- Bottom row -->
+              <rect x="180" y="255" width="280" height="80" rx="6" fill="#1C5B85" stroke="#04264E"/>
+              <text x="320" y="290" text-anchor="middle" font-weight="600" fill="#FFFFFF">Mornington Peninsula</text>
+              <text x="320" y="310" text-anchor="middle" font-size="13" fill="#FFFFFF">102.6</text>
+            </g>
+            <!-- Notice line -->
+            <g font-family="Jost, sans-serif" font-size="9" fill="#6B7B8C">
+              <text x="300" y="350" text-anchor="middle">Schematic — not geographically accurate. Ask the chat for a real choropleth.</text>
+            </g>
+          </svg>
+          <div class="map-legend">
+            <span>76</span>
+            <span class="scale"></span>
+            <span>116</span>
+            <span style="margin-left:auto; font-family: var(--mono); font-size: 0.7rem;">MH conditions / 1,000 residents</span>
+          </div>
         </div>
       </div>
 
-      <!-- MAPS TAB -->
-      <div class="canvas-pane" data-pane="maps" hidden>
-        <div class="canvas-empty">
-          <span class="num">02</span>
-          <h3>Catchment <em>maps</em> build here.</h3>
-          <p>
-            "<strong>MH prevalence by LGA, choropleth</strong>" or
-            "<strong>locate every ACCHS in catchment</strong>." Maps render against
-            the SEMPHN 10-LGA catchment. Export as PNG or paste into an HNA chapter.
-          </p>
-          <span class="pointer">Type in the chat to begin</span>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -589,8 +1066,7 @@
 
 <script>
   /* ============================================================
-   * Auth gate (frontend-only mock) — bounce to /signin/ without
-   * a session. Same key as the existing shell.
+   * Auth gate (frontend-only mock)
    * ============================================================ */
   (function authGate() {
     var key = 'domato.semphn.session';
@@ -617,8 +1093,9 @@
   });
 
   /* ============================================================
-   * Tab routing — switch canvas pane + sync nav highlight + URL.
+   * Tab routing
    * ============================================================ */
+  var TABS = ['hna', 'dashboards', 'maps'];
   function setActiveTab(tab) {
     document.querySelectorAll('.canvas-tab').forEach(function (b) {
       var on = b.dataset.tab === tab;
@@ -631,18 +1108,10 @@
     document.querySelectorAll('[data-nav-tab]').forEach(function (a) {
       a.classList.toggle('is-active', a.dataset.navTab === tab);
     });
-    var label = document.getElementById('chat-context-label');
-    if (label) {
-      var contexts = {
-        hna:        'Context: HNA · Chapter 4 First Nations',
-        dashboards: 'Context: Dashboards · pinning to your board',
-        maps:       'Context: Maps · SEMPHN 10 LGA catchment',
-      };
-      label.textContent = contexts[tab] || 'Workbench';
-    }
     var url = new URL(location.href);
     url.searchParams.set('tab', tab);
     history.replaceState(null, '', url.toString());
+    renderFeed(tab);
   }
   document.querySelectorAll('.canvas-tab').forEach(function (b) {
     b.addEventListener('click', function () { setActiveTab(b.dataset.tab); });
@@ -653,240 +1122,199 @@
       setActiveTab(a.dataset.navTab);
     });
   });
-  (function () {
-    var t = new URLSearchParams(location.search).get('tab');
-    if (t && ['hna', 'dashboards', 'maps'].indexOf(t) >= 0) setActiveTab(t);
-  })();
 
   /* ============================================================
-   * Tab-scoped chat
+   * Per-tab chat history — Figma Make style turns
    *
-   * Each canvas tab (HNA / Dashboards / Maps) keeps its OWN conversation.
-   * Switching tabs swaps the chat panel to that tab's history — so you can
-   * be drafting an HNA paragraph in one tab and asking for a dashboard
-   * chart in another, in parallel.
+   * Each "turn" is { prompt, reasoning, files[], summary, version }
+   * for the AI-built turns, OR a follow-up { prompt, reply } pair.
    *
-   * State shape (per session, persisted to localStorage):
-   *   STATE.byTab = { hna: [...messages], dashboards: [...], maps: [...] }
-   *   STATE.busy  = { hna: bool, dashboards: bool, maps: bool }
-   *
-   * Each message: { role: 'user' | 'assistant', content: string }
-   *
-   * /api/chat is called with ONLY the active tab's history + a tab-specific
-   * system context. Backend never sees cross-tab data.
-   *
-   * All DOM updates use createElement/textContent — no innerHTML on
-   * dynamic content (XSS surface zero).
+   * State persisted to localStorage; tab-scoped (HNA/Dashboards/Maps).
    * ============================================================ */
-  var TABS = ['hna', 'dashboards', 'maps'];
-  var TAB_META = {
-    hna:        { name: 'Health Needs Assessment co-author', context: 'HNA · Chapter 4 First Nations' },
-    dashboards: { name: 'Dashboards',                         context: 'Dashboards · pinning to your board' },
-    maps:       { name: 'Catchment maps',                     context: 'Maps · SEMPHN 10 LGA catchment' },
-  };
-  var TAB_SUGGESTIONS = {
-    hna: [
-      { pill: 'HNA',  label: 'Draft Chapter 4 opening paragraph',
-        prompt: 'Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong.' },
-      { pill: 'HNA',  label: 'Strongest cross-chapter finding',
-        prompt: 'Summarise the strongest cross-chapter finding in 3 sentences I can drop into the executive summary.' },
-      { pill: 'HNA',  label: 'Soften the Greater Dandenong wording',
-        prompt: 'Rewrite the Greater Dandenong housing-strain paragraph in a more strengths-based voice while keeping every figure.' },
-      { pill: 'HNA',  label: 'What is missing from this chapter?',
-        prompt: 'Looking at Chapter 4, what data or narrative is the DoH Performance Rubric most likely to flag as missing or thin?' },
-    ],
-    dashboards: [
-      { pill: 'Dash', label: 'Bowel cancer screening by LGA',
-        prompt: 'Show me bowel cancer screening participation by LGA across the SEMPHN catchment, ranked lowest to highest. Highlight the three LGAs below 40%.' },
-      { pill: 'Dash', label: 'headspace wait time over the year',
-        prompt: 'Plot average headspace wait time across the 9 catchment centres month-by-month for the last year. Annotate the July-August 2022 peak.' },
-      { pill: 'Dash', label: 'Multi-chronic vs 65+ share',
-        prompt: 'Scatter plot — multi-chronic conditions per 1k vs 65+ population share, by LGA. Should reveal Mornington Peninsula as the outlier.' },
-      { pill: 'Dash', label: 'AOD treatment activity by LGA',
-        prompt: 'Stacked bar of alcohol care episodes + illicit-drug care episodes per 100k, by LGA. Sort by total.' },
-    ],
-    maps: [
-      { pill: 'Map',  label: 'MH conditions choropleth',
-        prompt: 'Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1.' },
-      { pill: 'Map',  label: 'Locate every ACCHS',
-        prompt: 'Plot the 2 ACCHS in the SEMPHN catchment as points on a map. Add the catchment LGA outlines for context.' },
-      { pill: 'Map',  label: 'Disadvantage gradient',
-        prompt: 'Choropleth of SEIFA disadvantage by LGA. Annotate Greater Dandenong, Casey, Frankston as the top three disadvantaged.' },
-      { pill: 'Map',  label: 'Growth corridor',
-        prompt: 'Highlight the South East Growth Corridor — Cardinia, Casey, Greater Dandenong — with their projected 2030 population overlaid.' },
-    ],
-  };
+  var STORE_KEY = 'semphn.workbench.turns.v2';
+  var STATE = { byTab: {}, busy: { hna: false, dashboards: false, maps: false } };
 
-  var STORE_KEY = 'semphn.workbench.chats.v1';
-  var STATE = { byTab: { hna: [], dashboards: [], maps: [] }, busy: { hna: false, dashboards: false, maps: false } };
+  // Seed initial turns — one per tab, mirrors the Figma Make example.
+  var SEED = {
+    dashboards: [{
+      prompt: 'Build a simple catchment dashboard with the headline SEMPHN metrics.',
+      avatar: 'D',
+      reasoning: "I'll build a 4-card KPI strip plus two charts (monthly GP consultations + bowel screening trend) plus a recent commissioning table. All anchored on real catchment data from your CRM extract.",
+      filesLabel: 'Worked with 4 files',
+      files: ['site/build/index.html', 'data/snapshot.json', 'lga/concordance.csv', 'crm/commissioning_30d.json'],
+      summary: "I've built a catchment dashboard featuring four KPI cards (catchment population, active MH referrals, bowel screening rate, HNA chapters complete), a monthly GP consultations bar chart, a bowel cancer screening trend line, and a table of recent commissioning activity. Everything's themed in SEMPHN navy and teal and uses SVG so it renders instantly with no external chart library.",
+      version: { title: 'Catchment dashboard', tag: 'Version 1' },
+      warnings: { count: 3, label: '3 warnings · sample data only' },
+    }],
+    hna: [{
+      prompt: 'Draft Chapter 4 (First Nations) opening — anchored on IRSEO and MH prevalence.',
+      avatar: 'D',
+      reasoning: 'I read the Ch 4 source bullets from SEMPHN HNA 2025-28. The two strongest cross-LGA findings are IRSEO 25 vs Vic 14, and MH prevalence > 18.3% in three LGAs. I anchored the deck on those two and wrote one supporting paragraph for each.',
+      filesLabel: 'Worked with 3 files',
+      files: ['site/build/index.html', 'data/hna/ch04-spec.json', 'sources/abs-census-2021.csv'],
+      summary: "I've drafted the Chapter 4 opening — a deck paragraph plus two H2 subsections (Socioeconomic determinants, Mental health). All figures are sourced from ABS Census 2021 + AIHW IRSEO by IARE + POLAR. Three chip-highlighted LGAs flag where MH prevalence exceeds the Victorian average.",
+      version: { title: 'Chapter 4 opening', tag: 'Version 1' },
+      warnings: null,
+    }],
+    maps: [{
+      prompt: 'Map MH conditions per 1,000 residents by LGA — choropleth, navy-to-teal scale.',
+      avatar: 'D',
+      reasoning: 'Built as a schematic tile grid first (not geographically accurate but data-faithful). Frankston is the standout at 116.1 — flagged with the darkest tile and a teal-mint number for emphasis. Real GeoJSON choropleth ships in the next iteration.',
+      filesLabel: 'Worked with 2 files',
+      files: ['site/build/index.html', 'data/polar/mh-conditions-by-lga.csv'],
+      summary: 'Schematic catchment map rendered as SVG tiles. Frankston (116.1) is the deepest navy, Stonnington (76.9) the palest. Scale legend below. Real ABS LGA boundaries pending the GeoJSON loader.',
+      version: { title: 'MH choropleth · schematic', tag: 'Version 1' },
+      warnings: { count: 1, label: 'Schematic — not geographically accurate' },
+    }],
+  };
 
   try {
     var saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
-    if (saved && saved.byTab) {
-      TABS.forEach(function (t) {
-        if (Array.isArray(saved.byTab[t])) STATE.byTab[t] = saved.byTab[t];
-      });
-    }
+    if (saved && saved.byTab) STATE.byTab = saved.byTab;
   } catch (_) {}
+  TABS.forEach(function (t) { if (!STATE.byTab[t]) STATE.byTab[t] = SEED[t] ? SEED[t].slice() : []; });
   function persist() {
     try { localStorage.setItem(STORE_KEY, JSON.stringify({ byTab: STATE.byTab })); } catch (_) {}
   }
 
-  var body  = document.getElementById('chat-body');
-  var input = document.getElementById('chat-input');
-  var send  = document.getElementById('chat-send');
-  var clear = document.getElementById('chat-clear');
-  var ctxLabel = document.getElementById('chat-context-label');
+  var feed     = document.getElementById('chat-feed');
+  var input    = document.getElementById('chat-input');
+  var send     = document.getElementById('chat-send');
 
   function activeTab() {
     var on = document.querySelector('.canvas-tab.is-active');
-    return on ? on.dataset.tab : 'hna';
+    return on ? on.dataset.tab : 'dashboards';
   }
 
-  function setBusy(tab, busy) {
-    STATE.busy[tab] = busy;
-    // Disable send only if the CURRENT tab is busy or input empty
-    if (activeTab() === tab) {
-      send.disabled = busy || !input.value.trim();
-    }
-  }
+  /* Build a turn DOM node — safe createElement, no innerHTML. */
+  function buildTurnNode(turn) {
+    var wrap = document.createElement('div'); wrap.className = 'turn';
 
-  function buildEmptyState(tab) {
-    // Per-tab empty state: badge + heading + intro + 4 suggestions.
-    var wrap = document.createElement('div');
-    wrap.className = 'chat-empty';
-    var badge = document.createElement('span');
-    badge.className = 'badge';
-    var dot = document.createElement('span'); dot.className = 'dot';
-    badge.appendChild(dot);
-    badge.appendChild(document.createTextNode('Workbench · ' + tab.toUpperCase() + ' · ready'));
-    wrap.appendChild(badge);
+    // Prompt chip + avatar
+    var pr = document.createElement('div'); pr.className = 'turn-prompt';
+    var pTxt = document.createElement('div'); pTxt.className = 'text';
+    pTxt.textContent = turn.prompt || '';
+    var pAv = document.createElement('div'); pAv.className = 'avatar';
+    pAv.textContent = turn.avatar || 'U';
+    pr.appendChild(pTxt); pr.appendChild(pAv);
+    wrap.appendChild(pr);
 
-    var h2 = document.createElement('h2');
-    var heads = {
-      hna:        'What do you want to write next?',
-      dashboards: 'What chart should we build?',
-      maps:       'What should we map?',
-    };
-    h2.appendChild(document.createTextNode(heads[tab] || 'What do you want to build?'));
-    wrap.appendChild(h2);
-
-    var p = document.createElement('p');
-    var leads = {
-      hna:        'Ask the workbench to draft, revise or critique an HNA chapter. The document on the right updates as you go.',
-      dashboards: 'Ask in plain English. A SEMPHN-themed chart lands on the right. Pin it, restyle it, or drop it into the HNA.',
-      maps:       'Choropleth, point-overlay, or heat — all rendered against the SEMPHN 10-LGA catchment. Export as PNG.',
-    };
-    p.textContent = leads[tab] || '';
-    wrap.appendChild(p);
-
-    var sugs = document.createElement('div'); sugs.className = 'suggestions';
-    var sugsLabel = document.createElement('span'); sugsLabel.textContent = 'Try these for ' + tab.toUpperCase();
-    sugs.appendChild(sugsLabel);
-    (TAB_SUGGESTIONS[tab] || []).forEach(function (s) {
-      var btn = document.createElement('button');
-      btn.className = 'sug';
-      btn.dataset.prompt = s.prompt;
-      var pill = document.createElement('span'); pill.className = 'pill'; pill.textContent = s.pill;
-      btn.appendChild(pill);
-      btn.appendChild(document.createTextNode(s.label));
-      btn.addEventListener('click', function () {
-        input.value = s.prompt;
-        input.dispatchEvent(new Event('input'));
-        input.focus();
-        handleSend();
+    // Reasoning collapsible (if present)
+    if (turn.reasoning) {
+      var rBtn = document.createElement('button');
+      rBtn.className = 'turn-section';
+      rBtn.setAttribute('aria-expanded', 'true');
+      var rCar = document.createElement('span'); rCar.className = 'caret'; rCar.textContent = '▾';
+      rBtn.appendChild(document.createTextNode('Reasoning '));
+      rBtn.appendChild(rCar);
+      var rBody = document.createElement('div'); rBody.className = 'turn-reasoning';
+      rBody.textContent = turn.reasoning;
+      rBtn.addEventListener('click', function () {
+        var open = rBtn.getAttribute('aria-expanded') === 'true';
+        rBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        rBody.hidden = open;
       });
-      sugs.appendChild(btn);
-    });
-    wrap.appendChild(sugs);
+      wrap.appendChild(rBtn);
+      wrap.appendChild(rBody);
+    }
+
+    // Files collapsible (if present)
+    if (turn.files && turn.files.length) {
+      var fBtn = document.createElement('button');
+      fBtn.className = 'turn-section';
+      fBtn.setAttribute('aria-expanded', 'true');
+      var fCar = document.createElement('span'); fCar.className = 'caret'; fCar.textContent = '▾';
+      fBtn.appendChild(document.createTextNode((turn.filesLabel || ('Worked with ' + turn.files.length + ' files')) + ' '));
+      fBtn.appendChild(fCar);
+      var fBody = document.createElement('div'); fBody.className = 'turn-files';
+      var ul = document.createElement('ul'); ul.className = 'turn-files-list';
+      turn.files.forEach(function (f) {
+        var li = document.createElement('li');
+        li.textContent = f;
+        ul.appendChild(li);
+      });
+      fBody.appendChild(ul);
+      fBtn.addEventListener('click', function () {
+        var open = fBtn.getAttribute('aria-expanded') === 'true';
+        fBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        fBody.hidden = open;
+      });
+      wrap.appendChild(fBtn);
+      wrap.appendChild(fBody);
+    }
+
+    // Summary body
+    if (turn.summary) {
+      var bod = document.createElement('div'); bod.className = 'turn-body';
+      // Allow simple paragraph splits by newline; each line becomes a <p>
+      String(turn.summary).split(/\n\n+/).forEach(function (para) {
+        var p = document.createElement('p');
+        p.textContent = para;
+        bod.appendChild(p);
+      });
+      if (turn.streaming) bod.classList.add('streaming');
+      wrap.appendChild(bod);
+    }
+
+    // Version card
+    if (turn.version) {
+      var v = document.createElement('div'); v.className = 'turn-version';
+      var m = document.createElement('div'); m.className = 'meta';
+      var h = document.createElement('div'); h.className = 'h'; h.textContent = turn.version.title;
+      var vt = document.createElement('div'); vt.className = 'v'; vt.textContent = turn.version.tag;
+      m.appendChild(h); m.appendChild(vt);
+      var kb = document.createElement('button'); kb.className = 'kebab'; kb.textContent = '⋯'; kb.setAttribute('aria-label', 'More');
+      v.appendChild(m); v.appendChild(kb);
+      wrap.appendChild(v);
+    }
+
+    // Feedback chips
+    if (turn.summary) {
+      var fb = document.createElement('div'); fb.className = 'turn-feedback';
+      ['👍', '👎', '↻'].forEach(function (sym) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = sym;
+        b.addEventListener('click', function () { b.classList.toggle('is-on'); });
+        fb.appendChild(b);
+      });
+      wrap.appendChild(fb);
+    }
+
+    // Warnings bar
+    if (turn.warnings) {
+      var wn = document.createElement('div'); wn.className = 'turn-warnings';
+      var lbl = document.createElement('div'); lbl.className = 'label';
+      lbl.appendChild(document.createTextNode(turn.warnings.label || (turn.warnings.count + ' warnings')));
+      var right = document.createElement('div'); right.className = 'right';
+      var fix = document.createElement('button'); fix.type = 'button'; fix.className = 'fix'; fix.textContent = 'Fix for me';
+      var close = document.createElement('button'); close.type = 'button'; close.className = 'close'; close.textContent = '×';
+      close.addEventListener('click', function () { wn.remove(); });
+      right.appendChild(fix); right.appendChild(close);
+      wn.appendChild(lbl); wn.appendChild(right);
+      wrap.appendChild(wn);
+    }
 
     return wrap;
   }
 
-  function buildMessageNode(role, text, streaming) {
-    var w = document.createElement('div'); w.className = 'msg ' + role;
-    var who = document.createElement('div'); who.className = 'who';
-    var dot = document.createElement('span'); dot.className = 'dot';
-    who.appendChild(dot);
-    who.appendChild(document.createTextNode(role === 'user' ? 'You' : 'Workbench'));
-    var bub = document.createElement('div');
-    bub.className = 'bubble' + (streaming ? ' streaming' : '');
-    bub.textContent = text;
-    w.appendChild(who); w.appendChild(bub);
-    return { wrap: w, bubble: bub };
+  function renderFeed(tab) {
+    while (feed.firstChild) feed.removeChild(feed.firstChild);
+    var turns = STATE.byTab[tab] || [];
+    turns.forEach(function (t) { feed.appendChild(buildTurnNode(t)); });
+    feed.scrollTop = feed.scrollHeight;
   }
 
-  function renderTab(tab) {
-    // Tear down + rebuild chat panel from saved messages for this tab.
-    while (body.firstChild) body.removeChild(body.firstChild);
-    body.dataset.tab = tab;
-    var msgs = STATE.byTab[tab] || [];
-    if (msgs.length === 0) {
-      body.appendChild(buildEmptyState(tab));
-    } else {
-      msgs.forEach(function (m) {
-        body.appendChild(buildMessageNode(m.role, m.content, false).wrap);
-      });
-    }
-    body.scrollTop = body.scrollHeight;
-    // Sync context label + send-button enable state
-    if (ctxLabel) ctxLabel.textContent = 'Context: ' + (TAB_META[tab] ? TAB_META[tab].context : tab);
-    send.disabled = STATE.busy[tab] || !input.value.trim();
-  }
-
-  /* Hook the tab switcher: when the canvas tab changes, swap chat too. */
-  var prevSetActiveTab = window._setActiveTab || setActiveTab;
-  window._setActiveTab = function (tab) {
-    prevSetActiveTab(tab);
-    renderTab(tab);
-  };
-  // Replace global wired listeners to point at our wrapped version
-  document.querySelectorAll('.canvas-tab').forEach(function (b) {
-    var clone = b.cloneNode(true);
-    b.parentNode.replaceChild(clone, b);
-    clone.addEventListener('click', function () { window._setActiveTab(clone.dataset.tab); });
-  });
-  document.querySelectorAll('[data-nav-tab]').forEach(function (a) {
-    var clone = a.cloneNode(true);
-    a.parentNode.replaceChild(clone, a);
-    clone.addEventListener('click', function (e) {
-      e.preventDefault();
-      window._setActiveTab(clone.dataset.navTab);
-    });
-  });
-
+  /* Composer */
   input.addEventListener('input', function () {
     input.style.height = 'auto';
     input.style.height = Math.min(input.scrollHeight, 144) + 'px';
     send.disabled = STATE.busy[activeTab()] || !input.value.trim();
   });
   input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   });
   send.addEventListener('click', handleSend);
-
-  clear.addEventListener('click', function () {
-    var tab = activeTab();
-    STATE.byTab[tab] = [];
-    persist();
-    renderTab(tab);
-  });
-
-  function appendMessage(tab, role, text, streaming) {
-    var n = buildMessageNode(role, text, streaming);
-    // Only mutate the visible body if THIS message is for the active tab
-    if (activeTab() === tab) {
-      // If empty state is showing, remove it before appending
-      var emptyState = body.querySelector('.chat-empty');
-      if (emptyState) body.removeChild(emptyState);
-      body.appendChild(n.wrap);
-      body.scrollTop = body.scrollHeight;
-    }
-    return n.bubble;
-  }
 
   async function handleSend() {
     var tab = activeTab();
@@ -894,13 +1322,13 @@
     if (!text || STATE.busy[tab]) return;
     input.value = ''; input.style.height = 'auto';
 
-    // Append user msg to state + DOM
-    STATE.byTab[tab].push({ role: 'user', content: text });
+    var turn = { prompt: text, avatar: 'D', reasoning: '', files: [], summary: '', streaming: true };
+    STATE.byTab[tab].push(turn);
     persist();
-    appendMessage(tab, 'user', text, false);
+    renderFeed(tab);
 
-    setBusy(tab, true);
-    var bubble = appendMessage(tab, 'bot', '', true);
+    STATE.busy[tab] = true;
+    send.disabled = true;
 
     try {
       var res = await fetch('/api/chat', {
@@ -908,52 +1336,38 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           step_slug: 'build-' + tab,
-          step_name: TAB_META[tab] ? TAB_META[tab].name : tab,
-          messages: STATE.byTab[tab],
-          context_summary: 'SEMPHN catchment: 1.56M residents across 10 LGAs (Bayside, Cardinia, Casey, Frankston, Glen Eira, Greater Dandenong, Kingston, Mornington Peninsula, Port Phillip, Stonnington). 24% of Victoria. First Nations IRSEO 25 vs Vic 14. MH prevalence above 18.3% in Port Phillip (23.3), Frankston (22.0), Greater Dandenong (21.4). Lowest bowel screening: Casey South 35.9%, Dandenong 38.3%, Frankston 39.3%. Frankston highest MH conditions at 116.1/1k. headspace 9 centres, 8.6-day average wait. 11 funding schedules totalling ~$76M FY26.',
+          step_name: tab === 'hna' ? 'HNA co-author' : tab === 'maps' ? 'Catchment maps' : 'Dashboards',
+          messages: STATE.byTab[tab].map(function (t) {
+            return [{ role: 'user', content: t.prompt }, { role: 'assistant', content: t.summary || '' }];
+          }).flat().filter(function (m) { return m.content; }),
+          context_summary: 'SEMPHN catchment: 1.56M residents, 10 LGAs, 24% of Victoria. First Nations IRSEO 25 vs Vic 14. MH prevalence above 18.3% in Port Phillip (23.3), Frankston (22.0), Greater Dandenong (21.4). Lowest bowel screening: Casey South 35.9%, Dandenong 38.3%, Frankston 39.3%. Frankston highest MH conditions at 116.1/1k. headspace 9 centres, 8.6-day average wait.',
         }),
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var data = await res.json();
       var reply = (data && data.reply) || (data && data.error) || 'No response.';
 
-      // Save assistant turn to state once final
-      STATE.byTab[tab].push({ role: 'assistant', content: reply });
+      turn.summary = reply;
+      turn.streaming = false;
       persist();
-
-      // Stream the reply into the bubble char-by-char IF this tab is still visible.
-      // If user switched tabs mid-flight, the bubble is detached — drop the animation
-      // and just rely on renderTab(tab) to show the final state when user comes back.
-      if (activeTab() !== tab || !bubble.isConnected) {
-        setBusy(tab, false);
-        return;
-      }
-      bubble.textContent = '';
-      bubble.classList.add('streaming');
-      var i = 0;
-      var tick = setInterval(function () {
-        if (!bubble.isConnected) { clearInterval(tick); setBusy(tab, false); return; }
-        bubble.textContent += reply.slice(i, i + 4);
-        i += 4;
-        if (activeTab() === tab) body.scrollTop = body.scrollHeight;
-        if (i >= reply.length) {
-          clearInterval(tick);
-          bubble.classList.remove('streaming');
-          setBusy(tab, false);
-        }
-      }, 16);
+      renderFeed(tab);
     } catch (err) {
-      // Roll back: leave the user message, replace failed bot bubble with an apology.
-      if (bubble.isConnected) {
-        bubble.classList.remove('streaming');
-        bubble.textContent = 'Sorry — the assist is unreachable right now. Please retry.';
-      }
-      setBusy(tab, false);
+      turn.summary = 'Sorry — the assist is unreachable right now. Please retry.';
+      turn.streaming = false;
+      persist();
+      renderFeed(tab);
+    } finally {
+      STATE.busy[tab] = false;
+      send.disabled = !input.value.trim();
     }
   }
 
-  /* Initial render — figure out the active tab and paint its conversation. */
-  renderTab(activeTab());
+  /* Initial: honour ?tab= or default to dashboards */
+  (function init() {
+    var t = new URLSearchParams(location.search).get('tab');
+    var initial = t && TABS.indexOf(t) >= 0 ? t : 'dashboards';
+    setActiveTab(initial);
+  })();
 </script>
 
 </body>
