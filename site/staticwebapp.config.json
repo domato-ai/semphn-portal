@@ -2,17 +2,24 @@
   "$schema": "https://json.schemas.azure.com/staticwebapp/configuration.json",
   "trailingSlash": "auto",
   "routes": [
-    { "route": "/signin", "rewrite": "/signin/index.html" },
-    { "route": "/build",  "rewrite": "/build/index.html" },
-    { "route": "/atlas",  "rewrite": "/atlas/01-introduction/index.html" },
-    { "route": "/",       "rewrite": "/index.html" }
+    { "route": "/signin",      "rewrite": "/signin/index.html" },
+    { "route": "/hna",         "rewrite": "/hna/index.html" },
+    { "route": "/dashboards",  "rewrite": "/dashboards/index.html" },
+    { "route": "/maps",        "rewrite": "/maps/index.html" },
+    { "route": "/build",       "redirect": "/dashboards/", "statusCode": 301 },
+    { "route": "/build/*",     "redirect": "/dashboards/", "statusCode": 301 },
+    { "route": "/atlas",       "rewrite": "/atlas/01-introduction/index.html" },
+    { "route": "/",            "rewrite": "/index.html" }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
     "exclude": [
       "/api/*",
+      "/_assets/*",
       "/signin/*",
-      "/build/*",
+      "/hna/*",
+      "/dashboards/*",
+      "/maps/*",
       "/atlas/*",
       "/*.{css,js,json,png,jpg,jpeg,svg,ico,webp,woff,woff2,ttf}"
     ]

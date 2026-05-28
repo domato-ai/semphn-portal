@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Maps · SEMPHN Workbench</title>
+<meta name="description" content="Chat-build catchment maps for South Eastern Melbourne PHN. Choropleth + point overlay + heat." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200..900;1,200..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/_assets/shell.css" />
+
+<style>
+  /* Maps-specific artifact styles */
+  .map-head { margin-bottom: 1.6rem; }
+  .map-head h1 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.018em;
+    margin-bottom: 0.3rem;
+  }
+  .map-head p { color: var(--slate); font-size: 1rem; }
+
+  .map-card {
+    background: var(--paper);
+    border-radius: var(--r);
+    border: 1px solid var(--rule-soft);
+    padding: 1.4rem 1.4rem 1.6rem;
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+    margin-bottom: 1.2rem;
+  }
+  .map-card-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap; gap: 0.6rem;
+  }
+  .map-card h3 { font-size: 1rem; font-weight: 600; color: var(--navy); }
+  .map-card .sub { font-size: 0.78rem; color: var(--slate); margin-top: 0.15rem; }
+  .map-card .controls { display: flex; align-items: center; gap: 0.3rem; }
+  .map-card .controls button {
+    background: var(--blue-grey); border: 1px solid var(--rule);
+    color: var(--slate);
+    padding: 0.32rem 0.6rem;
+    border-radius: var(--r-sm);
+    font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase;
+    cursor: pointer; font-weight: 600;
+  }
+  .map-card .controls button.is-on { background: var(--navy); color: white; border-color: var(--navy); }
+  .map-svg { width: 100%; height: 420px; display: block; background: var(--blue-grey); border-radius: var(--r-sm); }
+  .map-legend {
+    margin-top: 0.85rem;
+    display: flex; align-items: center; gap: 0.7rem;
+    font-size: 0.74rem; color: var(--slate); font-weight: 500;
+  }
+  .map-legend .scale {
+    width: 200px; height: 8px;
+    background: linear-gradient(90deg, var(--teal-pale), var(--teal), var(--navy));
+    border-radius: 999px;
+  }
+
+  /* Side LGA list */
+  .map-row {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.2rem;
+  }
+  @media (max-width: 1100px) { .map-row { grid-template-columns: 1fr; } }
+  .lga-list {
+    background: var(--paper);
+    border-radius: var(--r);
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+    overflow: hidden;
+  }
+  .lga-list h3 {
+    padding: 1rem 1.2rem 0.5rem;
+    font-size: 0.86rem; font-weight: 600; color: var(--navy);
+  }
+  .lga-list .sub {
+    padding: 0 1.2rem 0.8rem;
+    font-size: 0.7rem; color: var(--slate);
+  }
+  .lga-list ul { list-style: none; padding: 0; }
+  .lga-list li {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 1.2rem;
+    border-top: 1px solid var(--rule-soft);
+    font-size: 0.84rem; color: var(--navy);
+  }
+  .lga-list li:hover { background: var(--blue-grey); }
+  .lga-list li .name { font-weight: 500; }
+  .lga-list li .v {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    color: var(--navy); font-weight: 600;
+  }
+  .lga-list li .bar {
+    width: 60px; height: 4px;
+    border-radius: 999px;
+    background: var(--rule-soft);
+    margin-left: 0.6rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .lga-list li .bar::after {
+    content: ""; position: absolute; inset: 0 var(--gap) 0 0;
+    background: var(--teal);
+  }
+</style>
+</head>
+<body data-page="maps" data-context="SEMPHN catchment maps. 10 LGAs: Bayside, Cardinia, Casey, Frankston, Glen Eira, Greater Dandenong, Kingston, Mornington Peninsula, Port Phillip, Stonnington. MH conditions per 1,000 residents: Frankston 116.1 (highest), Mornington Peninsula 102.6, Greater Dandenong 97.4, Casey 94.1, Port Phillip 91.8, Cardinia 88.4, Kingston 83.7, Bayside 82.5, Glen Eira 78.3, Stonnington 76.9 (lowest).">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">
+      <span class="mark"><img src="/atlas/_assets/semphn-logo.svg" alt="" /></span>
+      <span class="lockup">
+        <span class="name">South Eastern Melbourne PHN</span>
+        <span class="sub">Workbench</span>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="/hna/"        class="nav-link" data-page="hna"><span class="dot"></span>HNA</a>
+      <a href="/dashboards/" class="nav-link" data-page="dashboards"><span class="dot"></span>Dashboards</a>
+      <a href="/maps/"       class="nav-link" data-page="maps"><span class="dot"></span>Maps</a>
+    </nav>
+    <div class="nav-user" aria-label="Signed-in tenant">
+      <span class="av">D</span>
+      <span class="meta">
+        <span class="who">demo@semphn.org.au</span>
+        <span class="sub">SEMPHN · PHN108</span>
+      </span>
+      <button type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="split">
+
+  <!-- CHAT (LEFT) -->
+  <section class="chat" aria-label="Workbench chat">
+    <div class="chat-feed" id="chat-feed"></div>
+    <footer class="composer">
+      <div class="composer-prompt">Ask for changes</div>
+      <div class="composer-wrap">
+        <textarea id="chat-input" rows="1" placeholder='"MH choropleth" or "locate every ACCHS"…' aria-label="Ask for changes"></textarea>
+        <div class="composer-foot">
+          <div class="composer-foot-left">
+            <button type="button" class="icon" title="Add attachment">+</button>
+            <button type="button" class="icon" title="More options">⋯</button>
+          </div>
+          <div class="composer-foot-right">
+            <button type="button" class="mode">Default <span class="caret">▾</span></button>
+            <button type="button" class="icon" title="Voice input">🎤</button>
+            <button type="button" class="send" id="chat-send" disabled>
+              Send <span class="arr">↑</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- CANVAS (RIGHT) -->
+  <section class="canvas" aria-label="Maps canvas">
+    <header class="canvas-head">
+      <span class="page-label">
+        <span class="dot"></span>Maps
+        <small>· catchment choropleth &amp; overlays</small>
+      </span>
+      <div class="canvas-actions">
+        <button type="button">Export PNG</button>
+        <button type="button" class="primary">Embed in HNA</button>
+      </div>
+    </header>
+
+    <div class="canvas-body">
+      <div class="canvas-pane">
+        <div class="map-head">
+          <h1>Catchment Map</h1>
+          <p>10 LGAs across 2,935 km² · choropleth coloured by metric</p>
+        </div>
+
+        <div class="map-row">
+          <div class="map-card">
+            <div class="map-card-head">
+              <div>
+                <h3>MH conditions per 1,000 residents · by LGA</h3>
+                <div class="sub">Source · POLAR · last ingest 21 May 2026</div>
+              </div>
+              <div class="controls">
+                <button type="button" class="is-on">Choropleth</button>
+                <button type="button">Points</button>
+                <button type="button">Heat</button>
+              </div>
+            </div>
+            <svg class="map-svg" viewBox="0 0 600 420" preserveAspectRatio="xMidYMid meet" aria-label="Schematic SEMPHN catchment choropleth">
+              <g font-family="Jost, sans-serif" font-size="11" fill="#04264E">
+                <!-- top row -->
+                <rect x="30"  y="40"  width="100" height="85" rx="6" fill="#E5F4F0" stroke="#55BFAF"/>
+                <text x="80" y="78" text-anchor="middle" font-weight="600">Port Phillip</text>
+                <text x="80" y="98" text-anchor="middle" font-size="13">91.8</text>
+
+                <rect x="140" y="40"  width="115" height="85" rx="6" fill="#E5F4F0" stroke="#55BFAF"/>
+                <text x="197" y="78" text-anchor="middle" font-weight="600">Stonnington</text>
+                <text x="197" y="98" text-anchor="middle" font-size="13">76.9</text>
+
+                <rect x="265" y="40"  width="100" height="85" rx="6" fill="#82D9C4" stroke="#55BFAF"/>
+                <text x="315" y="78" text-anchor="middle" font-weight="600">Glen Eira</text>
+                <text x="315" y="98" text-anchor="middle" font-size="13">78.3</text>
+
+                <rect x="375" y="40"  width="100" height="85" rx="6" fill="#55BFAF" stroke="#04264E"/>
+                <text x="425" y="78" text-anchor="middle" font-weight="600">Bayside</text>
+                <text x="425" y="98" text-anchor="middle" font-size="13">82.5</text>
+
+                <rect x="485" y="40"  width="90"  height="85" rx="6" fill="#82D9C4" stroke="#55BFAF"/>
+                <text x="530" y="78" text-anchor="middle" font-weight="600">Kingston</text>
+                <text x="530" y="98" text-anchor="middle" font-size="13">83.7</text>
+
+                <!-- mid row -->
+                <rect x="30"  y="145" width="140" height="115" rx="6" fill="#0E4775" stroke="#04264E"/>
+                <text x="100" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF">Greater Dandenong</text>
+                <text x="100" y="220" text-anchor="middle" font-size="15" fill="#FFFFFF">97.4</text>
+
+                <rect x="180" y="145" width="180" height="115" rx="6" fill="#1C5B85" stroke="#04264E"/>
+                <text x="270" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF">Casey</text>
+                <text x="270" y="220" text-anchor="middle" font-size="15" fill="#FFFFFF">94.1</text>
+
+                <rect x="370" y="145" width="130" height="115" rx="6" fill="#003D69" stroke="#04264E"/>
+                <text x="435" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF">Frankston</text>
+                <text x="435" y="222" text-anchor="middle" font-size="17" fill="#82D9C4" font-weight="700">116.1</text>
+
+                <rect x="510" y="145" width="70"  height="115" rx="6" fill="#2C7995" stroke="#04264E"/>
+                <text x="545" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF" font-size="9">Cardinia</text>
+                <text x="545" y="220" text-anchor="middle" font-size="13" fill="#FFFFFF">88.4</text>
+
+                <!-- bottom row -->
+                <rect x="180" y="280" width="300" height="90" rx="6" fill="#1C5B85" stroke="#04264E"/>
+                <text x="330" y="318" text-anchor="middle" font-weight="600" fill="#FFFFFF">Mornington Peninsula</text>
+                <text x="330" y="343" text-anchor="middle" font-size="15" fill="#FFFFFF">102.6</text>
+              </g>
+              <g font-family="Jost, sans-serif" font-size="9" fill="#6B7B8C">
+                <text x="300" y="400" text-anchor="middle">Schematic — not geographically accurate. Ask the chat for a real choropleth.</text>
+              </g>
+            </svg>
+            <div class="map-legend">
+              <span>76</span>
+              <span class="scale"></span>
+              <span>116</span>
+              <span style="margin-left: auto; font-family: var(--mono); font-size: 0.7rem;">MH conditions / 1,000 residents</span>
+            </div>
+          </div>
+
+          <aside class="lga-list" aria-label="LGA rank">
+            <h3>LGAs · ranked</h3>
+            <p class="sub">Highest first</p>
+            <ul>
+              <li><span class="name">Frankston</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 0%"></span><span class="v">116.1</span></span></li>
+              <li><span class="name">Mornington Peninsula</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 11%"></span><span class="v">102.6</span></span></li>
+              <li><span class="name">Greater Dandenong</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 16%"></span><span class="v">97.4</span></span></li>
+              <li><span class="name">Casey</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 19%"></span><span class="v">94.1</span></span></li>
+              <li><span class="name">Port Phillip</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 21%"></span><span class="v">91.8</span></span></li>
+              <li><span class="name">Cardinia</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 24%"></span><span class="v">88.4</span></span></li>
+              <li><span class="name">Kingston</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 28%"></span><span class="v">83.7</span></span></li>
+              <li><span class="name">Bayside</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 29%"></span><span class="v">82.5</span></span></li>
+              <li><span class="name">Glen Eira</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 33%"></span><span class="v">78.3</span></span></li>
+              <li><span class="name">Stonnington</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 34%"></span><span class="v">76.9</span></span></li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="/_assets/shell.js"></script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dashboards · SEMPHN Workbench</title>
+<meta name="description" content="Chat-build catchment dashboards for South Eastern Melbourne PHN." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200..900;1,200..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/_assets/shell.css" />
+
+<style>
+  /* Dashboards-specific artifact styles */
+  .dash-head { margin-bottom: 1.8rem; }
+  .dash-head h1 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.018em;
+    margin-bottom: 0.3rem;
+  }
+  .dash-head p { color: var(--slate); font-size: 1rem; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 1.4rem;
+  }
+  @media (max-width: 1080px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .kpi-row { grid-template-columns: 1fr; } }
+  .kpi {
+    background: var(--paper);
+    border-radius: var(--r);
+    padding: 1.3rem 1.4rem;
+    display: flex; flex-direction: column; gap: 1rem;
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+  }
+  .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
+  .kpi-ico {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    color: white;
+    flex: none;
+  }
+  .kpi-ico svg { width: 22px; height: 22px; stroke: currentColor; }
+  .kpi-ico.navy   { background: var(--navy); }
+  .kpi-ico.teal   { background: var(--teal); color: var(--navy); }
+  .kpi-ico.purple { background: var(--accent-purple); }
+  .kpi-ico.amber  { background: var(--accent-amber); }
+  .kpi-delta {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.82rem; font-weight: 600;
+    color: var(--accent-green);
+  }
+  .kpi-delta.down { color: var(--accent-rose); }
+  .kpi-delta::before { font-size: 0.78rem; content: "↗"; }
+  .kpi-delta.down::before { content: "↘"; }
+  .kpi-label { color: var(--slate); font-size: 0.88rem; font-weight: 500; margin-bottom: 0.2rem; }
+  .kpi-value {
+    font-size: 1.85rem; font-weight: 700;
+    color: var(--navy);
+    letter-spacing: -0.02em; line-height: 1;
+  }
+
+  .chart-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 1.4rem;
+  }
+  @media (max-width: 1080px) { .chart-row { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--paper);
+    border-radius: var(--r);
+    padding: 1.3rem 1.4rem 1.4rem;
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+  }
+  .chart-card h3 { font-size: 1rem; font-weight: 600; color: var(--navy); margin-bottom: 0.2rem; letter-spacing: -0.005em; }
+  .chart-card .sub { font-size: 0.78rem; color: var(--slate); margin-bottom: 1rem; }
+  .chart-svg { width: 100%; height: 260px; display: block; }
+  .chart-legend {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    margin-top: 0.7rem;
+    font-size: 0.78rem; color: var(--slate); font-weight: 500;
+  }
+  .chart-legend .swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+  .table-card {
+    background: var(--paper);
+    border-radius: var(--r);
+    border: 1px solid var(--rule-soft);
+    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+    overflow: hidden;
+  }
+  .table-card-head {
+    padding: 1.1rem 1.4rem 0.4rem;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.5rem;
+  }
+  .table-card-head h3 { font-size: 1rem; font-weight: 600; color: var(--navy); }
+  .table-card-head .sub { font-size: 0.76rem; color: var(--slate); }
+  .table-card table { width: 100%; border-collapse: collapse; }
+  .table-card thead th {
+    text-align: left;
+    background: var(--paper);
+    color: var(--slate);
+    font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+    font-weight: 600;
+    padding: 0.85rem 1.4rem;
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .table-card thead th.r { text-align: right; }
+  .table-card tbody td {
+    padding: 0.85rem 1.4rem;
+    border-top: 1px solid var(--rule-soft);
+    color: var(--navy);
+    font-size: 0.88rem;
+  }
+  .table-card tbody td.r { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .table-card tbody tr:hover td { background: var(--blue-grey); }
+  .status-chip {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem; font-weight: 600;
+  }
+  .status-chip::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .status-chip.ok   { background: oklch(94% 0.04 155); color: oklch(35% 0.12 155); }
+  .status-chip.warn { background: oklch(96% 0.05 70);  color: oklch(40% 0.15 60); }
+  .status-chip.due  { background: var(--teal-pale);    color: var(--navy-mid); }
+  .status-chip.draft{ background: var(--blue-grey);    color: var(--slate); }
+</style>
+</head>
+<body data-page="dashboards">
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">
+      <span class="mark"><img src="/atlas/_assets/semphn-logo.svg" alt="" /></span>
+      <span class="lockup">
+        <span class="name">South Eastern Melbourne PHN</span>
+        <span class="sub">Workbench</span>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="/hna/"        class="nav-link" data-page="hna"><span class="dot"></span>HNA</a>
+      <a href="/dashboards/" class="nav-link" data-page="dashboards"><span class="dot"></span>Dashboards</a>
+      <a href="/maps/"       class="nav-link" data-page="maps"><span class="dot"></span>Maps</a>
+    </nav>
+    <div class="nav-user" aria-label="Signed-in tenant">
+      <span class="av">D</span>
+      <span class="meta">
+        <span class="who">demo@semphn.org.au</span>
+        <span class="sub">SEMPHN · PHN108</span>
+      </span>
+      <button type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="split">
+
+  <!-- CHAT (LEFT) -->
+  <section class="chat" aria-label="Workbench chat">
+    <div class="chat-feed" id="chat-feed"></div>
+    <footer class="composer">
+      <div class="composer-prompt">Ask for changes</div>
+      <div class="composer-wrap">
+        <textarea id="chat-input" rows="1" placeholder="Type a change or new request…" aria-label="Ask for changes"></textarea>
+        <div class="composer-foot">
+          <div class="composer-foot-left">
+            <button type="button" class="icon" title="Add attachment">+</button>
+            <button type="button" class="icon" title="More options">⋯</button>
+          </div>
+          <div class="composer-foot-right">
+            <button type="button" class="mode">Default <span class="caret">▾</span></button>
+            <button type="button" class="icon" title="Voice input">🎤</button>
+            <button type="button" class="send" id="chat-send" disabled>
+              Send <span class="arr">↑</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- CANVAS (RIGHT) -->
+  <section class="canvas" aria-label="Dashboards canvas">
+    <header class="canvas-head">
+      <span class="page-label">
+        <span class="dot"></span>Dashboards
+        <small>· catchment KPIs &amp; trends</small>
+      </span>
+      <div class="canvas-actions">
+        <button type="button">Download</button>
+        <button type="button" class="primary">Publish</button>
+      </div>
+    </header>
+
+    <div class="canvas-body">
+      <div class="canvas-pane">
+        <div class="dash-head">
+          <h1>Catchment Dashboard</h1>
+          <p>Welcome back. Here's what's happening across South Eastern Melbourne today.</p>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico navy">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9 12h6M12 9v6"></path></svg>
+              </div>
+              <span class="kpi-delta">+3.1%</span>
+            </div>
+            <div>
+              <div class="kpi-label">Catchment population</div>
+              <div class="kpi-value">1,638,200</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M3 20c0-3 3-5 6-5s6 2 6 5"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M14 17c0-1.7 1.5-3 3-3s4 1 4 3"></path></svg>
+              </div>
+              <span class="kpi-delta">+8.6%</span>
+            </div>
+            <div>
+              <div class="kpi-label">Active MH referrals</div>
+              <div class="kpi-value">12,408</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M6 7l1.5 11h9L18 7M9 11v4M15 11v4"></path></svg>
+              </div>
+              <span class="kpi-delta down">-2.4%</span>
+            </div>
+            <div>
+              <div class="kpi-label">Bowel screening rate</div>
+              <div class="kpi-value">47.5%</div>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-top">
+              <div class="kpi-ico amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"></path></svg>
+              </div>
+              <span class="kpi-delta">+5.1%</span>
+            </div>
+            <div>
+              <div class="kpi-label">HNA chapters complete</div>
+              <div class="kpi-value">6 / 10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+
+          <!-- BAR CHART -->
+          <div class="chart-card">
+            <h3>Monthly GP consultations</h3>
+            <div class="sub">Active patients across 493 SEMPHN practices · last 6 months</div>
+            <svg class="chart-svg" viewBox="0 0 520 260" preserveAspectRatio="none" aria-label="Bar chart">
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C">
+                <line x1="40" y1="40"  x2="510" y2="40"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="90"  x2="510" y2="90"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="140" x2="510" y2="140" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="190" x2="510" y2="190" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="220" x2="510" y2="220" stroke="#D6DFEB"/>
+                <text x="30" y="44"  text-anchor="end">240k</text>
+                <text x="30" y="94"  text-anchor="end">180k</text>
+                <text x="30" y="144" text-anchor="end">120k</text>
+                <text x="30" y="194" text-anchor="end">60k</text>
+                <text x="30" y="224" text-anchor="end">0</text>
+              </g>
+              <g>
+                <rect x="65"  y="120" width="50" height="100" rx="3" fill="#04264E"/>
+                <rect x="140" y="100" width="50" height="120" rx="3" fill="#003D69"/>
+                <rect x="215" y="70"  width="50" height="150" rx="3" fill="#0E4775"/>
+                <rect x="290" y="90"  width="50" height="130" rx="3" fill="#1C5B85"/>
+                <rect x="365" y="60"  width="50" height="160" rx="3" fill="#2C7995"/>
+                <rect x="440" y="50"  width="50" height="170" rx="3" fill="#55BFAF"/>
+              </g>
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C" text-anchor="middle">
+                <text x="90"  y="240">Dec</text>
+                <text x="165" y="240">Jan</text>
+                <text x="240" y="240">Feb</text>
+                <text x="315" y="240">Mar</text>
+                <text x="390" y="240">Apr</text>
+                <text x="465" y="240">May</text>
+              </g>
+            </svg>
+            <span class="chart-legend"><span class="swatch" style="background:#04264E"></span>GP consultations</span>
+          </div>
+
+          <!-- LINE CHART -->
+          <div class="chart-card">
+            <h3>Bowel cancer screening rate</h3>
+            <div class="sub">% of eligible 50–74 yo screened · catchment average · 6 quarters</div>
+            <svg class="chart-svg" viewBox="0 0 520 260" preserveAspectRatio="none" aria-label="Line chart">
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"  stop-color="#55BFAF" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#55BFAF" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C">
+                <line x1="40" y1="40"  x2="510" y2="40"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="90"  x2="510" y2="90"  stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="140" x2="510" y2="140" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="190" x2="510" y2="190" stroke="#E6EBF3" stroke-dasharray="2,3"/>
+                <line x1="40" y1="220" x2="510" y2="220" stroke="#D6DFEB"/>
+                <text x="30" y="44"  text-anchor="end">55%</text>
+                <text x="30" y="94"  text-anchor="end">50%</text>
+                <text x="30" y="144" text-anchor="end">45%</text>
+                <text x="30" y="194" text-anchor="end">40%</text>
+                <text x="30" y="224" text-anchor="end">35%</text>
+              </g>
+              <path d="M 70,150 L 160,135 L 250,118 L 340,105 L 430,95 L 500,85 L 500,220 L 70,220 Z" fill="url(#g1)" opacity="0.25"/>
+              <polyline points="70,150 160,135 250,118 340,105 430,95 500,85"
+                        fill="none" stroke="#55BFAF" stroke-width="2.5" stroke-linejoin="round"/>
+              <g fill="#FFFFFF" stroke="#55BFAF" stroke-width="2.5">
+                <circle cx="70"  cy="150" r="4"/>
+                <circle cx="160" cy="135" r="4"/>
+                <circle cx="250" cy="118" r="4"/>
+                <circle cx="340" cy="105" r="4"/>
+                <circle cx="430" cy="95"  r="4"/>
+                <circle cx="500" cy="85"  r="4"/>
+              </g>
+              <g font-family="Jost, sans-serif" font-size="11" fill="#6B7B8C" text-anchor="middle">
+                <text x="70"  y="240">Q4'24</text>
+                <text x="160" y="240">Q1'25</text>
+                <text x="250" y="240">Q2'25</text>
+                <text x="340" y="240">Q3'25</text>
+                <text x="430" y="240">Q4'25</text>
+                <text x="500" y="240">Q1'26</text>
+              </g>
+            </svg>
+            <span class="chart-legend"><span class="swatch" style="background:#55BFAF"></span>Screening participation</span>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-card-head">
+            <div>
+              <h3>Recent commissioning activity</h3>
+              <div class="sub">Last 30 days · SEMPHN CRM extract</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Activity</th>
+                <th>LGA</th>
+                <th>Schedule</th>
+                <th class="r">Value (AUD)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Refugee health navigator pilot</td>   <td>Greater Dandenong</td><td>Core</td>       <td class="r">$182,400</td><td><span class="status-chip ok">Approved</span></td></tr>
+              <tr><td>Headspace intake redesign</td>       <td>Frankston</td>        <td>Primary MH</td>  <td class="r">$96,800</td> <td><span class="status-chip ok">Approved</span></td></tr>
+              <tr><td>Bowel screening recall campaign</td> <td>Casey</td>            <td>Pop Health</td>  <td class="r">$54,200</td> <td><span class="status-chip warn">In review</span></td></tr>
+              <tr><td>ACCHS partnership MOU renewal</td>   <td>Frankston</td>        <td>ITC</td>         <td class="r">$120,000</td><td><span class="status-chip due">Due 14 Jun</span></td></tr>
+              <tr><td>RACF medication review pilot</td>    <td>Mornington Peninsula</td><td>Aged Care</td><td class="r">$78,500</td> <td><span class="status-chip draft">Draft</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="/_assets/shell.js"></script>
+</body>
+</html>

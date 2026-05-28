@@ -517,9 +517,9 @@
             }));
           } catch (_) {}
 
-          // Honour ?next= if present, otherwise land on /build/
+          // Honour ?next= if present, otherwise land on the Dashboards workbench
           var nextParam = new URLSearchParams(location.search).get('next');
-          var safeNext = nextParam && nextParam.indexOf('/') === 0 ? nextParam : '/build/';
+          var safeNext = nextParam && nextParam.indexOf('/') === 0 ? nextParam : '/dashboards/';
           window.location.href = safeNext;
         };
         if (form && form.tagName === 'FORM') form.addEventListener('submit', submit);
