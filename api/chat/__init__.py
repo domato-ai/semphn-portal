@@ -47,6 +47,8 @@ from collections import defaultdict, deque
 import azure.functions as func
 from openai import AzureOpenAI, OpenAIError
 
+from . import semphn_data  # local module — fetches real rows from domato_semphn
+
 log = logging.getLogger("chat")
 
 # ---- Configuration ---------------------------------------------------------
@@ -90,6 +92,9 @@ def _deployment_for_tier(tier: str) -> str:
 
 
 def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
+    """Build a system prompt with both the static page description AND a
+    fresh slice of real SEMPHN data fetched from domato_semphn. The model
+    grounds its answer in real numbers — no more hand-waving."""
     step_desc = STEP_PROMPTS.get(step_slug, f"step '{step_name}'")
     parts = [
         "You are an assistant for SEMPHN (South Eastern Melbourne Primary Health Network) "
@@ -99,12 +104,25 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "Help them frame priorities, draft narrative, and decide what rises to a "
         "recommendation in the lodged HNA.",
         "Be concise: 2-4 sentences unless they ask for a draft paragraph.",
-        "Cite specific LGA names and figures from the context where relevant.",
+        "Cite specific LGA names and figures from the SEMPHN data below where "
+        "relevant. When you cite a figure, append the source_id in parentheses "
+        "e.g. '116.1 (semphn_hna_2025_28)'.",
+        "Format responses in markdown: **bold** key figures, use bullet lists "
+        "for multiple items, use `code` for metric_codes.",
         "Australian English. Australian healthcare terminology.",
-        "Never invent figures. If you don't know a number, say so plainly.",
+        "Never invent figures. If a figure isn't in the SEMPHN data below or in "
+        "the conversation, say so plainly — don't guess.",
     ]
     if context_summary:
         parts.append(f"\nStep-specific data context:\n{context_summary.strip()}")
+    # ---- NEW: inject a page-relevant slice of real SEMPHN data ----
+    db_slice = semphn_data.render_for_prompt(step_slug)
+    if db_slice:
+        parts.append(
+            "\nLive SEMPHN data slice (from the domato_semphn database, fetched "
+            "this request). Treat as authoritative. Cite source_id values when "
+            "you use a figure:\n```json\n" + db_slice + "\n```"
+        )
     return "\n".join(parts)
 
 
