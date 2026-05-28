@@ -238,7 +238,30 @@ def render_for_prompt(page: str) -> str:
     except Exception:
         log.exception("Failed to serialise SEMPHN data slice")
         return ""
-    # Hard cap on prompt enrichment to avoid blowing the token budget.
-    if len(body) > 8000:
-        body = body[:8000] + "…[truncated]"
+    # Hard cap on prompt enrichment. GPT-4o-mini handles 128K context easily,
+    # so this only matters for cost. ~24KB ≈ 6K tokens — comfortable.
+    # Truncation is by full-section now (drop tail keys) rather than mid-JSON
+    # so the model never sees a malformed object.
+    MAX_CHARS = 24000
+    if len(body) <= MAX_CHARS:
+        return body
+    # Re-serialise with sections dropped one at a time until it fits.
+    keys = list(data.keys())
+    while keys and len(body) > MAX_CHARS:
+        # Drop the largest remaining section
+        sizes = [(k, len(json.dumps(data[k], default=str))) for k in keys]
+        sizes.sort(key=lambda kv: -kv[1])
+        drop_key = sizes[0][0]
+        del data[drop_key]
+        keys.remove(drop_key)
+        try:
+            body = json.dumps(data, default=str, separators=(",", ":"))
+        except Exception:
+            return ""
+    # Mark which sections were dropped so the model can flag it
+    dropped = [k for k in ("catchment_kpis", "kpis_by_lga", "recent_commissioning",
+                           "funding_schedules", "chapters", "lgas",
+                           "providers_by_lga", "data_sources") if k not in data]
+    if dropped:
+        body = body[:-1] + f',"_dropped":{json.dumps(dropped)}' + "}"
     return body

@@ -107,11 +107,17 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "Cite specific LGA names and figures from the SEMPHN data below where "
         "relevant. When you cite a figure, append the source_id in parentheses "
         "e.g. '116.1 (semphn_hna_2025_28)'.",
+        "When listing rows from a data array, PRESERVE the order they arrive "
+        "in (the DB query already sorted them how the user likely wants). "
+        "If you need to re-rank, sort BY THE NUMERIC VALUE — never by the order "
+        "you happened to list them.",
         "Format responses in markdown: **bold** key figures, use bullet lists "
         "for multiple items, use `code` for metric_codes.",
         "Australian English. Australian healthcare terminology.",
         "Never invent figures. If a figure isn't in the SEMPHN data below or in "
-        "the conversation, say so plainly — don't guess.",
+        "the conversation, say so plainly — don't guess. If the data slice "
+        "shows `_dropped` listing some sections, tell the user that section was "
+        "too large to fit and offer to query a narrower cut.",
     ]
     if context_summary:
         parts.append(f"\nStep-specific data context:\n{context_summary.strip()}")
