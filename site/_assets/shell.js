@@ -398,31 +398,157 @@
   }
 
   /* ============================================================
-   * Choropleth · custom SVG hex/tile cartogram of the SEMPHN catchment
+   * Choropleth · real Leaflet map with actual SEMPHN LGA boundaries
    *
-   * Stylised tile-map of the 10 SEMPHN LGAs. Positions are roughly
-   * geographic (north-west to south-east) but not surveyed-accurate —
-   * we trade cartographic precision for legibility, the way The
-   * Economist and FT do for compact regional summaries.
+   * Renders an interactive OSM-tiled Leaflet map with real polygon
+   * boundaries for the 10 SEMPHN LGAs (ABS LGA 2016 boundaries,
+   * bundled as /_assets/semphn-catchment.geojson, ~5.7 KB).
    *
-   * Widget shape (same as bar/line):
-   *   { type: "choropleth", title, subtitle, unit, source_id, data: [{label, value}, ...] }
+   * Widget shape (unchanged):
+   *   { type: "choropleth", title, subtitle, unit, source_id,
+   *     data: [{label, value}, ...] }
+   *
+   * Falls back to a stylised SVG tile cartogram if Leaflet hasn't
+   * loaded yet (cold-start scenario). The tile names below also
+   * preserved as a label whitelist for the GeoJSON join.
    * ============================================================ */
+  var SEMPHN_LGA_NAMES = [
+    'Port Phillip', 'Stonnington', 'Glen Eira', 'Bayside', 'Kingston',
+    'Greater Dandenong', 'Casey', 'Cardinia',
+    'Frankston', 'Mornington Peninsula',
+  ];
+  /* Cartogram fallback positions (only used if Leaflet missing) */
   var SEMPHN_LGA_TILES = [
-    // Inner south + bayside
     { name: 'Port Phillip',         x: 30,  y: 40,  w: 110, h: 80 },
     { name: 'Stonnington',          x: 145, y: 40,  w: 115, h: 80 },
     { name: 'Glen Eira',            x: 265, y: 40,  w: 100, h: 80 },
     { name: 'Bayside',              x: 370, y: 40,  w: 100, h: 80 },
     { name: 'Kingston',             x: 475, y: 40,  w: 100, h: 80 },
-    // Mid corridor
     { name: 'Greater Dandenong',    x: 30,  y: 130, w: 140, h: 105 },
     { name: 'Casey',                x: 175, y: 130, w: 195, h: 105 },
     { name: 'Cardinia',             x: 375, y: 130, w: 200, h: 105 },
-    // South / Frankston + Peninsula
     { name: 'Frankston',            x: 30,  y: 245, w: 140, h: 80 },
     { name: 'Mornington Peninsula', x: 175, y: 245, w: 400, h: 100 },
   ];
+
+  /* Cache the SEMPHN catchment GeoJSON across all map widgets · single fetch */
+  var SEMPHN_GEOJSON = null;
+  var SEMPHN_GEOJSON_PROMISE = null;
+  function loadSemphnGeoJSON() {
+    if (SEMPHN_GEOJSON) return Promise.resolve(SEMPHN_GEOJSON);
+    if (SEMPHN_GEOJSON_PROMISE) return SEMPHN_GEOJSON_PROMISE;
+    SEMPHN_GEOJSON_PROMISE = fetch('/_assets/semphn-catchment.geojson')
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (g) { SEMPHN_GEOJSON = g; return g; });
+    return SEMPHN_GEOJSON_PROMISE;
+  }
+
+  /* Build a Leaflet choropleth widget node */
+  function buildLeafletChoropleth(widget) {
+    var data = widget.data || [];
+    var byLga = {};
+    data.forEach(function (d) { byLga[(d.label || '').trim()] = Number(d.value) || 0; });
+    var values = Object.values(byLga);
+    var min = values.length ? Math.min.apply(null, values) : 0;
+    var max = values.length ? Math.max.apply(null, values) : 1;
+    if (min === max) max = min + 1;
+
+    function rampColor(v) {
+      var t = Math.max(0, Math.min(1, (v - min) / (max - min)));
+      if (t < 0.33)  return blendHex('#E5F4F0', '#82D9C4', t / 0.33);
+      if (t < 0.66)  return blendHex('#82D9C4', '#04264E', (t - 0.33) / 0.33);
+      return blendHex('#04264E', '#0A0A0A', (t - 0.66) / 0.34);
+    }
+
+    // Outer wrapper · the chart goes inside the .wgt-map (sized by CSS),
+    // legend strip sits below.
+    var wrap = document.createElement('div');
+    wrap.className = 'wgt-leaflet-wrap';
+
+    var mapDiv = document.createElement('div');
+    mapDiv.className = 'wgt-leaflet';
+    wrap.appendChild(mapDiv);
+
+    var legend = document.createElement('div');
+    legend.className = 'wgt-choro-legend';
+    var lo = document.createElement('span'); lo.className = 'v'; lo.textContent = formatValue(min, widget.unit);
+    var bar = document.createElement('span'); bar.className = 'bar';
+    bar.style.background = 'linear-gradient(90deg, #E5F4F0, #82D9C4 35%, #04264E 78%, #0A0A0A)';
+    var hi = document.createElement('span'); hi.className = 'v'; hi.textContent = formatValue(max, widget.unit);
+    var unit = document.createElement('span'); unit.className = 'unit'; unit.textContent = widget.unit_label || widget.unit || '';
+    legend.appendChild(lo); legend.appendChild(bar); legend.appendChild(hi); legend.appendChild(unit);
+    wrap.appendChild(legend);
+
+    // Defer init until container is in DOM + Leaflet is loaded
+    setTimeout(function () {
+      if (typeof window.L === 'undefined') {
+        // Leaflet missing — fall back to the cartogram
+        var fallback = buildChoroplethSVG(widget);
+        wrap.replaceChild(fallback, mapDiv);
+        return;
+      }
+      var map = L.map(mapDiv, {
+        zoomControl: true,
+        attributionControl: true,
+        scrollWheelZoom: false,  // prevent stealing page scroll
+        doubleClickZoom: true,
+        dragging: true,
+      });
+      // Light + minimal tile layer — CartoDB Positron complements the refined aesthetic
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19,
+      }).addTo(map);
+
+      loadSemphnGeoJSON().then(function (geojson) {
+        var layer = L.geoJSON(geojson, {
+          style: function (feature) {
+            var name  = feature.properties.name;
+            var has   = name in byLga;
+            var value = byLga[name];
+            return {
+              fillColor:   has ? rampColor(value) : '#F3F4F6',
+              weight:      widget.highlight === name ? 2.5 : 1.25,
+              color:       widget.highlight === name ? '#0A0A0A' : '#FFFFFF',
+              fillOpacity: has ? 0.85 : 0.4,
+            };
+          },
+          onEachFeature: function (feature, lyr) {
+            var name  = feature.properties.name;
+            var has   = name in byLga;
+            var html  =
+              '<div style="font-family:Geist,system-ui,sans-serif;min-width:140px;">' +
+                '<div style="font-weight:600;font-size:0.95rem;color:#0A0A0A;margin-bottom:0.2rem;">' + name + '</div>' +
+                (has
+                  ? '<div style="font-family:Geist Mono,ui-monospace,monospace;font-size:1.15rem;font-weight:600;color:#0A0A0A;">' + formatValue(byLga[name], widget.unit) + '</div>' +
+                    '<div style="font-size:0.7rem;color:#6B7280;margin-top:0.25rem;">' + (widget.unit_label || widget.unit || '') + '</div>'
+                  : '<div style="font-size:0.78rem;color:#9CA3AF;font-style:italic;">no data</div>') +
+              '</div>';
+            lyr.bindTooltip(html, { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' });
+            lyr.on({
+              mouseover: function (e) {
+                e.target.setStyle({ weight: 2.5, color: '#0A0A0A' });
+                e.target.bringToFront();
+              },
+              mouseout: function (e) { layer.resetStyle(e.target); },
+            });
+          },
+        }).addTo(map);
+        try { map.fitBounds(layer.getBounds(), { padding: [12, 12] }); } catch (_) {}
+      }).catch(function (e) {
+        console.error('[choropleth] geojson load failed', e);
+        var fallback = buildChoroplethSVG(widget);
+        wrap.replaceChild(fallback, mapDiv);
+      });
+
+      // Resize map when card resizes / DOM settles
+      setTimeout(function () { try { map.invalidateSize(); } catch (_) {} }, 200);
+    }, 0);
+
+    return wrap;
+  }
+
   /* Linear-blend two hex colors at t∈[0,1] */
   function blendHex(a, b, t) {
     function p(s) { return [parseInt(s.slice(1,3),16), parseInt(s.slice(3,5),16), parseInt(s.slice(5,7),16)]; }
@@ -844,7 +970,8 @@
     else if (widget.type === 'donut' || widget.type === 'pie') node = buildDonutChart(widget);
     else if (widget.type === 'kpi')   node = buildKpiNode(widget);
     else if (widget.type === 'table') node = buildTableNode(widget);
-    else if (widget.type === 'choropleth' || widget.type === 'map') node = buildChoroplethSVG(widget);
+    else if (widget.type === 'choropleth' || widget.type === 'map') node = buildLeafletChoropleth(widget);
+    else if (widget.type === 'cartogram') node = buildChoroplethSVG(widget);
     if (!node) {
       node = document.createElement('div');
       node.className = 'wgt-empty';
@@ -943,7 +1070,7 @@
         }
       }
     }
-    if (widget.type === 'choropleth' || widget.type === 'map') {
+    if (widget.type === 'cartogram') {
       var svg = card.querySelector('svg.wgt-choro');
       if (svg) {
         svgToPng(svg, slug(widget.title) + '.png', function (ok) {
@@ -952,6 +1079,12 @@
         });
         return;
       }
+    }
+    if (widget.type === 'choropleth' || widget.type === 'map') {
+      // Leaflet tile maps can't be exported via canvas due to cross-origin
+      // tile policy. Best UX: tell the user + suggest the OS screenshot.
+      showToast('Use ⌘⇧4 to screenshot Leaflet maps — tile servers block canvas export', 'warn');
+      return;
     }
     showToast('PNG export not supported for "' + widget.type + '" yet', 'warn');
   }
