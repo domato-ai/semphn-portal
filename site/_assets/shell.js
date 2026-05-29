@@ -121,83 +121,203 @@
     }
   }
 
+  /* SVG helper · namespaced create */
+  function svgEl(name, attrs) {
+    var el = document.createElementNS('http://www.w3.org/2000/svg', name);
+    if (attrs) Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    return el;
+  }
+
+  /* Build horizontal-bar chart · Figma-style
+   * - all four corners rounded (rx=4)
+   * - solid ink fill for default, teal for highlighted row
+   * - Geist for labels, Geist Mono for values
+   * - hairline grid + soft baseline only */
   function buildBarSVG(widget) {
     var data = widget.data || [];
     if (!data.length) return null;
-    var w = 520, h = 260, padL = 130, padR = 24, padT = 16, padB = 24;
-    var max = Math.max.apply(null, data.map(function (d) { return Number(d.value) || 0; }));
+    var w = 560, h = 280;
+    var padL = 140, padR = 64, padT = 12, padB = 14;
+    var values = data.map(function (d) { return Number(d.value) || 0; });
+    var max = Math.max.apply(null, values);
     if (max <= 0) max = 1;
-    var barH = Math.max(14, Math.floor((h - padT - padB) / data.length) - 6);
-    var rowH = Math.floor((h - padT - padB) / data.length);
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
-    svg.setAttribute('class', 'wgt-svg');
-    svg.setAttribute('preserveAspectRatio', 'none');
-    // axis line
-    var axis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    axis.setAttribute('x1', padL); axis.setAttribute('x2', w - padR);
-    axis.setAttribute('y1', padT); axis.setAttribute('y2', padT);
-    axis.setAttribute('stroke', '#E6EBF3');
-    svg.appendChild(axis);
+    var rows = data.length;
+    var rowH = (h - padT - padB) / rows;
+    var barH = Math.min(22, Math.max(10, rowH - 10));
+
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + h, class: 'wgt-svg' });
+
+    // Vertical gridlines at 0/50/100% of max
+    [0, 0.5, 1].forEach(function (pct) {
+      var x = padL + pct * (w - padL - padR);
+      var line = svgEl('line', {
+        x1: x, x2: x, y1: padT - 4, y2: h - padB + 4,
+        stroke: '#F3F4F6', 'stroke-width': '1',
+      });
+      svg.appendChild(line);
+    });
+    // Baseline
+    var base = svgEl('line', {
+      x1: padL, x2: padL, y1: padT - 4, y2: h - padB + 4,
+      stroke: '#E5E7EB', 'stroke-width': '1',
+    });
+    svg.appendChild(base);
+
     data.forEach(function (d, i) {
-      var y = padT + i * rowH + 3;
-      var lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      lbl.setAttribute('x', padL - 8); lbl.setAttribute('y', y + barH * 0.7);
-      lbl.setAttribute('text-anchor', 'end');
-      lbl.setAttribute('font-family', 'Jost,sans-serif');
-      lbl.setAttribute('font-size', '11'); lbl.setAttribute('fill', '#324354');
+      var rowY = padT + i * rowH;
+      var y = rowY + (rowH - barH) / 2;
+      var isHi = widget.highlight && d.label === widget.highlight;
+      var fill = isHi ? '#55BFAF' : '#0A0A0A';
+
+      // Row label
+      var lbl = svgEl('text', {
+        x: padL - 10, y: y + barH * 0.72,
+        'text-anchor': 'end',
+        'font-family': 'Geist, -apple-system, system-ui, sans-serif',
+        'font-size': '11.5', 'font-weight': isHi ? '600' : '500',
+        fill: isHi ? '#0A0A0A' : '#4B5563',
+      });
       lbl.textContent = d.label || '';
       svg.appendChild(lbl);
-      var isHi = widget.highlight && d.label === widget.highlight;
-      var bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      var bw = ((Number(d.value) || 0) / max) * (w - padL - padR - 50);
-      bar.setAttribute('x', padL); bar.setAttribute('y', y);
-      bar.setAttribute('width', Math.max(2, bw)); bar.setAttribute('height', barH);
-      bar.setAttribute('rx', '3'); bar.setAttribute('fill', isHi ? '#55BFAF' : '#04264E');
+
+      // Track background
+      var track = svgEl('rect', {
+        x: padL, y: y,
+        width: w - padL - padR, height: barH,
+        rx: '4', ry: '4',
+        fill: '#F9FAFB',
+      });
+      svg.appendChild(track);
+
+      // Bar
+      var bw = (values[i] / max) * (w - padL - padR);
+      var bar = svgEl('rect', {
+        x: padL, y: y,
+        width: Math.max(3, bw), height: barH,
+        rx: '4', ry: '4',
+        fill: fill,
+      });
       svg.appendChild(bar);
-      var vlbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      vlbl.setAttribute('x', padL + bw + 6); vlbl.setAttribute('y', y + barH * 0.7);
-      vlbl.setAttribute('font-family', 'JetBrains Mono,monospace');
-      vlbl.setAttribute('font-size', '10'); vlbl.setAttribute('fill', '#04264E');
-      vlbl.setAttribute('font-weight', '600');
+
+      // Value label
+      var vlbl = svgEl('text', {
+        x: padL + bw + 7, y: y + barH * 0.72,
+        'font-family': 'Geist Mono, ui-monospace, monospace',
+        'font-size': '11', 'font-weight': '500',
+        fill: '#0A0A0A',
+      });
       vlbl.textContent = formatValue(d.value, widget.unit);
       svg.appendChild(vlbl);
     });
     return svg;
   }
+
+  /* Build line chart · Figma-style
+   * - smooth Catmull-Rom curve through points
+   * - gradient area fill underneath (ink → transparent)
+   * - 4px solid stroke, ink-colored
+   * - circles + label for first/last, every Nth otherwise
+   * - hairline horizontal gridlines, no left axis */
   function buildLineSVG(widget) {
     var data = widget.data || [];
     if (!data.length) return null;
-    var w = 520, h = 240, padL = 40, padR = 16, padT = 16, padB = 32;
+    var w = 560, h = 260;
+    var padL = 36, padR = 24, padT = 24, padB = 36;
     var values = data.map(function (d) { return Number(d.value) || 0; });
     var max = Math.max.apply(null, values), min = Math.min.apply(null, values);
-    if (max === min) max = min + 1;
+    if (max === min) { max = min + 1; }
+    // Pad domain by 10% so curve has breathing room
+    var range = max - min;
+    var yMin = min - range * 0.1, yMax = max + range * 0.1;
     var innerW = w - padL - padR, innerH = h - padT - padB;
+
     function x(i) { return padL + (i / (data.length - 1 || 1)) * innerW; }
-    function y(v) { return padT + (1 - (v - min) / (max - min)) * innerH; }
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h); svg.setAttribute('class', 'wgt-svg');
-    var grid = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    grid.setAttribute('x1', padL); grid.setAttribute('x2', w - padR);
-    grid.setAttribute('y1', h - padB); grid.setAttribute('y2', h - padB);
-    grid.setAttribute('stroke', '#D6DFEB'); svg.appendChild(grid);
-    var path = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    path.setAttribute('points', data.map(function (d, i) { return x(i) + ',' + y(Number(d.value) || 0); }).join(' '));
-    path.setAttribute('fill', 'none'); path.setAttribute('stroke', '#55BFAF');
-    path.setAttribute('stroke-width', '2.5'); path.setAttribute('stroke-linejoin', 'round');
-    svg.appendChild(path);
-    data.forEach(function (d, i) {
-      var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      c.setAttribute('cx', x(i)); c.setAttribute('cy', y(Number(d.value) || 0));
-      c.setAttribute('r', '4'); c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#55BFAF'); c.setAttribute('stroke-width', '2.5');
-      svg.appendChild(c);
-      var t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      t.setAttribute('x', x(i)); t.setAttribute('y', h - 10);
-      t.setAttribute('text-anchor', 'middle');
-      t.setAttribute('font-family', 'Jost,sans-serif'); t.setAttribute('font-size', '10'); t.setAttribute('fill', '#6B7B8C');
-      t.textContent = d.label || '';
-      svg.appendChild(t);
+    function y(v) { return padT + (1 - (v - yMin) / (yMax - yMin)) * innerH; }
+
+    var svg = svgEl('svg', { viewBox: '0 0 ' + w + ' ' + h, class: 'wgt-svg' });
+
+    // <defs> with gradient for area fill
+    var defs = svgEl('defs');
+    var gradId = 'wgt-grad-' + Math.random().toString(36).slice(2, 8);
+    var grad = svgEl('linearGradient', {
+      id: gradId, x1: '0', y1: '0', x2: '0', y2: '1',
     });
+    var s1 = svgEl('stop', { offset: '0%',  'stop-color': '#0A0A0A', 'stop-opacity': '0.14' });
+    var s2 = svgEl('stop', { offset: '100%', 'stop-color': '#0A0A0A', 'stop-opacity': '0' });
+    grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad); svg.appendChild(defs);
+
+    // 3 horizontal gridlines
+    [0.25, 0.5, 0.75, 1].forEach(function (pct) {
+      var gy = padT + pct * innerH;
+      var line = svgEl('line', {
+        x1: padL, x2: w - padR, y1: gy, y2: gy,
+        stroke: '#F3F4F6', 'stroke-width': '1',
+      });
+      svg.appendChild(line);
+    });
+
+    // Build smooth Catmull-Rom → bezier path
+    var pts = data.map(function (d, i) { return [x(i), y(values[i])]; });
+    function smoothPath(pts) {
+      if (pts.length < 2) return '';
+      var d = 'M' + pts[0][0] + ',' + pts[0][1];
+      for (var i = 0; i < pts.length - 1; i++) {
+        var p0 = pts[i - 1] || pts[i];
+        var p1 = pts[i];
+        var p2 = pts[i + 1];
+        var p3 = pts[i + 2] || p2;
+        var cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+        var cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+        var cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+        var cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+        d += ' C' + cp1x + ',' + cp1y + ' ' + cp2x + ',' + cp2y + ' ' + p2[0] + ',' + p2[1];
+      }
+      return d;
+    }
+    var smoothD = smoothPath(pts);
+
+    // Area fill
+    if (smoothD) {
+      var areaD = smoothD + ' L' + pts[pts.length - 1][0] + ',' + (h - padB) +
+                  ' L' + pts[0][0] + ',' + (h - padB) + ' Z';
+      var area = svgEl('path', { d: areaD, fill: 'url(#' + gradId + ')' });
+      svg.appendChild(area);
+
+      // Line
+      var line = svgEl('path', {
+        d: smoothD,
+        fill: 'none',
+        stroke: '#0A0A0A',
+        'stroke-width': '2',
+        'stroke-linejoin': 'round',
+        'stroke-linecap': 'round',
+      });
+      svg.appendChild(line);
+    }
+
+    // Data points · subtle dots at every point, larger at first + last
+    data.forEach(function (d, i) {
+      var isEnd = (i === 0 || i === data.length - 1);
+      var dot = svgEl('circle', {
+        cx: x(i), cy: y(values[i]),
+        r: isEnd ? '5' : '3',
+        fill: '#FFFFFF',
+        stroke: '#0A0A0A',
+        'stroke-width': isEnd ? '2' : '1.5',
+      });
+      svg.appendChild(dot);
+      // X-axis label
+      var xLbl = svgEl('text', {
+        x: x(i), y: h - 12,
+        'text-anchor': 'middle',
+        'font-family': 'Geist, -apple-system, system-ui, sans-serif',
+        'font-size': '10.5', 'font-weight': '500',
+        fill: '#6B7280',
+      });
+      xLbl.textContent = d.label || '';
+      svg.appendChild(xLbl);
+    });
+
     return svg;
   }
   function formatValue(v, unit) {

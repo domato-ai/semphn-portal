@@ -8,29 +8,32 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200..900;1,200..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1780022810" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1780500000" />
 
 <style>
   /* HNA-specific artifact styles */
   .hna-doc {
     max-width: 820px; margin: 0 auto;
-    background: var(--paper); border: 1px solid var(--rule-soft);
-    border-radius: var(--r);
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: var(--r-lg);
     padding: clamp(2rem, 4vw, 3.5rem);
-    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 16px 40px -24px rgba(4,38,78,0.18);
   }
   .hna-doc .doc-meta {
     display: flex; align-items: center; justify-content: space-between;
     gap: 1rem; flex-wrap: wrap;
-    font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--teal); font-weight: 700;
-    margin-bottom: 1.1rem;
+    font-size: 0.74rem;
+    color: var(--slate-soft); font-weight: 500;
+    margin-bottom: 1.4rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--rule-soft);
   }
+  .hna-doc .doc-meta > span:first-child { color: var(--ink); }
   .hna-doc .doc-meta .right {
-    color: var(--slate-soft);
+    color: var(--slate-mute);
     font-family: var(--mono);
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    letter-spacing: 0;
   }
   .hna-doc h1 {
     font-family: var(--display); font-weight: 400;
@@ -254,6 +257,6 @@
     <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1780022810"></script>
+<script src="/_assets/shell.js?v=1780500000"></script>
 </body>
 </html>

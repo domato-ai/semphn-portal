@@ -8,8 +8,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200..900;1,200..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1780022810" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1780500000" />
 
 <style>
   /* Maps-specific artifact styles */
@@ -25,10 +25,9 @@
 
   .map-card {
     background: var(--paper);
-    border-radius: var(--r);
-    border: 1px solid var(--rule-soft);
-    padding: 1.4rem 1.4rem 1.6rem;
-    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--rule);
+    padding: 1.4rem 1.5rem 1.5rem;
     margin-bottom: 1.2rem;
   }
   .map-card-head {
@@ -40,14 +39,16 @@
   .map-card .sub { font-size: 0.78rem; color: var(--slate); margin-top: 0.15rem; }
   .map-card .controls { display: flex; align-items: center; gap: 0.3rem; }
   .map-card .controls button {
-    background: var(--blue-grey); border: 1px solid var(--rule);
+    background: var(--paper); border: 1px solid var(--rule);
     color: var(--slate);
-    padding: 0.32rem 0.6rem;
+    padding: 0.4rem 0.75rem;
     border-radius: var(--r-sm);
-    font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase;
-    cursor: pointer; font-weight: 600;
+    font-size: 0.76rem;
+    cursor: pointer; font-weight: 500;
+    transition: all 130ms;
   }
-  .map-card .controls button.is-on { background: var(--navy); color: white; border-color: var(--navy); }
+  .map-card .controls button:hover { color: var(--ink); border-color: var(--slate-mute); background: var(--rule-soft); }
+  .map-card .controls button.is-on { background: var(--ink); color: white; border-color: var(--ink); }
   .map-svg { width: 100%; height: 420px; display: block; background: var(--blue-grey); border-radius: var(--r-sm); }
   .map-legend {
     margin-top: 0.85rem;
@@ -69,9 +70,8 @@
   @media (max-width: 1100px) { .map-row { grid-template-columns: 1fr; } }
   .lga-list {
     background: var(--paper);
-    border-radius: var(--r);
-    border: 1px solid var(--rule-soft);
-    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--rule);
     overflow: hidden;
   }
   .lga-list h3 {
@@ -202,7 +202,7 @@
               </div>
             </div>
             <svg class="map-svg" viewBox="0 0 600 420" preserveAspectRatio="xMidYMid meet" aria-label="Schematic SEMPHN catchment choropleth">
-              <g font-family="Jost, sans-serif" font-size="11" fill="#04264E">
+              <g font-family="Geist, sans-serif" font-size="11" fill="#04264E">
                 <!-- top row -->
                 <rect x="30"  y="40"  width="100" height="85" rx="6" fill="#E5F4F0" stroke="#55BFAF"/>
                 <text x="80" y="78" text-anchor="middle" font-weight="600">Port Phillip</text>
@@ -246,7 +246,7 @@
                 <text x="330" y="318" text-anchor="middle" font-weight="600" fill="#FFFFFF">Mornington Peninsula</text>
                 <text x="330" y="343" text-anchor="middle" font-size="15" fill="#FFFFFF">102.6</text>
               </g>
-              <g font-family="Jost, sans-serif" font-size="9" fill="#6B7B8C">
+              <g font-family="Geist, sans-serif" font-size="9" fill="#6B7B8C">
                 <text x="300" y="400" text-anchor="middle">Schematic — not geographically accurate. Ask the chat for a real choropleth.</text>
               </g>
             </svg>
@@ -292,6 +292,6 @@
     <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1780022810"></script>
+<script src="/_assets/shell.js?v=1780500000"></script>
 </body>
 </html>

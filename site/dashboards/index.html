@@ -8,134 +8,110 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200..900;1,200..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1780022810" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1780500000" />
 
 <style>
-  /* Dashboards-specific artifact styles */
-  .dash-head { margin-bottom: 1.8rem; }
-  .dash-head h1 {
-    font-size: clamp(1.8rem, 3vw, 2.4rem);
-    font-weight: 700;
-    color: var(--navy);
-    letter-spacing: -0.018em;
-    margin-bottom: 0.3rem;
-  }
-  .dash-head p { color: var(--slate); font-size: 1rem; }
+  /* Dashboards builder · canvas-specific styles
+     (shared widget styles + chrome live in shell.css) */
 
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.2rem;
-    margin-bottom: 1.4rem;
-  }
-  @media (max-width: 1080px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 600px)  { .kpi-row { grid-template-columns: 1fr; } }
-  .kpi {
-    background: var(--paper);
-    border-radius: var(--r);
-    padding: 1.3rem 1.4rem;
-    display: flex; flex-direction: column; gap: 1rem;
-    border: 1px solid var(--rule-soft);
-    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
-  }
-  .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
-  .kpi-ico {
-    width: 44px; height: 44px;
-    border-radius: 10px;
-    display: grid; place-items: center;
-    color: white;
-    flex: none;
-  }
-  .kpi-ico svg { width: 22px; height: 22px; stroke: currentColor; }
-  .kpi-ico.navy   { background: var(--navy); }
-  .kpi-ico.teal   { background: var(--teal); color: var(--navy); }
-  .kpi-ico.purple { background: var(--accent-purple); }
-  .kpi-ico.amber  { background: var(--accent-amber); }
-  .kpi-delta {
-    display: inline-flex; align-items: center; gap: 0.3rem;
-    font-size: 0.82rem; font-weight: 600;
-    color: var(--accent-green);
-  }
-  .kpi-delta.down { color: var(--accent-rose); }
-  .kpi-delta::before { font-size: 0.78rem; content: "↗"; }
-  .kpi-delta.down::before { content: "↘"; }
-  .kpi-label { color: var(--slate); font-size: 0.88rem; font-weight: 500; margin-bottom: 0.2rem; }
-  .kpi-value {
-    font-size: 1.85rem; font-weight: 700;
-    color: var(--navy);
-    letter-spacing: -0.02em; line-height: 1;
-  }
-
-  .chart-row {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.2rem;
-    margin-bottom: 1.4rem;
-  }
-  @media (max-width: 1080px) { .chart-row { grid-template-columns: 1fr; } }
-  .chart-card {
-    background: var(--paper);
-    border-radius: var(--r);
-    padding: 1.3rem 1.4rem 1.4rem;
-    border: 1px solid var(--rule-soft);
-    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
-  }
-  .chart-card h3 { font-size: 1rem; font-weight: 600; color: var(--navy); margin-bottom: 0.2rem; letter-spacing: -0.005em; }
-  .chart-card .sub { font-size: 0.78rem; color: var(--slate); margin-bottom: 1rem; }
-  .chart-svg { width: 100%; height: 260px; display: block; }
-  .chart-legend {
-    display: inline-flex; align-items: center; gap: 0.45rem;
-    margin-top: 0.7rem;
-    font-size: 0.78rem; color: var(--slate); font-weight: 500;
-  }
-  .chart-legend .swatch { width: 10px; height: 10px; border-radius: 2px; }
-
-  .table-card {
-    background: var(--paper);
-    border-radius: var(--r);
-    border: 1px solid var(--rule-soft);
-    box-shadow: 0 1px 0 rgba(4,38,78,0.02), 0 6px 20px -10px rgba(4,38,78,0.06);
-    overflow: hidden;
-  }
-  .table-card-head {
-    padding: 1.1rem 1.4rem 0.4rem;
+  .builder-head {
     display: flex; align-items: flex-end; justify-content: space-between;
-    flex-wrap: wrap; gap: 0.5rem;
+    gap: 1rem; flex-wrap: wrap;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--rule);
   }
-  .table-card-head h3 { font-size: 1rem; font-weight: 600; color: var(--navy); }
-  .table-card-head .sub { font-size: 0.76rem; color: var(--slate); }
-  .table-card table { width: 100%; border-collapse: collapse; }
-  .table-card thead th {
-    text-align: left;
-    background: var(--paper);
-    color: var(--slate);
-    font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
+  .builder-head h1 {
+    font-size: 1.65rem;
     font-weight: 600;
-    padding: 0.85rem 1.4rem;
-    border-top: 1px solid var(--rule-soft);
-    border-bottom: 1px solid var(--rule-soft);
+    color: var(--ink);
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+    margin-bottom: 0.35rem;
   }
-  .table-card thead th.r { text-align: right; }
-  .table-card tbody td {
-    padding: 0.85rem 1.4rem;
-    border-top: 1px solid var(--rule-soft);
-    color: var(--navy);
-    font-size: 0.88rem;
+  .builder-head p {
+    color: var(--slate-soft);
+    font-size: 0.9rem;
+    font-weight: 400;
+    max-width: 60ch;
   }
-  .table-card tbody td.r { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
-  .table-card tbody tr:hover td { background: var(--blue-grey); }
-  .status-chip {
+  .builder-head .count {
     display: inline-flex; align-items: center; gap: 0.35rem;
-    padding: 0.18rem 0.5rem;
+    padding: 0.35rem 0.7rem;
+    background: var(--rule-soft);
     border-radius: 999px;
-    font-size: 0.7rem; font-weight: 600;
+    font-size: 0.74rem;
+    color: var(--slate);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
-  .status-chip::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-  .status-chip.ok   { background: oklch(94% 0.04 155); color: oklch(35% 0.12 155); }
-  .status-chip.warn { background: oklch(96% 0.05 70);  color: oklch(40% 0.15 60); }
-  .status-chip.due  { background: var(--teal-pale);    color: var(--navy-mid); }
-  .status-chip.draft{ background: var(--blue-grey);    color: var(--slate); }
+  .builder-head .clear {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--slate);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--r-sm);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--motion-fast, 130ms);
+  }
+  .builder-head .clear:hover {
+    color: var(--ink); border-color: var(--slate-mute);
+    background: var(--rule-soft);
+  }
+
+  /* The widget grid · auto-fit cards at ~360px min, equal gaps */
+  #widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 1.1rem;
+    align-items: stretch;
+  }
+
+  /* Empty state · centered card with quiet copy */
+  .widget-empty {
+    max-width: 480px;
+    margin: 4rem auto 2rem;
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--paper);
+    border: 1px dashed var(--rule);
+    border-radius: var(--r-lg);
+  }
+  .widget-empty .ico {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--ink);
+    color: white;
+    display: grid; place-items: center;
+    margin: 0 auto 1.1rem;
+    font-family: var(--mono); font-size: 1.05rem; font-weight: 600;
+  }
+  .widget-empty h3 {
+    font-size: 1.1rem; font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.015em;
+    margin-bottom: 0.45rem;
+  }
+  .widget-empty p {
+    color: var(--slate-soft);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  .widget-empty p strong { color: var(--ink); font-weight: 500; }
+  .widget-empty .hint {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.76rem;
+    color: var(--slate-mute);
+    font-family: var(--mono);
+  }
+  .widget-empty .hint::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--positive, #10B981);
+  }
 </style>
 </head>
 <body data-page="dashboards">
@@ -308,6 +284,6 @@
   refresh();
 })();
 </script>
-<script src="/_assets/shell.js?v=1780022810"></script>
+<script src="/_assets/shell.js?v=1780500000"></script>
 </body>
 </html>
