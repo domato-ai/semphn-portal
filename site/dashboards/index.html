@@ -219,6 +219,7 @@
           </div>
           <div style="display: flex; align-items: center; gap: 0.6rem;">
             <span class="count" id="widget-count">0 widgets</span>
+            <button type="button" class="clear" id="widget-test">+ Test widget</button>
             <button type="button" class="clear" id="widget-clear">Clear all</button>
           </div>
         </div>
@@ -264,6 +265,31 @@
       if (c) c.textContent = arr.length + (arr.length === 1 ? ' widget' : ' widgets');
     } catch (e) {}
   }
+  var test = document.getElementById('widget-test');
+  if (test) test.addEventListener('click', function () {
+    var w = {
+      type: 'bar',
+      title: 'Test widget · MH conditions per 1k (hardcoded)',
+      subtitle: 'Bypasses chat — proves render path works',
+      unit: 'per_1k',
+      source_id: 'TEST',
+      highlight: 'Frankston',
+      data: [
+        {label: 'Frankston', value: 116.1},
+        {label: 'Mornington Peninsula', value: 102.6},
+        {label: 'Greater Dandenong', value: 97.4},
+        {label: 'Casey', value: 94.1},
+        {label: 'Port Phillip', value: 91.8},
+      ],
+    };
+    if (typeof window.__addWidget === 'function') {
+      console.log('[test] adding hardcoded test widget');
+      window.__addWidget(w);
+    } else {
+      alert('window.__addWidget is not a function — shell.js failed to expose it');
+      console.error('[test] window.__addWidget missing. Type:', typeof window.__addWidget);
+    }
+  });
   var btn = document.getElementById('widget-clear');
   if (btn) btn.addEventListener('click', function () {
     if (!confirm('Remove all widgets from this dashboard?')) return;

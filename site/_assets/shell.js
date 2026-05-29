@@ -289,25 +289,34 @@
 
   function renderWidgets() {
     var grid = document.getElementById('widget-grid');
+    console.log('[widget] renderWidgets · grid found:', !!grid);
     if (!grid) return;
     var page = pageId();
     while (grid.firstChild) grid.removeChild(grid.firstChild);
     var widgets = readWidgets(page);
+    console.log('[widget] renderWidgets · widgets count:', widgets.length);
     var empty = document.getElementById('widget-empty');
     if (empty) empty.hidden = widgets.length > 0;
     widgets.forEach(function (w, idx) {
-      var card = buildWidgetCard(w, function () {
-        var arr = readWidgets(page);
-        arr.splice(idx, 1);
-        writeWidgets(page, arr);
-        renderWidgets();
-        showToast('Widget removed', 'success');
-      });
-      grid.appendChild(card);
+      try {
+        var card = buildWidgetCard(w, function () {
+          var arr = readWidgets(page);
+          arr.splice(idx, 1);
+          writeWidgets(page, arr);
+          renderWidgets();
+          showToast('Widget removed', 'success');
+        });
+        if (!card) { console.error('[widget] buildWidgetCard returned null for widget', idx, w); return; }
+        grid.appendChild(card);
+      } catch (e) {
+        console.error('[widget] failed to render widget', idx, e, w);
+      }
     });
+    console.log('[widget] renderWidgets · cards in grid:', grid.children.length);
   }
   function addWidget(widget) {
-    if (!widget) return;
+    console.log('[widget] addWidget called with', widget);
+    if (!widget) { console.warn('[widget] addWidget called with null/undefined'); return; }
     var page = pageId();
     var arr = readWidgets(page);
     arr.push(widget);
@@ -830,11 +839,24 @@
         // On the Dashboards builder, the model may return a ```widget JSON
         // block. Extract it, render the tile on the canvas, and strip
         // it from the visible chat reply so the prose stays clean.
-        if (pageId() === 'dashboards' && typeof window.__extractWidget === 'function') {
-          var parsed = window.__extractWidget(reply);
-          if (parsed.widget) {
-            window.__addWidget(parsed.widget);
-            reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '" to your dashboard.');
+        if (pageId() === 'dashboards') {
+          console.log('[widget] reply length:', reply.length, '· has ```widget:', reply.indexOf('```widget') >= 0);
+          if (typeof window.__extractWidget === 'function') {
+            try {
+              var parsed = window.__extractWidget(reply);
+              console.log('[widget] extracted:', parsed.widget);
+              if (parsed.widget) {
+                window.__addWidget(parsed.widget);
+                console.log('[widget] addWidget called, persisted widgets:', JSON.parse(localStorage.getItem('semphn.workbench.widgets.v1') || '{}').dashboards || []);
+                reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '" to your dashboard.');
+              } else {
+                console.warn('[widget] no ```widget block found in reply');
+              }
+            } catch (e) {
+              console.error('[widget] extract/add failed', e);
+            }
+          } else {
+            console.error('[widget] window.__extractWidget is not a function:', typeof window.__extractWidget);
           }
         }
 
