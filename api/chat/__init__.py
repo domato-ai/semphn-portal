@@ -130,27 +130,37 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
             "Widget schema (return ONLY these fields, no extras):\n"
             "```widget\n"
             "{\n"
-            '  "type": "bar" | "line" | "kpi" | "table",\n'
+            '  "type": "bar" | "line" | "area" | "donut" | "kpi" | "table",\n'
             '  "title": "<short title shown on the tile>",\n'
             '  "subtitle": "<one line of context>",\n'
-            '  "unit": "pct" | "per_1k" | "count" | "aud" | etc,\n'
+            '  "unit": "pct" | "per_1k" | "per_10k" | "per_100k" | "count" | "aud",\n'
             '  "source_id": "<the source_id from the data>",\n'
             '  "data": [...],   // shape depends on type — see below\n'
-            '  "highlight": "<optional label of the row to emphasise>",\n'
+            '  "highlight": "<optional label of the row/slice to emphasise (bar/donut)>",\n'
             '  "delta": "<optional, KPI only: \\"+8.6%\\" or \\"-2.4%\\">"\n'
             "}\n"
             "```\n\n"
             "Data shapes:\n"
-            "  bar / line: [{\"label\": \"Frankston\", \"value\": 116.1}, ...]"
-            " — pre-sorted desc by value for bar, by time/x for line.\n"
+            "  bar:        [{\"label\": \"Frankston\", \"value\": 116.1}, ...]"
+            " — pre-sorted desc by value.\n"
+            "  line/area:  [{\"label\": \"FY22\", \"value\": 72.4}, ...]"
+            " — pre-sorted ascending by time / x-axis.\n"
+            "  donut:      [{\"label\": \"Mental health\", \"value\": 25.6e6}, ...]"
+            " — slices auto-sum to 100%. Use for share-of-total.\n"
             "  kpi:        [{\"label\": \"Catchment population\", \"value\": 1638200}]"
             " — single entry.\n"
             "  table:      [{\"<col1>\": ..., \"<col2>\": ...}, ...]"
             " — array of column-keyed rows.\n\n"
+            "Picking the right type:\n"
+            "  • Compare across LGAs / categories  → bar\n"
+            "  • Change over time (3+ points)      → line (or area for total magnitude)\n"
+            "  • Share of a whole / breakdown      → donut\n"
+            "  • Single headline number            → kpi\n"
+            "  • Mixed columns (names + status)    → table\n\n"
             "Rules:\n"
             "  • USE REAL VALUES from the SEMPHN data slice — no fabricating.\n"
             "  • Title MUST match what was asked.\n"
-            "  • Keep your prose reply short (1-2 sentences) explaining what you built. "
+            "  • Keep your prose reply VERY short (1 sentence) explaining what you built. "
             "The widget speaks for itself; don't repeat the values in prose.\n"
             "  • If the user asks for something the data doesn't support, "
             "say so in prose and DON'T emit a widget block."

@@ -9,7 +9,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1780500000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1780600000" />
+
+<!-- Apache ECharts · widget rendering for the dashboard builder.
+     Why ECharts: enterprise-grade defaults, single CDN, supports geo/choropleth
+     out of the box (needed for /maps/ next), and themeable to match the
+     SEMPHN Geist + ink palette. (Figma Make and shadcn pick Recharts because
+     they're React-only; ECharts is the vanilla-JS equivalent.) -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
 
 <style>
   /* Dashboards builder · canvas-specific styles
@@ -284,6 +291,6 @@
   refresh();
 })();
 </script>
-<script src="/_assets/shell.js?v=1780500000"></script>
+<script src="/_assets/shell.js?v=1780600000"></script>
 </body>
 </html>

@@ -52,36 +52,98 @@
    * Each chat starts CLEAN — no pre-seeded "I built this..." turns.
    * Click a chip → fills the composer + auto-sends.
    *
-   * Dashboards suggestions are BUILD prompts — they ask the chat to
-   * generate a widget that lands on the right canvas as a tile. */
+   * Grouped into sections so the empty state reads like a menu, not a list.
+   * Dashboards suggestions are BUILD prompts that produce ECharts tiles
+   * on the right canvas. */
   var SUGGESTIONS = {
     hna: [
-      { icon: '✎', label: 'Draft Chapter 4 opening',     prompt: 'Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong.' },
-      { icon: '✎', label: 'Summarise strongest finding', prompt: 'In 3 sentences I can drop into the executive summary, what is the strongest cross-chapter finding for SEMPHN this cycle?' },
-      { icon: '⟳', label: 'Soften a paragraph',          prompt: 'Rewrite the Greater Dandenong housing-strain paragraph in a more strengths-based voice while keeping every figure.' },
-      { icon: '⚑', label: 'Compliance critique',         prompt: 'Looking at the current Chapter 4 draft, what data or framing is the DoH Performance Rubric most likely to flag as missing or thin?' },
-      { icon: '↔', label: 'Cross-reference chapters',    prompt: 'Where does the First Nations chapter (4) need a cross-reference to the Mental health chapter (7) for coherence?' },
-      { icon: '◉', label: 'Pre-flight check',            prompt: 'Run the DoH Compliance Checklist + Performance Rubric on the current Chapter 4 draft. Flag warnings.' },
+      { section: 'Draft', items: [
+        { icon: '✎', label: 'Open Chapter 4',         prompt: 'Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong.' },
+        { icon: '✎', label: 'Executive summary',      prompt: 'In 3 sentences I can drop into the executive summary, what is the strongest cross-chapter finding for SEMPHN this cycle?' },
+        { icon: '⟳', label: 'Soften the tone',        prompt: 'Rewrite the Greater Dandenong housing-strain paragraph in a more strengths-based voice while keeping every figure.' },
+      ]},
+      { section: 'Critique', items: [
+        { icon: '⚑', label: 'DoH rubric flags',       prompt: 'Looking at the current Chapter 4 draft, what data or framing is the DoH Performance Rubric most likely to flag as missing or thin?' },
+        { icon: '↔', label: 'Cross-reference Ch 7',   prompt: 'Where does the First Nations chapter (4) need a cross-reference to the Mental health chapter (7) for coherence?' },
+        { icon: '◉', label: 'Pre-flight check',       prompt: 'Run the DoH Compliance Checklist + Performance Rubric on the current Chapter 4 draft. Flag warnings.' },
+      ]},
     ],
     dashboards: [
-      { icon: '#', label: 'KPI · catchment population',        prompt: 'Add a KPI tile showing the SEMPHN catchment population (2024) with the growth-pa delta.' },
-      { icon: '▮', label: 'Bar · MH conditions by LGA',        prompt: 'Build a bar chart of MH conditions per 1,000 by LGA, ranked highest to lowest. Highlight Frankston as the standout.' },
-      { icon: '▮', label: 'Bar · Bulk-billing by LGA',         prompt: 'Build a bar chart of bulk-billing percentage by LGA, ranked highest to lowest.' },
-      { icon: '▮', label: 'Bar · GP practices by LGA',         prompt: 'Build a bar chart of GP practice counts by LGA, ranked highest to lowest. Title: "GP practices · 31 Jul 2024".' },
-      { icon: '▮', label: 'Bar · FY26 funding schedules',      prompt: 'Build a bar chart of FY26 funding schedules by value (AUD), ranked highest to lowest. Unit: aud.' },
-      { icon: '▤', label: 'Table · Recent commissioning',      prompt: 'Build a table widget showing the recent commissioning activity — columns: Activity, LGA, Schedule, Value, Status.' },
-      { icon: '#', label: 'KPI · Bowel screening rate',        prompt: 'Add a KPI tile for the catchment bowel cancer screening rate with the delta indicator.' },
-      { icon: '▮', label: 'Bar · Homeless rate by LGA',        prompt: 'Build a bar chart of homeless + marginal housing rate per 10k by LGA, ranked highest to lowest. Highlight Greater Dandenong.' },
+      { section: 'KPI tiles', items: [
+        { icon: '#', label: 'Catchment population',     prompt: 'Add a KPI tile showing the SEMPHN catchment population (2024) with the growth-pa delta.' },
+        { icon: '#', label: 'Bowel screening rate',     prompt: 'Add a KPI tile for the catchment bowel cancer screening rate with the delta indicator.' },
+        { icon: '#', label: 'GP encounter rate',        prompt: 'Add a KPI tile for catchment GP encounters per resident per year, with the delta to Victorian average.' },
+      ]},
+      { section: 'Compare LGAs', items: [
+        { icon: '▮', label: 'MH conditions',            prompt: 'Build a bar chart of MH conditions per 1,000 by LGA, ranked highest to lowest. Highlight Frankston as the standout.' },
+        { icon: '▮', label: 'Bulk-billing',             prompt: 'Build a bar chart of bulk-billing percentage by LGA, ranked highest to lowest.' },
+        { icon: '▮', label: 'Homelessness rate',        prompt: 'Build a bar chart of homeless + marginal housing rate per 10k by LGA, ranked highest to lowest. Highlight Greater Dandenong.' },
+        { icon: '▮', label: 'GP practices',             prompt: 'Build a bar chart of GP practice counts by LGA, ranked highest to lowest. Title: "GP practices · 31 Jul 2024".' },
+      ]},
+      { section: 'Commissioning', items: [
+        { icon: '◐', label: 'Funding schedules · donut', prompt: 'Build a donut chart of FY26 funding schedules by program category. Unit: aud.' },
+        { icon: '▤', label: 'Recent activity · table',  prompt: 'Build a table widget showing recent commissioning activity — columns: Activity, LGA, Schedule, Value, Status.' },
+        { icon: '↗', label: 'Trend · 5-year area',      prompt: 'Build an area chart of total SEMPHN funding (AUD) by financial year for the last 5 years.' },
+      ]},
     ],
     maps: [
-      { icon: '◐', label: 'MH choropleth',                prompt: 'Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1.' },
-      { icon: '◉', label: 'Locate every ACCHS',           prompt: 'Plot the 2 ACCHS in the SEMPHN catchment as points on a map. Add the catchment LGA outlines for context.' },
-      { icon: '▦', label: 'SEIFA disadvantage',           prompt: 'Choropleth of SEIFA disadvantage by LGA. Annotate Greater Dandenong, Casey, Frankston as the top three disadvantaged.' },
-      { icon: '↗', label: 'Growth corridor',              prompt: 'Highlight the South East Growth Corridor — Cardinia, Casey, Greater Dandenong — with their projected 2030 population overlaid.' },
-      { icon: '●', label: 'Service points overlay',       prompt: 'Plot all 9 headspace centres + 2 ACCHS + 155 RACFs on the catchment map. Colour-code by service type.' },
-      { icon: '◌', label: 'Refugee settlement density',   prompt: 'Heat-map the humanitarian-arrival settlement density across the catchment. Casey + Greater Dandenong should dominate.' },
+      { section: 'Choropleth', items: [
+        { icon: '◐', label: 'MH prevalence',            prompt: 'Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1.' },
+        { icon: '▦', label: 'SEIFA disadvantage',       prompt: 'Choropleth of SEIFA disadvantage by LGA. Annotate Greater Dandenong, Casey, Frankston as the top three disadvantaged.' },
+        { icon: '◌', label: 'Refugee settlement',       prompt: 'Heat-map the humanitarian-arrival settlement density across the catchment. Casey + Greater Dandenong should dominate.' },
+      ]},
+      { section: 'Service overlays', items: [
+        { icon: '◉', label: 'ACCHS locations',          prompt: 'Plot the 2 ACCHS in the SEMPHN catchment as points on a map. Add the catchment LGA outlines for context.' },
+        { icon: '●', label: 'All service points',       prompt: 'Plot all 9 headspace centres + 2 ACCHS + 155 RACFs on the catchment map. Colour-code by service type.' },
+        { icon: '↗', label: 'Growth corridor',          prompt: 'Highlight the South East Growth Corridor — Cardinia, Casey, Greater Dandenong — with their projected 2030 population overlaid.' },
+      ]},
     ],
   };
+
+  /* ============================================================
+   * Follow-up chips · "help them build as we go"
+   *
+   * After each AI reply on the Dashboards page, we surface 2-3
+   * follow-up prompts inline in the chat. The chips are picked by
+   * widget type so the next action always extends the canvas
+   * with related data, not random suggestions.
+   * ============================================================ */
+  var FOLLOWUPS = {
+    bar: [
+      { label: 'Same metric → choropleth',  prompt: 'Map the same metric as a choropleth on the Maps tab.' },
+      { label: 'Add LGA-share donut',       prompt: 'Add a donut chart breaking down the same metric by LGA share.' },
+      { label: 'Add 3-year trend',          prompt: 'Add an area chart of the same metric over the last 3 years for the catchment total.' },
+    ],
+    line: [
+      { label: 'Add a KPI for latest year', prompt: 'Add a KPI tile for the latest value with the year-on-year delta.' },
+      { label: 'Compare LGAs',              prompt: 'Add a bar chart breaking the same metric down by LGA for the latest year.' },
+    ],
+    area: [
+      { label: 'Add a KPI for latest year', prompt: 'Add a KPI tile for the latest value with the year-on-year delta.' },
+      { label: 'Compare LGAs',              prompt: 'Add a bar chart breaking the same metric down by LGA for the latest year.' },
+    ],
+    donut: [
+      { label: 'Show as a table',           prompt: 'Add a table showing the same breakdown with absolute values + percentages.' },
+      { label: 'Top 3 as KPI tiles',        prompt: 'Add 3 KPI tiles for the top-3 categories from the donut.' },
+    ],
+    kpi: [
+      { label: 'Trend over time',           prompt: 'Add an area chart of this metric over the last 5 years.' },
+      { label: 'Break down by LGA',         prompt: 'Add a bar chart of this metric broken down by LGA, ranked highest to lowest.' },
+      { label: 'Map it',                    prompt: 'Map this metric as a choropleth across the catchment LGAs.' },
+    ],
+    table: [
+      { label: 'Visualise top 5',           prompt: 'Build a bar chart of the top 5 rows in the last table.' },
+      { label: 'Totals as a KPI',           prompt: 'Add a KPI tile for the column total from the last table.' },
+    ],
+    _default: [
+      { label: 'Add a related KPI',         prompt: 'Add a KPI tile for the most important headline number related to what we just built.' },
+      { label: 'Break it down by LGA',      prompt: 'Add a bar chart breaking the metric down by LGA, ranked highest to lowest.' },
+    ],
+  };
+  function getFollowups(widget) {
+    if (!widget) return FOLLOWUPS._default;
+    return FOLLOWUPS[widget.type] || FOLLOWUPS._default;
+  }
 
   /* ============================================================
    * Widget rendering (Dashboards builder)
@@ -121,18 +183,222 @@
     }
   }
 
-  /* SVG helper · namespaced create */
+  /* ============================================================
+   * ECharts integration
+   *
+   * Why ECharts: enterprise-grade defaults, single CDN, supports
+   * geo/choropleth out of the box (needed for /maps/ next), and
+   * themeable. We register a 'semphn' theme once on first use so
+   * every chart inherits Geist + ink/teal palette + hairline grid.
+   * ============================================================ */
+  var SEMPHN_THEME_NAME = 'semphn';
+  var semphnThemeRegistered = false;
+  function ensureSemphnTheme() {
+    if (semphnThemeRegistered || typeof window.echarts === 'undefined') return semphnThemeRegistered;
+    window.echarts.registerTheme(SEMPHN_THEME_NAME, {
+      color: ['#0A0A0A', '#55BFAF', '#04264E', '#82D9C4', '#003D69', '#9CA3AF'],
+      backgroundColor: 'transparent',
+      textStyle: {
+        fontFamily: '"Geist", -apple-system, "Segoe UI", system-ui, sans-serif',
+        color: '#0A0A0A',
+      },
+      title: { textStyle: { color: '#0A0A0A', fontWeight: 600, fontSize: 13 } },
+      legend: { textStyle: { color: '#4B5563', fontSize: 11 } },
+      categoryAxis: {
+        axisLine:   { show: false },
+        axisTick:   { show: false },
+        axisLabel:  { color: '#6B7280', fontSize: 11 },
+        splitLine:  { show: false },
+        splitArea:  { show: false },
+      },
+      valueAxis: {
+        axisLine:   { show: false },
+        axisTick:   { show: false },
+        axisLabel:  { color: '#9CA3AF', fontSize: 11 },
+        splitLine:  { lineStyle: { color: '#F3F4F6', type: 'solid' } },
+        splitArea:  { show: false },
+      },
+      bar:  { itemStyle: { borderRadius: [4, 4, 4, 4] } },
+      line: {
+        smooth: true,
+        symbol: 'circle', symbolSize: 6,
+        lineStyle: { width: 2 },
+        itemStyle: { borderColor: '#FFFFFF', borderWidth: 2 },
+      },
+      pie: {
+        itemStyle: { borderColor: '#FFFFFF', borderWidth: 2 },
+        label: { color: '#0A0A0A', fontSize: 11 },
+      },
+      tooltip: {
+        backgroundColor: '#0A0A0A',
+        borderColor: 'transparent',
+        textStyle: { color: '#FFFFFF', fontSize: 12, fontFamily: '"Geist", system-ui' },
+        padding: [8, 12],
+        extraCssText: 'box-shadow: 0 8px 24px -8px rgba(0,0,0,0.2); border-radius: 8px;',
+      },
+    });
+    semphnThemeRegistered = true;
+    return true;
+  }
+
+  /* Track every ECharts instance so we can resize them on window resize
+   * and dispose them when the underlying widget is deleted. */
+  var ECHARTS_INSTANCES = [];
+  function registerEchartsInstance(chart) {
+    ECHARTS_INSTANCES.push(chart);
+  }
+  window.addEventListener('resize', function () {
+    ECHARTS_INSTANCES.forEach(function (c) { try { c.resize(); } catch (_) {} });
+  });
+
+  /* Build a chart inside the given container using ECharts.
+   * Returns the container element (which already has the chart attached). */
+  function buildEchartsContainer(widget, optionFn) {
+    var div = document.createElement('div');
+    div.className = 'wgt-chart';
+    // Defer init until container is in DOM (so width is non-zero).
+    setTimeout(function () {
+      if (typeof window.echarts === 'undefined') {
+        div.textContent = 'Chart library not loaded.';
+        return;
+      }
+      ensureSemphnTheme();
+      var chart = window.echarts.init(div, SEMPHN_THEME_NAME, { renderer: 'svg' });
+      try {
+        chart.setOption(optionFn(widget));
+        registerEchartsInstance(chart);
+      } catch (e) {
+        console.error('[widget] echarts setOption failed', e, widget);
+        div.textContent = 'Failed to render this widget.';
+      }
+    }, 0);
+    return div;
+  }
+
+  function barOption(widget) {
+    var data = (widget.data || []);
+    var labels = data.map(function (d) { return d.label || ''; });
+    var values = data.map(function (d, i) {
+      var v = Number(d.value) || 0;
+      return {
+        value: v,
+        itemStyle: { color: (widget.highlight && d.label === widget.highlight) ? '#55BFAF' : '#0A0A0A' },
+      };
+    });
+    return {
+      grid: { left: 4, right: 56, top: 8, bottom: 0, containLabel: true },
+      tooltip: {
+        trigger: 'axis', axisPointer: { type: 'shadow' },
+        formatter: function (p) {
+          var row = p[0];
+          return '<span style="font-weight:500;">' + row.name + '</span>'
+               + '<br/><span style="opacity:0.8;">' + formatValue(row.value, widget.unit) + '</span>';
+        },
+      },
+      yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { fontSize: 11.5, color: '#4B5563' } },
+      xAxis: { type: 'value', show: false },
+      series: [{
+        type: 'bar',
+        data: values,
+        barMaxWidth: 22,
+        label: {
+          show: true, position: 'right',
+          formatter: function (p) { return formatValue(p.value, widget.unit); },
+          color: '#0A0A0A', fontSize: 11, fontWeight: 500,
+          fontFamily: '"Geist Mono", ui-monospace, monospace',
+        },
+        animationDuration: 500,
+        animationEasing: 'cubicOut',
+      }],
+    };
+  }
+
+  function lineOption(widget, opts) {
+    opts = opts || {};
+    var data = widget.data || [];
+    var labels = data.map(function (d) { return d.label || ''; });
+    var values = data.map(function (d) { return Number(d.value) || 0; });
+    var areaStyle = opts.area ? {
+      areaStyle: {
+        color: {
+          type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(10,10,10,0.18)' },
+            { offset: 1, color: 'rgba(10,10,10,0)' },
+          ],
+        },
+      },
+    } : {};
+    return {
+      grid: { left: 8, right: 20, top: 20, bottom: 6, containLabel: true },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'line', lineStyle: { color: '#9CA3AF', width: 1, type: 'dashed' } },
+        formatter: function (p) {
+          var row = p[0];
+          return '<span style="font-weight:500;">' + row.axisValue + '</span>'
+               + '<br/><span style="opacity:0.8;">' + formatValue(row.value, widget.unit) + '</span>';
+        },
+      },
+      xAxis: { type: 'category', data: labels, boundaryGap: false, axisLabel: { fontSize: 10.5 } },
+      yAxis: { type: 'value', axisLabel: { formatter: function (v) { return formatValue(v, widget.unit); } } },
+      series: [Object.assign({
+        type: 'line',
+        data: values,
+        smooth: true,
+        showSymbol: true,
+        lineStyle: { width: 2, color: '#0A0A0A' },
+        itemStyle: { color: '#0A0A0A', borderColor: '#FFFFFF', borderWidth: 2 },
+        emphasis: { focus: 'series' },
+        animationDuration: 600,
+      }, areaStyle)],
+    };
+  }
+
+  function donutOption(widget) {
+    var data = (widget.data || []).map(function (d) {
+      return { name: d.label || '', value: Number(d.value) || 0 };
+    });
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: function (p) {
+          return '<span style="font-weight:500;">' + p.name + '</span>'
+               + '<br/><span style="opacity:0.8;">' + formatValue(p.value, widget.unit) + ' · ' + p.percent.toFixed(1) + '%</span>';
+        },
+      },
+      legend: {
+        type: 'scroll', orient: 'vertical', right: 6, top: 'middle',
+        textStyle: { fontSize: 11, color: '#4B5563' },
+        itemWidth: 10, itemHeight: 10, itemGap: 10,
+      },
+      series: [{
+        type: 'pie',
+        radius: ['52%', '78%'],
+        center: ['35%', '50%'],
+        avoidLabelOverlap: true,
+        padAngle: 1,
+        itemStyle: { borderRadius: 3, borderColor: '#FFFFFF', borderWidth: 2 },
+        label: { show: false },
+        labelLine: { show: false },
+        data: data,
+        animationDuration: 600,
+      }],
+    };
+  }
+
+  function buildBarChart(widget)  { return buildEchartsContainer(widget, barOption); }
+  function buildLineChart(widget) { return buildEchartsContainer(widget, function (w) { return lineOption(w, { area: false }); }); }
+  function buildAreaChart(widget) { return buildEchartsContainer(widget, function (w) { return lineOption(w, { area: true  }); }); }
+  function buildDonutChart(widget){ return buildEchartsContainer(widget, donutOption); }
+
+  /* Legacy SVG renderers preserved as a fallback when ECharts hasn't
+   * loaded yet (rare — but failing soft beats a blank tile). */
   function svgEl(name, attrs) {
     var el = document.createElementNS('http://www.w3.org/2000/svg', name);
     if (attrs) Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
     return el;
   }
-
-  /* Build horizontal-bar chart · Figma-style
-   * - all four corners rounded (rx=4)
-   * - solid ink fill for default, teal for highlighted row
-   * - Geist for labels, Geist Mono for values
-   * - hairline grid + soft baseline only */
   function buildBarSVG(widget) {
     var data = widget.data || [];
     if (!data.length) return null;
@@ -374,7 +640,7 @@
     return tbl;
   }
 
-  function buildWidgetCard(widget, onDelete) {
+  function buildWidgetCard(widget, onDelete, onDuplicate) {
     var card = document.createElement('div'); card.className = 'wgt-card wgt-type-' + (widget.type || 'unknown');
     // Head
     var head = document.createElement('div'); head.className = 'wgt-head';
@@ -382,22 +648,44 @@
     var t = document.createElement('div'); t.className = 'wgt-t'; t.textContent = widget.title || 'Untitled widget';
     var s = document.createElement('div'); s.className = 'wgt-s'; s.textContent = widget.subtitle || '';
     title.appendChild(t); if (widget.subtitle) title.appendChild(s);
+
     var actions = document.createElement('div'); actions.className = 'wgt-actions';
-    var del = document.createElement('button'); del.type = 'button'; del.title = 'Delete widget'; del.textContent = '×';
+    // Duplicate · clones the widget into a new tile
+    if (onDuplicate) {
+      var dup = document.createElement('button');
+      dup.type = 'button'; dup.title = 'Duplicate widget';
+      dup.setAttribute('aria-label', 'Duplicate widget');
+      dup.textContent = '⎘';
+      dup.addEventListener('click', onDuplicate);
+      actions.appendChild(dup);
+    }
+    var del = document.createElement('button');
+    del.type = 'button'; del.title = 'Delete widget';
+    del.setAttribute('aria-label', 'Delete widget');
+    del.textContent = '×';
     del.addEventListener('click', onDelete);
     actions.appendChild(del);
+
     head.appendChild(title); head.appendChild(actions);
     card.appendChild(head);
-    // Body
+
+    // Body — dispatch by type
     var body = document.createElement('div'); body.className = 'wgt-body';
     var node = null;
-    if (widget.type === 'bar')       node = buildBarSVG(widget);
-    else if (widget.type === 'line') node = buildLineSVG(widget);
-    else if (widget.type === 'kpi')  node = buildKpiNode(widget);
-    else if (widget.type === 'table')node = buildTableNode(widget);
-    if (!node) { node = document.createElement('div'); node.className = 'wgt-empty'; node.textContent = 'Unable to render widget of type "' + (widget.type || '?') + '".'; }
+    if      (widget.type === 'bar')   node = buildBarChart(widget);
+    else if (widget.type === 'line')  node = buildLineChart(widget);
+    else if (widget.type === 'area')  node = buildAreaChart(widget);
+    else if (widget.type === 'donut' || widget.type === 'pie') node = buildDonutChart(widget);
+    else if (widget.type === 'kpi')   node = buildKpiNode(widget);
+    else if (widget.type === 'table') node = buildTableNode(widget);
+    if (!node) {
+      node = document.createElement('div');
+      node.className = 'wgt-empty';
+      node.textContent = 'Unable to render widget of type "' + (widget.type || '?') + '".';
+    }
     body.appendChild(node);
     card.appendChild(body);
+
     // Foot
     if (widget.source_id) {
       var foot = document.createElement('div'); foot.className = 'wgt-foot';
@@ -409,30 +697,45 @@
 
   function renderWidgets() {
     var grid = document.getElementById('widget-grid');
-    console.log('[widget] renderWidgets · grid found:', !!grid);
     if (!grid) return;
     var page = pageId();
+    // Dispose existing ECharts instances before re-render so we don't leak.
+    ECHARTS_INSTANCES.forEach(function (c) { try { c.dispose(); } catch (_) {} });
+    ECHARTS_INSTANCES = [];
     while (grid.firstChild) grid.removeChild(grid.firstChild);
     var widgets = readWidgets(page);
-    console.log('[widget] renderWidgets · widgets count:', widgets.length);
     var empty = document.getElementById('widget-empty');
     if (empty) empty.hidden = widgets.length > 0;
+    var countEl = document.getElementById('widget-count');
+    if (countEl) countEl.textContent = widgets.length + (widgets.length === 1 ? ' widget' : ' widgets');
     widgets.forEach(function (w, idx) {
       try {
-        var card = buildWidgetCard(w, function () {
-          var arr = readWidgets(page);
-          arr.splice(idx, 1);
-          writeWidgets(page, arr);
-          renderWidgets();
-          showToast('Widget removed', 'success');
-        });
-        if (!card) { console.error('[widget] buildWidgetCard returned null for widget', idx, w); return; }
+        var card = buildWidgetCard(
+          w,
+          function () {
+            var arr = readWidgets(page);
+            arr.splice(idx, 1);
+            writeWidgets(page, arr);
+            renderWidgets();
+            showToast('Widget removed', 'success');
+          },
+          function () {
+            var arr = readWidgets(page);
+            // Deep clone via JSON so future edits don't mutate the original
+            var clone = JSON.parse(JSON.stringify(w));
+            clone.title = (w.title || 'Untitled') + ' (copy)';
+            arr.splice(idx + 1, 0, clone);
+            writeWidgets(page, arr);
+            renderWidgets();
+            showToast('Widget duplicated', 'success');
+          }
+        );
+        if (!card) { console.error('[widget] buildWidgetCard returned null', idx, w); return; }
         grid.appendChild(card);
       } catch (e) {
         console.error('[widget] failed to render widget', idx, e, w);
       }
     });
-    console.log('[widget] renderWidgets · cards in grid:', grid.children.length);
   }
   function addWidget(widget) {
     console.log('[widget] addWidget called with', widget);
@@ -804,7 +1107,63 @@
       wrap.appendChild(wn);
     }
 
+    /* Follow-up chips · "help them build as we go".
+     * We attach 2-3 next-step prompts to every turn that has a summary,
+     * driven by the widget type if the turn produced a widget, otherwise
+     * by the page (HNA gets critique chips, Maps gets overlay chips). */
+    if (turn.summary && turn.followups && turn.followups.length) {
+      var fu = document.createElement('div'); fu.className = 'turn-followups';
+      var fuLab = document.createElement('div'); fuLab.className = 'turn-followups-label';
+      fuLab.textContent = 'Next';
+      fu.appendChild(fuLab);
+      var fuRow = document.createElement('div'); fuRow.className = 'turn-followups-row';
+      turn.followups.forEach(function (sug) {
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'turn-followup-chip';
+        var arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = '→';
+        var lab = document.createElement('span'); lab.textContent = sug.label;
+        chip.appendChild(arr); chip.appendChild(lab);
+        chip.addEventListener('click', function () {
+          var input = document.getElementById('chat-input');
+          var send  = document.getElementById('chat-send');
+          if (!input || !send) return;
+          input.value = sug.prompt;
+          input.dispatchEvent(new Event('input'));
+          if (!send.disabled) send.click();
+        });
+        fuRow.appendChild(chip);
+      });
+      fu.appendChild(fuRow);
+      wrap.appendChild(fu);
+    }
+
     return wrap;
+  }
+
+  /* Pick 2-3 follow-up chips for a freshly completed turn.
+   * If the turn produced a widget on the dashboards page, key off the
+   * widget type. Otherwise use a per-page default set. */
+  function pickFollowups(turn, widget) {
+    var page = pageId();
+    if (page === 'dashboards') {
+      return getFollowups(widget);
+    }
+    if (page === 'hna') {
+      return [
+        { label: 'Critique this paragraph', prompt: 'Critique the paragraph you just produced — what is weak, what is strong, what would a DoH reviewer flag?' },
+        { label: 'Cite the SEMPHN data',    prompt: 'Add inline citations to the paragraph for every figure, pointing to the SEMPHN source.' },
+        { label: 'Tighten it',              prompt: 'Tighten the paragraph by 25% without losing any figure.' },
+      ];
+    }
+    if (page === 'maps') {
+      return [
+        { label: 'Add point overlay',       prompt: 'Add the 9 headspace centres + 2 ACCHS as a point overlay on the current map.' },
+        { label: 'Switch palette',          prompt: 'Switch the palette to navy-to-teal sequential.' },
+        { label: 'Export as PNG',           prompt: 'Stage the current map for export as PNG.' },
+      ];
+    }
+    return [];
   }
 
   function buildEmptyState() {
@@ -842,32 +1201,40 @@
     p.textContent = leads[page] || meta.placeholder;
     wrap.appendChild(p);
 
-    var sugsLabel = document.createElement('div');
-    sugsLabel.className = 'chat-empty-suglabel';
-    sugsLabel.textContent = 'Try one of these';
-    wrap.appendChild(sugsLabel);
-
-    var grid = document.createElement('div'); grid.className = 'chat-empty-sugs';
-    sugs.forEach(function (s) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'chat-empty-sug';
-      var ic = document.createElement('span'); ic.className = 'ico'; ic.textContent = s.icon;
-      var lab = document.createElement('span'); lab.className = 'label'; lab.textContent = s.label;
-      btn.appendChild(ic); btn.appendChild(lab);
-      btn.addEventListener('click', function () {
-        var input = document.getElementById('chat-input');
-        if (!input) return;
-        input.value = s.prompt;
-        input.dispatchEvent(new Event('input'));
-        input.focus();
-        // Auto-send the suggestion (same behaviour as Send button)
-        var send = document.getElementById('chat-send');
-        if (send && !send.disabled) send.click();
+    // Suggestions are now grouped into sections. The list under each section
+    // header is a tighter version of the empty-state — easier to scan, gives
+    // each chip a category context.
+    function fireSuggestion(prompt) {
+      var input = document.getElementById('chat-input');
+      if (!input) return;
+      input.value = prompt;
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+      var send = document.getElementById('chat-send');
+      if (send && !send.disabled) send.click();
+    }
+    // Backwards-compat: support both legacy flat array AND new grouped shape.
+    var groups = Array.isArray(sugs) && sugs.length && sugs[0].section
+      ? sugs
+      : [{ section: 'Try one of these', items: sugs || [] }];
+    groups.forEach(function (group) {
+      var label = document.createElement('div');
+      label.className = 'chat-empty-suglabel';
+      label.textContent = group.section;
+      wrap.appendChild(label);
+      var grid = document.createElement('div'); grid.className = 'chat-empty-sugs';
+      (group.items || []).forEach(function (s) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chat-empty-sug';
+        var ic = document.createElement('span'); ic.className = 'ico'; ic.textContent = s.icon || '·';
+        var lab = document.createElement('span'); lab.className = 'label'; lab.textContent = s.label;
+        btn.appendChild(ic); btn.appendChild(lab);
+        btn.addEventListener('click', function () { fireSuggestion(s.prompt); });
+        grid.appendChild(btn);
       });
-      grid.appendChild(btn);
+      wrap.appendChild(grid);
     });
-    wrap.appendChild(grid);
 
     var hint = document.createElement('div');
     hint.className = 'chat-empty-hint';
@@ -959,29 +1326,22 @@
         // On the Dashboards builder, the model may return a ```widget JSON
         // block. Extract it, render the tile on the canvas, and strip
         // it from the visible chat reply so the prose stays clean.
-        if (pageId() === 'dashboards') {
-          console.log('[widget] reply length:', reply.length, '· has ```widget:', reply.indexOf('```widget') >= 0);
-          if (typeof window.__extractWidget === 'function') {
-            try {
-              var parsed = window.__extractWidget(reply);
-              console.log('[widget] extracted:', parsed.widget);
-              if (parsed.widget) {
-                window.__addWidget(parsed.widget);
-                console.log('[widget] addWidget called, persisted widgets:', JSON.parse(localStorage.getItem('semphn.workbench.widgets.v1') || '{}').dashboards || []);
-                reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '" to your dashboard.');
-              } else {
-                console.warn('[widget] no ```widget block found in reply');
-              }
-            } catch (e) {
-              console.error('[widget] extract/add failed', e);
+        var producedWidget = null;
+        if (pageId() === 'dashboards' && typeof window.__extractWidget === 'function') {
+          try {
+            var parsed = window.__extractWidget(reply);
+            if (parsed.widget) {
+              producedWidget = parsed.widget;
+              window.__addWidget(parsed.widget);
+              reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '" to your dashboard.');
             }
-          } else {
-            console.error('[widget] window.__extractWidget is not a function:', typeof window.__extractWidget);
-          }
+          } catch (e) { console.error('[widget] extract/add failed', e); }
         }
 
         turn.summary = reply;
         turn.thinking = false;
+        // Pick context-aware follow-up chips so the user always has a next move
+        turn.followups = pickFollowups(turn, producedWidget);
         setPageTurns(pageId(), turns);
         renderFeed();
         updateLastSaved();
