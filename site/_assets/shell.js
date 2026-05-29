@@ -88,14 +88,15 @@
     ],
     maps: [
       { section: 'Choropleth', items: [
-        { icon: '◐', label: 'MH prevalence',            prompt: 'Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1.' },
-        { icon: '▦', label: 'SEIFA disadvantage',       prompt: 'Choropleth of SEIFA disadvantage by LGA. Annotate Greater Dandenong, Casey, Frankston as the top three disadvantaged.' },
-        { icon: '◌', label: 'Refugee settlement',       prompt: 'Heat-map the humanitarian-arrival settlement density across the catchment. Casey + Greater Dandenong should dominate.' },
+        { icon: '◐', label: 'MH prevalence',            prompt: 'Build a choropleth of MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Highlight Frankston (116.1) as the standout. Unit per_1k.' },
+        { icon: '▮', label: 'Bulk-billing by LGA',      prompt: 'Build a choropleth of bulk-billing percentage by LGA. Unit pct.' },
+        { icon: '▦', label: 'Homelessness rate',        prompt: 'Build a choropleth of homeless + marginal housing rate per 10k by LGA. Highlight Greater Dandenong. Unit per_10k.' },
+        { icon: '◌', label: 'Bowel screening rate',     prompt: 'Build a choropleth of bowel cancer screening participation by LGA. Unit pct. Lower is worse.' },
       ]},
-      { section: 'Service overlays', items: [
-        { icon: '◉', label: 'ACCHS locations',          prompt: 'Plot the 2 ACCHS in the SEMPHN catchment as points on a map. Add the catchment LGA outlines for context.' },
-        { icon: '●', label: 'All service points',       prompt: 'Plot all 9 headspace centres + 2 ACCHS + 155 RACFs on the catchment map. Colour-code by service type.' },
-        { icon: '↗', label: 'Growth corridor',          prompt: 'Highlight the South East Growth Corridor — Cardinia, Casey, Greater Dandenong — with their projected 2030 population overlaid.' },
+      { section: 'Build context', items: [
+        { icon: '#', label: 'KPI for max LGA',          prompt: 'Add a KPI tile for the LGA with the highest MH conditions rate (Frankston, 116.1 per 1k).' },
+        { icon: '▮', label: 'Bar · ranked LGAs',        prompt: 'Add a bar chart of MH conditions per 1,000 by LGA, ranked highest to lowest.' },
+        { icon: '▤', label: 'Table · all 10 LGAs',      prompt: 'Add a table showing all 10 LGAs with population, MH rate, and SEIFA score.' },
       ]},
     ],
   };
@@ -134,6 +135,15 @@
     table: [
       { label: 'Visualise top 5',           prompt: 'Build a bar chart of the top 5 rows in the last table.' },
       { label: 'Totals as a KPI',           prompt: 'Add a KPI tile for the column total from the last table.' },
+    ],
+    choropleth: [
+      { label: 'Add a ranked bar',          prompt: 'Add a bar chart ranking the LGAs by the same metric, highest to lowest.' },
+      { label: 'Highlight top-3',           prompt: 'Re-render the choropleth with the top-3 LGAs highlighted.' },
+      { label: 'Add a KPI for max',         prompt: 'Add a KPI tile for the LGA with the highest value of the metric.' },
+    ],
+    map: [
+      { label: 'Add a ranked bar',          prompt: 'Add a bar chart ranking the LGAs by the same metric, highest to lowest.' },
+      { label: 'Highlight top-3',           prompt: 'Re-render the choropleth with the top-3 LGAs highlighted.' },
     ],
     _default: [
       { label: 'Add a related KPI',         prompt: 'Add a KPI tile for the most important headline number related to what we just built.' },
@@ -385,6 +395,139 @@
         animationDuration: 600,
       }],
     };
+  }
+
+  /* ============================================================
+   * Choropleth · custom SVG hex/tile cartogram of the SEMPHN catchment
+   *
+   * Stylised tile-map of the 10 SEMPHN LGAs. Positions are roughly
+   * geographic (north-west to south-east) but not surveyed-accurate —
+   * we trade cartographic precision for legibility, the way The
+   * Economist and FT do for compact regional summaries.
+   *
+   * Widget shape (same as bar/line):
+   *   { type: "choropleth", title, subtitle, unit, source_id, data: [{label, value}, ...] }
+   * ============================================================ */
+  var SEMPHN_LGA_TILES = [
+    // Inner south + bayside
+    { name: 'Port Phillip',         x: 30,  y: 40,  w: 110, h: 80 },
+    { name: 'Stonnington',          x: 145, y: 40,  w: 115, h: 80 },
+    { name: 'Glen Eira',            x: 265, y: 40,  w: 100, h: 80 },
+    { name: 'Bayside',              x: 370, y: 40,  w: 100, h: 80 },
+    { name: 'Kingston',             x: 475, y: 40,  w: 100, h: 80 },
+    // Mid corridor
+    { name: 'Greater Dandenong',    x: 30,  y: 130, w: 140, h: 105 },
+    { name: 'Casey',                x: 175, y: 130, w: 195, h: 105 },
+    { name: 'Cardinia',             x: 375, y: 130, w: 200, h: 105 },
+    // South / Frankston + Peninsula
+    { name: 'Frankston',            x: 30,  y: 245, w: 140, h: 80 },
+    { name: 'Mornington Peninsula', x: 175, y: 245, w: 400, h: 100 },
+  ];
+  /* Linear-blend two hex colors at t∈[0,1] */
+  function blendHex(a, b, t) {
+    function p(s) { return [parseInt(s.slice(1,3),16), parseInt(s.slice(3,5),16), parseInt(s.slice(5,7),16)]; }
+    function h(n) { var s = Math.round(n).toString(16); return s.length === 1 ? '0'+s : s; }
+    var ap = p(a), bp = p(b);
+    return '#' + h(ap[0]+(bp[0]-ap[0])*t) + h(ap[1]+(bp[1]-ap[1])*t) + h(ap[2]+(bp[2]-ap[2])*t);
+  }
+  /* WCAG-ish: pick a text color (white or near-black) that contrasts a fill */
+  function pickTextColor(hex) {
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    var lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+    return lum > 0.62 ? '#0A0A0A' : '#FFFFFF';
+  }
+  function buildChoroplethSVG(widget) {
+    var w = 600, h = 380;
+    var data = widget.data || [];
+    var byLga = {};
+    data.forEach(function (d) { byLga[(d.label || '').trim()] = Number(d.value) || 0; });
+    var values = Object.values(byLga);
+    var min = values.length ? Math.min.apply(null, values) : 0;
+    var max = values.length ? Math.max.apply(null, values) : 1;
+    if (min === max) max = min + 1;
+    // Colour ramp: pale-teal → teal → navy → ink (matches SEMPHN palette)
+    function rampColor(v) {
+      var t = (v - min) / (max - min);
+      if (t < 0.33)  return blendHex('#E5F4F0', '#82D9C4', t / 0.33);
+      if (t < 0.66)  return blendHex('#82D9C4', '#04264E', (t - 0.33) / 0.33);
+      return blendHex('#04264E', '#0A0A0A', (t - 0.66) / 0.34);
+    }
+    var svg = svgEl('svg', {
+      viewBox: '0 0 ' + w + ' ' + h,
+      class: 'wgt-svg wgt-choro',
+      preserveAspectRatio: 'xMidYMid meet',
+    });
+    SEMPHN_LGA_TILES.forEach(function (lga) {
+      var hasData = lga.name in byLga;
+      var value   = byLga[lga.name];
+      var fill    = hasData ? rampColor(value) : '#F9FAFB';
+      var stroke  = hasData ? rampColor(value) : '#E5E7EB';
+      var txt     = hasData ? pickTextColor(fill) : '#9CA3AF';
+      var isHi    = widget.highlight && widget.highlight === lga.name;
+      // Tile background
+      var rect = svgEl('rect', {
+        x: lga.x, y: lga.y, width: lga.w, height: lga.h,
+        rx: '8', ry: '8',
+        fill: fill,
+        stroke: isHi ? '#0A0A0A' : '#FFFFFF',
+        'stroke-width': isHi ? '2.5' : '2',
+      });
+      // Hover title
+      var title = svgEl('title');
+      title.textContent = lga.name + (hasData ? (' — ' + formatValue(value, widget.unit)) : ' — no data');
+      rect.appendChild(title);
+      svg.appendChild(rect);
+      // LGA name
+      var cx = lga.x + lga.w / 2;
+      var cy = lga.y + lga.h / 2;
+      var nameLbl = svgEl('text', {
+        x: cx, y: cy - (hasData ? 6 : 0),
+        'text-anchor': 'middle',
+        'font-family': 'Geist, system-ui, sans-serif',
+        'font-size': lga.w < 110 ? '10.5' : '11.5',
+        'font-weight': '500',
+        fill: txt,
+      });
+      nameLbl.textContent = lga.name;
+      svg.appendChild(nameLbl);
+      // Value
+      if (hasData) {
+        var vLbl = svgEl('text', {
+          x: cx, y: cy + 14,
+          'text-anchor': 'middle',
+          'font-family': 'Geist Mono, ui-monospace, monospace',
+          'font-size': isHi ? '15' : '13',
+          'font-weight': isHi ? '700' : '600',
+          fill: txt,
+        });
+        vLbl.textContent = formatValue(value, widget.unit);
+        svg.appendChild(vLbl);
+      }
+    });
+    // Footer note · cartogram disclaimer
+    var note = svgEl('text', {
+      x: w / 2, y: h - 8,
+      'text-anchor': 'middle',
+      'font-family': 'Geist, system-ui, sans-serif',
+      'font-size': '9.5',
+      fill: '#9CA3AF',
+    });
+    note.textContent = 'Stylised tile cartogram of the SEMPHN catchment · not surveyed-accurate';
+    svg.appendChild(note);
+    // Build a wrapper that includes a legend strip below the SVG
+    var wrap = document.createElement('div');
+    wrap.className = 'wgt-choro-wrap';
+    wrap.appendChild(svg);
+    var legend = document.createElement('div');
+    legend.className = 'wgt-choro-legend';
+    var lo = document.createElement('span'); lo.className = 'v'; lo.textContent = formatValue(min, widget.unit);
+    var bar = document.createElement('span'); bar.className = 'bar';
+    bar.style.background = 'linear-gradient(90deg, #E5F4F0, #82D9C4 35%, #04264E 78%, #0A0A0A)';
+    var hi = document.createElement('span'); hi.className = 'v'; hi.textContent = formatValue(max, widget.unit);
+    var note2 = document.createElement('span'); note2.className = 'unit'; note2.textContent = widget.unit_label || widget.unit || '';
+    legend.appendChild(lo); legend.appendChild(bar); legend.appendChild(hi); legend.appendChild(note2);
+    wrap.appendChild(legend);
+    return wrap;
   }
 
   function buildBarChart(widget)  { return buildEchartsContainer(widget, barOption); }
@@ -640,8 +783,11 @@
     return tbl;
   }
 
-  function buildWidgetCard(widget, onDelete, onDuplicate) {
+  function buildWidgetCard(widget, callbacks) {
+    callbacks = callbacks || {};
     var card = document.createElement('div'); card.className = 'wgt-card wgt-type-' + (widget.type || 'unknown');
+    card.setAttribute('draggable', 'true');
+
     // Head
     var head = document.createElement('div'); head.className = 'wgt-head';
     var title = document.createElement('div'); title.className = 'wgt-title';
@@ -649,22 +795,42 @@
     var s = document.createElement('div'); s.className = 'wgt-s'; s.textContent = widget.subtitle || '';
     title.appendChild(t); if (widget.subtitle) title.appendChild(s);
 
-    var actions = document.createElement('div'); actions.className = 'wgt-actions';
-    // Duplicate · clones the widget into a new tile
-    if (onDuplicate) {
-      var dup = document.createElement('button');
-      dup.type = 'button'; dup.title = 'Duplicate widget';
-      dup.setAttribute('aria-label', 'Duplicate widget');
-      dup.textContent = '⎘';
-      dup.addEventListener('click', onDuplicate);
-      actions.appendChild(dup);
+    // Inline rename · click the title to edit, blur or Enter to save
+    if (callbacks.onRename) {
+      t.title = 'Click to rename';
+      t.addEventListener('click', function () {
+        t.contentEditable = 'true';
+        t.classList.add('is-editing');
+        t.focus();
+        document.execCommand('selectAll', false, null);
+      });
+      var commitRename = function () {
+        t.contentEditable = 'false';
+        t.classList.remove('is-editing');
+        var v = (t.textContent || '').trim();
+        if (v && v !== widget.title) callbacks.onRename(v);
+        else t.textContent = widget.title || 'Untitled widget';
+      };
+      t.addEventListener('blur', commitRename);
+      t.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); t.blur(); }
+        if (e.key === 'Escape') { t.textContent = widget.title || 'Untitled widget'; t.blur(); }
+      });
     }
-    var del = document.createElement('button');
-    del.type = 'button'; del.title = 'Delete widget';
-    del.setAttribute('aria-label', 'Delete widget');
-    del.textContent = '×';
-    del.addEventListener('click', onDelete);
-    actions.appendChild(del);
+
+    var actions = document.createElement('div'); actions.className = 'wgt-actions';
+    // Kebab menu · rename / export PNG / copy CSV / duplicate / delete
+    var kebab = document.createElement('button');
+    kebab.type = 'button';
+    kebab.title = 'Widget actions';
+    kebab.setAttribute('aria-label', 'Widget actions');
+    kebab.className = 'wgt-kebab';
+    kebab.textContent = '⋯';
+    kebab.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openKebabMenu(card, widget, callbacks, kebab);
+    });
+    actions.appendChild(kebab);
 
     head.appendChild(title); head.appendChild(actions);
     card.appendChild(head);
@@ -678,6 +844,7 @@
     else if (widget.type === 'donut' || widget.type === 'pie') node = buildDonutChart(widget);
     else if (widget.type === 'kpi')   node = buildKpiNode(widget);
     else if (widget.type === 'table') node = buildTableNode(widget);
+    else if (widget.type === 'choropleth' || widget.type === 'map') node = buildChoroplethSVG(widget);
     if (!node) {
       node = document.createElement('div');
       node.className = 'wgt-empty';
@@ -695,6 +862,163 @@
     return card;
   }
 
+  /* Kebab menu · Rename / Export PNG / Copy CSV / Edit JSON / Duplicate / Delete */
+  function openKebabMenu(card, widget, callbacks, anchor) {
+    closeKebabMenu();
+    var rect = anchor.getBoundingClientRect();
+    var menu = document.createElement('div');
+    menu.className = 'wgt-menu';
+    menu.style.top  = (rect.bottom + 4) + 'px';
+    menu.style.left = (rect.right - 200) + 'px';
+    function item(label, handler, opt) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'wgt-menu-item' + (opt && opt.danger ? ' is-danger' : '');
+      b.textContent = label;
+      b.addEventListener('click', function () { closeKebabMenu(); handler(); });
+      menu.appendChild(b);
+    }
+    if (callbacks.onRename) item('Rename', function () {
+      var t = card.querySelector('.wgt-t');
+      if (t) { t.contentEditable = 'true'; t.classList.add('is-editing'); t.focus(); document.execCommand('selectAll', false, null); }
+    });
+    item('Copy data as CSV', function () { copyWidgetCSV(widget); });
+    item('Export as PNG',    function () { exportWidgetPNG(card, widget); });
+    item('Copy widget JSON', function () {
+      navigator.clipboard.writeText(JSON.stringify(widget, null, 2))
+        .then(function () { showToast('Widget JSON copied', 'success'); })
+        .catch(function () { showToast('Clipboard blocked — try again', 'error'); });
+    });
+    var sep = document.createElement('div'); sep.className = 'wgt-menu-sep'; menu.appendChild(sep);
+    if (callbacks.onDuplicate) item('Duplicate', callbacks.onDuplicate);
+    if (callbacks.onDelete)    item('Delete',    callbacks.onDelete, { danger: true });
+    document.body.appendChild(menu);
+    setTimeout(function () {
+      document.addEventListener('click', closeKebabMenu, { once: true });
+    }, 0);
+  }
+  function closeKebabMenu() {
+    var m = document.querySelector('.wgt-menu');
+    if (m && m.parentNode) m.parentNode.removeChild(m);
+  }
+  /* CSV serializer · handles bar/line/donut (label,value), table (column keys),
+   * kpi (label,value,delta) */
+  function copyWidgetCSV(widget) {
+    var rows = [];
+    var data = widget.data || [];
+    if (widget.type === 'table' && data.length) {
+      var cols = Object.keys(data[0]);
+      rows.push(cols.map(csvCell).join(','));
+      data.forEach(function (r) { rows.push(cols.map(function (c) { return csvCell(r[c]); }).join(',')); });
+    } else if (data.length) {
+      rows.push('label,value');
+      data.forEach(function (d) { rows.push(csvCell(d.label) + ',' + csvCell(d.value)); });
+    } else {
+      showToast('No data to copy', 'warn'); return;
+    }
+    navigator.clipboard.writeText(rows.join('\n'))
+      .then(function () { showToast('Copied ' + (rows.length - 1) + ' rows as CSV', 'success'); })
+      .catch(function () { showToast('Clipboard blocked — try again', 'error'); });
+  }
+  function csvCell(v) {
+    if (v == null) return '';
+    var s = String(v);
+    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  /* Export widget as PNG · uses ECharts.getDataURL for charts, SVG → PNG via
+   * canvas for choropleth, html-to-image fallback would be needed for kpi/table
+   * (left as a 'screenshot the card' toast for those types) */
+  function exportWidgetPNG(card, widget) {
+    var chartType = ['bar','line','area','donut','pie'].indexOf(widget.type) >= 0;
+    if (chartType) {
+      // Find the ECharts instance attached to this card and dump it
+      var div = card.querySelector('.wgt-chart');
+      if (div && window.echarts) {
+        var inst = window.echarts.getInstanceByDom(div);
+        if (inst) {
+          var url = inst.getDataURL({ pixelRatio: 2, backgroundColor: '#FFFFFF' });
+          downloadDataUrl(url, slug(widget.title) + '.png');
+          showToast('PNG downloaded', 'success'); return;
+        }
+      }
+    }
+    if (widget.type === 'choropleth' || widget.type === 'map') {
+      var svg = card.querySelector('svg.wgt-choro');
+      if (svg) {
+        svgToPng(svg, slug(widget.title) + '.png', function (ok) {
+          if (ok) showToast('PNG downloaded', 'success');
+          else    showToast('PNG export failed', 'error');
+        });
+        return;
+      }
+    }
+    showToast('PNG export not supported for "' + widget.type + '" yet', 'warn');
+  }
+  function downloadDataUrl(url, name) {
+    var a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function slug(s) {
+    return String(s || 'widget').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
+  }
+  function svgToPng(svg, name, cb) {
+    try {
+      var xml = new XMLSerializer().serializeToString(svg);
+      var encoded = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        var bb = svg.getBoundingClientRect();
+        canvas.width = bb.width * 2; canvas.height = bb.height * 2;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        downloadDataUrl(canvas.toDataURL('image/png'), name);
+        cb(true);
+      };
+      img.onerror = function () { cb(false); };
+      img.src = encoded;
+    } catch (e) { console.error(e); cb(false); }
+  }
+
+  /* Drag-to-reorder · native HTML5 DnD on widget cards */
+  var DRAG_STATE = { fromIdx: -1, page: null };
+  function attachDragHandlers(card, idx, page) {
+    card.addEventListener('dragstart', function (e) {
+      DRAG_STATE.fromIdx = idx;
+      DRAG_STATE.page = page;
+      card.classList.add('is-dragging');
+      try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(idx)); } catch (_) {}
+    });
+    card.addEventListener('dragend', function () {
+      card.classList.remove('is-dragging');
+      document.querySelectorAll('.wgt-card.is-drag-over').forEach(function (el) { el.classList.remove('is-drag-over'); });
+    });
+    card.addEventListener('dragover', function (e) {
+      if (DRAG_STATE.fromIdx < 0) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      card.classList.add('is-drag-over');
+    });
+    card.addEventListener('dragleave', function () { card.classList.remove('is-drag-over'); });
+    card.addEventListener('drop', function (e) {
+      e.preventDefault();
+      card.classList.remove('is-drag-over');
+      var fromIdx = DRAG_STATE.fromIdx;
+      var toIdx = idx;
+      if (fromIdx < 0 || fromIdx === toIdx || DRAG_STATE.page !== page) return;
+      var arr = readWidgets(page);
+      var item = arr.splice(fromIdx, 1)[0];
+      arr.splice(toIdx, 0, item);
+      writeWidgets(page, arr);
+      DRAG_STATE.fromIdx = -1;
+      renderWidgets();
+      showToast('Widget reordered', 'success');
+    });
+  }
+
   function renderWidgets() {
     var grid = document.getElementById('widget-grid');
     if (!grid) return;
@@ -710,27 +1034,33 @@
     if (countEl) countEl.textContent = widgets.length + (widgets.length === 1 ? ' widget' : ' widgets');
     widgets.forEach(function (w, idx) {
       try {
-        var card = buildWidgetCard(
-          w,
-          function () {
+        var card = buildWidgetCard(w, {
+          onDelete: function () {
             var arr = readWidgets(page);
             arr.splice(idx, 1);
             writeWidgets(page, arr);
             renderWidgets();
             showToast('Widget removed', 'success');
           },
-          function () {
+          onDuplicate: function () {
             var arr = readWidgets(page);
-            // Deep clone via JSON so future edits don't mutate the original
             var clone = JSON.parse(JSON.stringify(w));
             clone.title = (w.title || 'Untitled') + ' (copy)';
             arr.splice(idx + 1, 0, clone);
             writeWidgets(page, arr);
             renderWidgets();
             showToast('Widget duplicated', 'success');
-          }
-        );
+          },
+          onRename: function (newTitle) {
+            var arr = readWidgets(page);
+            if (!arr[idx]) return;
+            arr[idx].title = newTitle;
+            writeWidgets(page, arr);
+            showToast('Renamed', 'success');
+          },
+        });
         if (!card) { console.error('[widget] buildWidgetCard returned null', idx, w); return; }
+        attachDragHandlers(card, idx, page);
         grid.appendChild(card);
       } catch (e) {
         console.error('[widget] failed to render widget', idx, e, w);
@@ -1264,6 +1594,91 @@
   /* ============================================================
    * Composer
    * ============================================================ */
+  /* Slash command templates — Notion/Linear-style power-user shortcut.
+   * Type "/" at start of composer → menu opens; arrow + enter to insert. */
+  var SLASH_COMMANDS = [
+    { trigger: '/bar',    label: 'Bar chart',     hint: 'Compare across LGAs',          template: 'Build a bar chart of __METRIC__ by LGA, ranked highest to lowest. Highlight __TOP_LGA__.' },
+    { trigger: '/line',   label: 'Line chart',    hint: 'Trend over time',              template: 'Build a line chart of __METRIC__ over the last 5 years for the SEMPHN catchment.' },
+    { trigger: '/area',   label: 'Area chart',    hint: 'Trend with magnitude',         template: 'Build an area chart of __METRIC__ over the last 5 financial years for the SEMPHN catchment.' },
+    { trigger: '/donut',  label: 'Donut chart',   hint: 'Share of total',               template: 'Build a donut chart of __METRIC__ broken down by __CATEGORY__.' },
+    { trigger: '/kpi',    label: 'KPI tile',      hint: 'Single headline number',       template: 'Add a KPI tile for __METRIC__ with the year-on-year delta.' },
+    { trigger: '/table',  label: 'Table',         hint: 'Mixed columns',                template: 'Build a table widget with columns: __COL_1__, __COL_2__, __COL_3__.' },
+    { trigger: '/map',    label: 'Choropleth',    hint: 'Map by LGA',                   template: 'Build a choropleth of __METRIC__ across the 10 SEMPHN LGAs. Highlight __TOP_LGA__.' },
+    { trigger: '/draft',  label: 'Draft paragraph', hint: 'HNA narrative',              template: 'Draft a paragraph for the HNA on __TOPIC__ — anchor it on real SEMPHN figures from the data slice.' },
+    { trigger: '/critique', label: 'Critique',    hint: 'DoH-rubric style review',      template: 'Critique the current draft against the DoH Performance Rubric. List the top 3 gaps.' },
+  ];
+  function wireSlashMenu(input, send) {
+    var menu = null, cursor = 0, filtered = SLASH_COMMANDS.slice();
+    function close() {
+      if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
+      menu = null;
+    }
+    function shouldOpen() {
+      var v = input.value;
+      // Open if the whole field starts with "/" — keeps things deterministic
+      return v[0] === '/' && v.indexOf(' ') < 0 && v.indexOf('\n') < 0;
+    }
+    function refresh() {
+      var q = input.value.toLowerCase();
+      filtered = SLASH_COMMANDS.filter(function (c) {
+        return c.trigger.indexOf(q) === 0 || c.label.toLowerCase().indexOf(q.slice(1)) >= 0;
+      });
+      cursor = 0;
+      render();
+    }
+    function render() {
+      if (!shouldOpen()) { close(); return; }
+      if (!menu) {
+        menu = document.createElement('div');
+        menu.className = 'slash-menu';
+        // Position relative to the composer-wrap (textarea parent)
+        var wrap = input.closest('.composer-wrap') || input.parentNode;
+        var rect = wrap.getBoundingClientRect();
+        menu.style.left  = rect.left + 'px';
+        menu.style.width = rect.width + 'px';
+        menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+        document.body.appendChild(menu);
+      }
+      while (menu.firstChild) menu.removeChild(menu.firstChild);
+      if (!filtered.length) {
+        var none = document.createElement('div'); none.className = 'slash-menu-empty';
+        none.textContent = 'No matching commands. Press Esc.';
+        menu.appendChild(none); return;
+      }
+      filtered.forEach(function (c, i) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'slash-menu-item' + (i === cursor ? ' is-on' : '');
+        var trig = document.createElement('span'); trig.className = 'trig'; trig.textContent = c.trigger;
+        var lab  = document.createElement('span'); lab.className  = 'lab';  lab.textContent  = c.label;
+        var hint = document.createElement('span'); hint.className = 'hint'; hint.textContent = c.hint;
+        item.appendChild(trig); item.appendChild(lab); item.appendChild(hint);
+        item.addEventListener('mouseenter', function () { cursor = i; render(); });
+        item.addEventListener('mousedown', function (e) { e.preventDefault(); insert(c); });
+        menu.appendChild(item);
+      });
+    }
+    function insert(c) {
+      input.value = c.template;
+      input.dispatchEvent(new Event('input'));
+      // Move cursor to first placeholder
+      var pos = input.value.indexOf('__');
+      if (pos >= 0) { input.selectionStart = pos; input.selectionEnd = input.value.indexOf('__', pos + 2) + 2; }
+      input.focus();
+      close();
+    }
+    input.addEventListener('input', refresh);
+    input.addEventListener('keydown', function (e) {
+      if (!menu) return;
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); cursor = (cursor + 1) % filtered.length; render(); return; }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); cursor = (cursor - 1 + filtered.length) % filtered.length; render(); return; }
+      if (e.key === 'Enter' && filtered[cursor]) { e.preventDefault(); insert(filtered[cursor]); return; }
+      if (e.key === 'Tab' && filtered[cursor])   { e.preventDefault(); insert(filtered[cursor]); return; }
+    });
+    input.addEventListener('blur', function () { setTimeout(close, 120); });
+  }
+
   function wireComposer(contextSummary) {
     var input = document.getElementById('chat-input');
     var send  = document.getElementById('chat-send');
@@ -1272,7 +1687,7 @@
     var meta = PAGE_META[pageId()] || PAGE_META.dashboards;
     var promptLabel = document.querySelector('.composer-prompt');
     if (promptLabel) promptLabel.textContent = meta.composerLabel;
-    input.placeholder = meta.placeholder;
+    input.placeholder = meta.placeholder + ' · type "/" for templates';
 
     var busy = false;
     function setBusy(b) { busy = b; send.disabled = b || !input.value.trim(); updateStatus(b ? 'thinking' : 'idle'); }
@@ -1283,9 +1698,14 @@
       send.disabled = busy || !input.value.trim();
     });
     input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+      if (e.key === 'Enter' && !e.shiftKey && document.querySelector('.slash-menu') == null) {
+        e.preventDefault(); handleSend();
+      }
     });
     send.addEventListener('click', handleSend);
+
+    // Slash-menu power-user shortcut · "/" at start opens template picker
+    wireSlashMenu(input, send);
 
     async function handleSend() {
       var text = input.value.trim();

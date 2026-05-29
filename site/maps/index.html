@@ -9,103 +9,113 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1780600000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1780700000" />
+
+<!-- ECharts for the same Dashboards-style widgets (bar/donut/kpi) that
+     work on the Maps page too. Choropleth is rendered as custom SVG
+     by shell.js — no GeoJSON dep, uses a stylised SEMPHN LGA tile layout. -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
 
 <style>
-  /* Maps-specific artifact styles */
-  .map-head { margin-bottom: 1.6rem; }
-  .map-head h1 {
-    font-size: clamp(1.8rem, 3vw, 2.4rem);
-    font-weight: 700;
-    color: var(--navy);
-    letter-spacing: -0.018em;
-    margin-bottom: 0.3rem;
-  }
-  .map-head p { color: var(--slate); font-size: 1rem; }
+  /* Maps builder · canvas-specific styles
+     (shared widget styles + chrome live in shell.css) */
 
-  .map-card {
-    background: var(--paper);
-    border-radius: var(--r-lg);
-    border: 1px solid var(--rule);
-    padding: 1.4rem 1.5rem 1.5rem;
-    margin-bottom: 1.2rem;
-  }
-  .map-card-head {
+  .builder-head {
     display: flex; align-items: flex-end; justify-content: space-between;
-    margin-bottom: 1rem;
-    flex-wrap: wrap; gap: 0.6rem;
+    gap: 1rem; flex-wrap: wrap;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--rule);
   }
-  .map-card h3 { font-size: 1rem; font-weight: 600; color: var(--navy); }
-  .map-card .sub { font-size: 0.78rem; color: var(--slate); margin-top: 0.15rem; }
-  .map-card .controls { display: flex; align-items: center; gap: 0.3rem; }
-  .map-card .controls button {
-    background: var(--paper); border: 1px solid var(--rule);
-    color: var(--slate);
-    padding: 0.4rem 0.75rem;
-    border-radius: var(--r-sm);
-    font-size: 0.76rem;
-    cursor: pointer; font-weight: 500;
-    transition: all 130ms;
+  .builder-head h1 {
+    font-size: 1.65rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+    margin-bottom: 0.35rem;
   }
-  .map-card .controls button:hover { color: var(--ink); border-color: var(--slate-mute); background: var(--rule-soft); }
-  .map-card .controls button.is-on { background: var(--ink); color: white; border-color: var(--ink); }
-  .map-svg { width: 100%; height: 420px; display: block; background: var(--blue-grey); border-radius: var(--r-sm); }
-  .map-legend {
-    margin-top: 0.85rem;
-    display: flex; align-items: center; gap: 0.7rem;
-    font-size: 0.74rem; color: var(--slate); font-weight: 500;
+  .builder-head p {
+    color: var(--slate-soft);
+    font-size: 0.9rem;
+    font-weight: 400;
+    max-width: 60ch;
   }
-  .map-legend .scale {
-    width: 200px; height: 8px;
-    background: linear-gradient(90deg, var(--teal-pale), var(--teal), var(--navy));
+  .builder-head .count {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    background: var(--rule-soft);
     border-radius: 999px;
+    font-size: 0.74rem;
+    color: var(--slate);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .builder-head .clear {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--slate);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--r-sm);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--motion-fast, 130ms);
+  }
+  .builder-head .clear:hover {
+    color: var(--ink); border-color: var(--slate-mute);
+    background: var(--rule-soft);
   }
 
-  /* Side LGA list */
-  .map-row {
+  /* Widget grid · single column wide for maps so choropleth has space */
+  #widget-grid {
     display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 1.2rem;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    align-items: stretch;
   }
-  @media (max-width: 1100px) { .map-row { grid-template-columns: 1fr; } }
-  .lga-list {
+
+  /* Empty state */
+  .widget-empty {
+    max-width: 480px;
+    margin: 4rem auto 2rem;
+    text-align: center;
+    padding: 3rem 2rem;
     background: var(--paper);
+    border: 1px dashed var(--rule);
     border-radius: var(--r-lg);
-    border: 1px solid var(--rule);
-    overflow: hidden;
   }
-  .lga-list h3 {
-    padding: 1rem 1.2rem 0.5rem;
-    font-size: 0.86rem; font-weight: 600; color: var(--navy);
+  .widget-empty .ico {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--ink);
+    color: white;
+    display: grid; place-items: center;
+    margin: 0 auto 1.1rem;
+    font-family: var(--mono); font-size: 1.05rem; font-weight: 600;
   }
-  .lga-list .sub {
-    padding: 0 1.2rem 0.8rem;
-    font-size: 0.7rem; color: var(--slate);
+  .widget-empty h3 {
+    font-size: 1.1rem; font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.015em;
+    margin-bottom: 0.45rem;
   }
-  .lga-list ul { list-style: none; padding: 0; }
-  .lga-list li {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.6rem 1.2rem;
-    border-top: 1px solid var(--rule-soft);
-    font-size: 0.84rem; color: var(--navy);
+  .widget-empty p {
+    color: var(--slate-soft);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
   }
-  .lga-list li:hover { background: var(--blue-grey); }
-  .lga-list li .name { font-weight: 500; }
-  .lga-list li .v {
-    font-family: var(--mono); font-variant-numeric: tabular-nums;
-    color: var(--navy); font-weight: 600;
+  .widget-empty p strong { color: var(--ink); font-weight: 500; }
+  .widget-empty .hint {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.76rem;
+    color: var(--slate-mute);
+    font-family: var(--mono);
   }
-  .lga-list li .bar {
-    width: 60px; height: 4px;
-    border-radius: 999px;
-    background: var(--rule-soft);
-    margin-left: 0.6rem;
-    overflow: hidden;
-    position: relative;
-  }
-  .lga-list li .bar::after {
-    content: ""; position: absolute; inset: 0 var(--gap) 0 0;
-    background: var(--teal);
+  .widget-empty .hint::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--positive, #10B981);
   }
 </style>
 </head>
@@ -183,98 +193,29 @@
 
     <div class="canvas-body">
       <div class="canvas-pane">
-        <div class="map-head">
-          <h1>Catchment Map</h1>
-          <p>10 LGAs across 2,935 km² · choropleth coloured by metric</p>
-        </div>
-
-        <div class="map-row">
-          <div class="map-card">
-            <div class="map-card-head">
-              <div>
-                <h3>MH conditions per 1,000 residents · by LGA</h3>
-                <div class="sub">Source · POLAR · last ingest 21 May 2026</div>
-              </div>
-              <div class="controls">
-                <button type="button" class="is-on">Choropleth</button>
-                <button type="button">Points</button>
-                <button type="button">Heat</button>
-              </div>
-            </div>
-            <svg class="map-svg" viewBox="0 0 600 420" preserveAspectRatio="xMidYMid meet" aria-label="Schematic SEMPHN catchment choropleth">
-              <g font-family="Geist, sans-serif" font-size="11" fill="#04264E">
-                <!-- top row -->
-                <rect x="30"  y="40"  width="100" height="85" rx="6" fill="#E5F4F0" stroke="#55BFAF"/>
-                <text x="80" y="78" text-anchor="middle" font-weight="600">Port Phillip</text>
-                <text x="80" y="98" text-anchor="middle" font-size="13">91.8</text>
-
-                <rect x="140" y="40"  width="115" height="85" rx="6" fill="#E5F4F0" stroke="#55BFAF"/>
-                <text x="197" y="78" text-anchor="middle" font-weight="600">Stonnington</text>
-                <text x="197" y="98" text-anchor="middle" font-size="13">76.9</text>
-
-                <rect x="265" y="40"  width="100" height="85" rx="6" fill="#82D9C4" stroke="#55BFAF"/>
-                <text x="315" y="78" text-anchor="middle" font-weight="600">Glen Eira</text>
-                <text x="315" y="98" text-anchor="middle" font-size="13">78.3</text>
-
-                <rect x="375" y="40"  width="100" height="85" rx="6" fill="#55BFAF" stroke="#04264E"/>
-                <text x="425" y="78" text-anchor="middle" font-weight="600">Bayside</text>
-                <text x="425" y="98" text-anchor="middle" font-size="13">82.5</text>
-
-                <rect x="485" y="40"  width="90"  height="85" rx="6" fill="#82D9C4" stroke="#55BFAF"/>
-                <text x="530" y="78" text-anchor="middle" font-weight="600">Kingston</text>
-                <text x="530" y="98" text-anchor="middle" font-size="13">83.7</text>
-
-                <!-- mid row -->
-                <rect x="30"  y="145" width="140" height="115" rx="6" fill="#0E4775" stroke="#04264E"/>
-                <text x="100" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF">Greater Dandenong</text>
-                <text x="100" y="220" text-anchor="middle" font-size="15" fill="#FFFFFF">97.4</text>
-
-                <rect x="180" y="145" width="180" height="115" rx="6" fill="#1C5B85" stroke="#04264E"/>
-                <text x="270" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF">Casey</text>
-                <text x="270" y="220" text-anchor="middle" font-size="15" fill="#FFFFFF">94.1</text>
-
-                <rect x="370" y="145" width="130" height="115" rx="6" fill="#003D69" stroke="#04264E"/>
-                <text x="435" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF">Frankston</text>
-                <text x="435" y="222" text-anchor="middle" font-size="17" fill="#82D9C4" font-weight="700">116.1</text>
-
-                <rect x="510" y="145" width="70"  height="115" rx="6" fill="#2C7995" stroke="#04264E"/>
-                <text x="545" y="195" text-anchor="middle" font-weight="600" fill="#FFFFFF" font-size="9">Cardinia</text>
-                <text x="545" y="220" text-anchor="middle" font-size="13" fill="#FFFFFF">88.4</text>
-
-                <!-- bottom row -->
-                <rect x="180" y="280" width="300" height="90" rx="6" fill="#1C5B85" stroke="#04264E"/>
-                <text x="330" y="318" text-anchor="middle" font-weight="600" fill="#FFFFFF">Mornington Peninsula</text>
-                <text x="330" y="343" text-anchor="middle" font-size="15" fill="#FFFFFF">102.6</text>
-              </g>
-              <g font-family="Geist, sans-serif" font-size="9" fill="#6B7B8C">
-                <text x="300" y="400" text-anchor="middle">Schematic — not geographically accurate. Ask the chat for a real choropleth.</text>
-              </g>
-            </svg>
-            <div class="map-legend">
-              <span>76</span>
-              <span class="scale"></span>
-              <span>116</span>
-              <span style="margin-left: auto; font-family: var(--mono); font-size: 0.7rem;">MH conditions / 1,000 residents</span>
-            </div>
+        <div class="builder-head">
+          <div>
+            <h1>Catchment Maps</h1>
+            <p>Type a metric in the chat → a SEMPHN-themed choropleth lands here. Mix with KPI tiles, donuts and tables for a full geo report.</p>
           </div>
-
-          <aside class="lga-list" aria-label="LGA rank">
-            <h3>LGAs · ranked</h3>
-            <p class="sub">Highest first</p>
-            <ul>
-              <li><span class="name">Frankston</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 0%"></span><span class="v">116.1</span></span></li>
-              <li><span class="name">Mornington Peninsula</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 11%"></span><span class="v">102.6</span></span></li>
-              <li><span class="name">Greater Dandenong</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 16%"></span><span class="v">97.4</span></span></li>
-              <li><span class="name">Casey</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 19%"></span><span class="v">94.1</span></span></li>
-              <li><span class="name">Port Phillip</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 21%"></span><span class="v">91.8</span></span></li>
-              <li><span class="name">Cardinia</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 24%"></span><span class="v">88.4</span></span></li>
-              <li><span class="name">Kingston</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 28%"></span><span class="v">83.7</span></span></li>
-              <li><span class="name">Bayside</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 29%"></span><span class="v">82.5</span></span></li>
-              <li><span class="name">Glen Eira</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 33%"></span><span class="v">78.3</span></span></li>
-              <li><span class="name">Stonnington</span> <span style="display:inline-flex; align-items:center; gap:0.4rem;"><span class="bar" style="--gap: 34%"></span><span class="v">76.9</span></span></li>
-            </ul>
-          </aside>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span class="count" id="widget-count">0 widgets</span>
+            <button type="button" class="clear" id="widget-clear">Clear all</button>
+          </div>
         </div>
+
+        <div id="widget-empty" class="widget-empty">
+          <div class="ico">M</div>
+          <h3>Empty canvas.</h3>
+          <p>
+            Pick a suggestion in the chat on the left, or type your own request like
+            <strong>"map MH conditions per 1k by LGA"</strong> or
+            <strong>"choropleth of SEIFA disadvantage"</strong>.
+          </p>
+          <span class="hint">Type in the chat to begin</span>
+        </div>
+
+        <div id="widget-grid"></div>
       </div>
     </div>
   </section>
@@ -292,6 +233,21 @@
     <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1780600000"></script>
+<script>
+(function () {
+  var btn = document.getElementById('widget-clear');
+  if (btn) btn.addEventListener('click', function () {
+    if (!confirm('Remove all widgets from this map canvas?')) return;
+    try {
+      var raw = localStorage.getItem('semphn.workbench.widgets.v1');
+      var s = raw ? JSON.parse(raw) : {};
+      s.maps = [];
+      localStorage.setItem('semphn.workbench.widgets.v1', JSON.stringify(s));
+      if (typeof window.__renderWidgets === 'function') window.__renderWidgets();
+    } catch (_) {}
+  });
+})();
+</script>
+<script src="/_assets/shell.js?v=1780700000"></script>
 </body>
 </html>

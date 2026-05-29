@@ -808,6 +808,131 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .wgt-empty { padding: 1.4rem; text-align: center; color: var(--slate); font-size: 0.86rem; }
 
+/* Kebab menu trigger */
+.wgt-kebab {
+  background: none !important;
+  font-size: 1.2rem !important;
+  line-height: 0.5 !important;
+  letter-spacing: 0.08em;
+}
+
+/* Inline-rename title */
+.wgt-title .wgt-t.is-editing {
+  outline: none;
+  background: var(--rule-soft);
+  padding: 0.1rem 0.4rem;
+  margin: -0.1rem -0.4rem;
+  border-radius: var(--r-xs);
+}
+
+/* Kebab menu dropdown */
+.wgt-menu {
+  position: fixed;
+  z-index: 250;
+  min-width: 200px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  box-shadow: 0 12px 36px -8px rgba(10,10,10,0.18), 0 4px 12px -4px rgba(10,10,10,0.08);
+  padding: 0.35rem;
+  display: flex; flex-direction: column;
+  animation: cmdk-in 140ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.wgt-menu-item {
+  background: none; border: none;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--r-sm);
+  font-size: 0.86rem;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--motion-fast);
+}
+.wgt-menu-item:hover { background: var(--rule-soft); }
+.wgt-menu-item.is-danger { color: var(--negative); }
+.wgt-menu-item.is-danger:hover { background: rgba(239,68,68,0.08); }
+.wgt-menu-sep {
+  height: 1px; background: var(--rule-soft); margin: 0.3rem 0;
+}
+
+/* Choropleth widget · legend strip below the SVG */
+.wgt-choro-wrap { display: flex; flex-direction: column; gap: 0.7rem; }
+svg.wgt-choro { width: 100%; height: auto; max-height: 380px; display: block; }
+.wgt-choro-legend {
+  display: flex; align-items: center; gap: 0.7rem;
+  font-size: 0.74rem; color: var(--slate-soft); font-weight: 500;
+}
+.wgt-choro-legend .v {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.wgt-choro-legend .bar {
+  flex: 1; max-width: 240px;
+  height: 8px; border-radius: 999px;
+}
+.wgt-choro-legend .unit {
+  margin-left: auto;
+  font-family: var(--mono); font-size: 0.7rem;
+  color: var(--slate-soft);
+}
+
+/* Drag-to-reorder visual states */
+.wgt-card { transition: border-color var(--motion-fast), transform var(--motion-fast), opacity var(--motion-fast); }
+.wgt-card[draggable="true"] { cursor: grab; }
+.wgt-card[draggable="true"]:active { cursor: grabbing; }
+.wgt-card.is-dragging { opacity: 0.45; transform: scale(0.99); }
+.wgt-card.is-drag-over {
+  border-color: var(--ink);
+  border-style: dashed;
+  border-width: 2px;
+  margin: -1px;  /* compensate for the 1→2px border so layout doesn't jump */
+}
+
+/* Slash command menu (composer) */
+.slash-menu {
+  position: fixed;
+  z-index: 250;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  box-shadow: 0 -12px 36px -8px rgba(10,10,10,0.18), 0 -4px 12px -4px rgba(10,10,10,0.08);
+  padding: 0.4rem;
+  display: flex; flex-direction: column;
+  gap: 0.1rem;
+  max-height: 320px; overflow-y: auto;
+  animation: cmdk-in 140ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.slash-menu-item {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: left;
+  background: none; border: none;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.slash-menu-item.is-on, .slash-menu-item:hover { background: var(--rule-soft); }
+.slash-menu-item .trig {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
+  color: var(--slate);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 0.18rem 0.4rem;
+  border-radius: var(--r-xs);
+  text-align: center;
+}
+.slash-menu-item .lab { font-weight: 500; }
+.slash-menu-item .hint { font-size: 0.76rem; color: var(--slate-soft); }
+.slash-menu-empty {
+  padding: 1rem; text-align: center; color: var(--slate); font-size: 0.86rem;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
  * STATUS BAR (BOTTOM)
  * ═══════════════════════════════════════════════════════════════════ */

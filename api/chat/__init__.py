@@ -119,8 +119,8 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "shows `_dropped` listing some sections, tell the user that section was "
         "too large to fit and offer to query a narrower cut.",
     ]
-    # ---- Dashboards page · widget-builder mode ----
-    if "dashboards" in step_slug:
+    # ---- Dashboards + Maps pages · widget-builder mode ----
+    if "dashboards" in step_slug or "maps" in step_slug:
         parts.append(
             "\n=== DASHBOARD BUILDER MODE ===\n"
             "When the user asks for a chart, KPI, table or anything that should "
@@ -130,7 +130,7 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
             "Widget schema (return ONLY these fields, no extras):\n"
             "```widget\n"
             "{\n"
-            '  "type": "bar" | "line" | "area" | "donut" | "kpi" | "table",\n'
+            '  "type": "bar" | "line" | "area" | "donut" | "kpi" | "table" | "choropleth",\n'
             '  "title": "<short title shown on the tile>",\n'
             '  "subtitle": "<one line of context>",\n'
             '  "unit": "pct" | "per_1k" | "per_10k" | "per_100k" | "count" | "aud",\n'
@@ -150,13 +150,19 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
             "  kpi:        [{\"label\": \"Catchment population\", \"value\": 1638200}]"
             " — single entry.\n"
             "  table:      [{\"<col1>\": ..., \"<col2>\": ...}, ...]"
-            " — array of column-keyed rows.\n\n"
+            " — array of column-keyed rows.\n"
+            "  choropleth: [{\"label\": \"Frankston\", \"value\": 116.1}, ...]"
+            " — one entry per LGA. Labels MUST match the 10 SEMPHN LGA names"
+            " exactly (Bayside, Cardinia, Casey, Frankston, Glen Eira,"
+            " Greater Dandenong, Kingston, Mornington Peninsula, Port Phillip,"
+            " Stonnington). Missing LGAs render as 'no data'.\n\n"
             "Picking the right type:\n"
             "  • Compare across LGAs / categories  → bar\n"
             "  • Change over time (3+ points)      → line (or area for total magnitude)\n"
             "  • Share of a whole / breakdown      → donut\n"
             "  • Single headline number            → kpi\n"
-            "  • Mixed columns (names + status)    → table\n\n"
+            "  • Mixed columns (names + status)    → table\n"
+            "  • Spatial pattern across LGAs       → choropleth (Maps page only)\n\n"
             "Rules:\n"
             "  • USE REAL VALUES from the SEMPHN data slice — no fabricating.\n"
             "  • Title MUST match what was asked.\n"
