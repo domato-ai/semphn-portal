@@ -119,6 +119,42 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "shows `_dropped` listing some sections, tell the user that section was "
         "too large to fit and offer to query a narrower cut.",
     ]
+    # ---- Dashboards page · widget-builder mode ----
+    if "dashboards" in step_slug:
+        parts.append(
+            "\n=== DASHBOARD BUILDER MODE ===\n"
+            "When the user asks for a chart, KPI, table or anything that should "
+            "land as a tile on their dashboard, end your reply with a fenced "
+            "```widget code block containing a JSON object. The frontend will "
+            "parse this and render the tile.\n\n"
+            "Widget schema (return ONLY these fields, no extras):\n"
+            "```widget\n"
+            "{\n"
+            '  "type": "bar" | "line" | "kpi" | "table",\n'
+            '  "title": "<short title shown on the tile>",\n'
+            '  "subtitle": "<one line of context>",\n'
+            '  "unit": "pct" | "per_1k" | "count" | "aud" | etc,\n'
+            '  "source_id": "<the source_id from the data>",\n'
+            '  "data": [...],   // shape depends on type — see below\n'
+            '  "highlight": "<optional label of the row to emphasise>",\n'
+            '  "delta": "<optional, KPI only: \\"+8.6%\\" or \\"-2.4%\\">"\n'
+            "}\n"
+            "```\n\n"
+            "Data shapes:\n"
+            "  bar / line: [{\"label\": \"Frankston\", \"value\": 116.1}, ...]"
+            " — pre-sorted desc by value for bar, by time/x for line.\n"
+            "  kpi:        [{\"label\": \"Catchment population\", \"value\": 1638200}]"
+            " — single entry.\n"
+            "  table:      [{\"<col1>\": ..., \"<col2>\": ...}, ...]"
+            " — array of column-keyed rows.\n\n"
+            "Rules:\n"
+            "  • USE REAL VALUES from the SEMPHN data slice — no fabricating.\n"
+            "  • Title MUST match what was asked.\n"
+            "  • Keep your prose reply short (1-2 sentences) explaining what you built. "
+            "The widget speaks for itself; don't repeat the values in prose.\n"
+            "  • If the user asks for something the data doesn't support, "
+            "say so in prose and DON'T emit a widget block."
+        )
     if context_summary:
         parts.append(f"\nStep-specific data context:\n{context_summary.strip()}")
     # ---- NEW: inject a page-relevant slice of real SEMPHN data ----

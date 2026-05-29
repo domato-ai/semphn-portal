@@ -50,7 +50,10 @@
 
   /* Per-page suggested starters shown in the empty state.
    * Each chat starts CLEAN — no pre-seeded "I built this..." turns.
-   * Click a chip → fills the composer + auto-sends. */
+   * Click a chip → fills the composer + auto-sends.
+   *
+   * Dashboards suggestions are BUILD prompts — they ask the chat to
+   * generate a widget that lands on the right canvas as a tile. */
   var SUGGESTIONS = {
     hna: [
       { icon: '✎', label: 'Draft Chapter 4 opening',     prompt: 'Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong.' },
@@ -61,12 +64,14 @@
       { icon: '◉', label: 'Pre-flight check',            prompt: 'Run the DoH Compliance Checklist + Performance Rubric on the current Chapter 4 draft. Flag warnings.' },
     ],
     dashboards: [
-      { icon: '▮', label: 'Bowel screening by LGA',       prompt: 'Show bowel cancer screening participation by LGA across the SEMPHN catchment, ranked lowest to highest. Highlight the three LGAs below 40%.' },
-      { icon: '◉', label: 'headspace wait time',          prompt: 'Plot average headspace wait time across the 9 catchment centres month-by-month for the last year. Annotate the July-August 2022 peak.' },
-      { icon: '◯', label: 'Multi-chronic scatter',        prompt: 'Scatter plot — multi-chronic conditions per 1k vs 65+ population share, by LGA. Should reveal Mornington Peninsula as the outlier.' },
-      { icon: '▦', label: 'AOD treatment activity',       prompt: 'Stacked bar of alcohol care episodes + illicit-drug care episodes per 100k, by LGA. Sort by total.' },
-      { icon: '↗', label: 'GP density gap',               prompt: 'Compare GP FTE per 100k by LGA against the Victorian benchmark of 116.3. Show the gap in either direction.' },
-      { icon: '↻', label: 'Refresh from latest data',     prompt: 'Refresh every KPI on this dashboard with the latest data extract. Tell me what changed since the last view.' },
+      { icon: '#', label: 'KPI · catchment population',        prompt: 'Add a KPI tile showing the SEMPHN catchment population (2024) with the growth-pa delta.' },
+      { icon: '▮', label: 'Bar · MH conditions by LGA',        prompt: 'Build a bar chart of MH conditions per 1,000 by LGA, ranked highest to lowest. Highlight Frankston as the standout.' },
+      { icon: '▮', label: 'Bar · Bulk-billing by LGA',         prompt: 'Build a bar chart of bulk-billing percentage by LGA, ranked highest to lowest.' },
+      { icon: '▮', label: 'Bar · GP practices by LGA',         prompt: 'Build a bar chart of GP practice counts by LGA, ranked highest to lowest. Title: "GP practices · 31 Jul 2024".' },
+      { icon: '▮', label: 'Bar · FY26 funding schedules',      prompt: 'Build a bar chart of FY26 funding schedules by value (AUD), ranked highest to lowest. Unit: aud.' },
+      { icon: '▤', label: 'Table · Recent commissioning',      prompt: 'Build a table widget showing the recent commissioning activity — columns: Activity, LGA, Schedule, Value, Status.' },
+      { icon: '#', label: 'KPI · Bowel screening rate',        prompt: 'Add a KPI tile for the catchment bowel cancer screening rate with the delta indicator.' },
+      { icon: '▮', label: 'Bar · Homeless rate by LGA',        prompt: 'Build a bar chart of homeless + marginal housing rate per 10k by LGA, ranked highest to lowest. Highlight Greater Dandenong.' },
     ],
     maps: [
       { icon: '◐', label: 'MH choropleth',                prompt: 'Map MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Choropleth, navy-to-teal scale. Frankston should be the darkest at 116.1.' },
@@ -77,6 +82,243 @@
       { icon: '◌', label: 'Refugee settlement density',   prompt: 'Heat-map the humanitarian-arrival settlement density across the catchment. Casey + Greater Dandenong should dominate.' },
     ],
   };
+
+  /* ============================================================
+   * Widget rendering (Dashboards builder)
+   *
+   * When the chat reply contains a ```widget JSON block,
+   * we extract the spec, append it to the persisted widget list
+   * for this page, and render it as a tile on the canvas grid.
+   * The JSON block is stripped from the visible chat reply.
+   * ============================================================ */
+  var WIDGET_KEY = 'semphn.workbench.widgets.v1';
+  var WIDGET_RE = /```widget\s*\n([\s\S]*?)```/;
+
+  function readWidgets(page) {
+    try {
+      var raw = localStorage.getItem(WIDGET_KEY);
+      var s = raw ? JSON.parse(raw) : {};
+      return Array.isArray(s[page]) ? s[page] : [];
+    } catch (_) { return []; }
+  }
+  function writeWidgets(page, widgets) {
+    try {
+      var raw = localStorage.getItem(WIDGET_KEY);
+      var s = raw ? JSON.parse(raw) : {};
+      s[page] = widgets;
+      localStorage.setItem(WIDGET_KEY, JSON.stringify(s));
+    } catch (_) {}
+  }
+  function extractWidget(text) {
+    if (!text) return { stripped: '', widget: null };
+    var m = text.match(WIDGET_RE);
+    if (!m) return { stripped: text, widget: null };
+    try {
+      var w = JSON.parse(m[1].trim());
+      return { stripped: text.replace(WIDGET_RE, '').trim(), widget: w };
+    } catch (e) {
+      return { stripped: text, widget: null };
+    }
+  }
+
+  function buildBarSVG(widget) {
+    var data = widget.data || [];
+    if (!data.length) return null;
+    var w = 520, h = 260, padL = 130, padR = 24, padT = 16, padB = 24;
+    var max = Math.max.apply(null, data.map(function (d) { return Number(d.value) || 0; }));
+    if (max <= 0) max = 1;
+    var barH = Math.max(14, Math.floor((h - padT - padB) / data.length) - 6);
+    var rowH = Math.floor((h - padT - padB) / data.length);
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.setAttribute('class', 'wgt-svg');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    // axis line
+    var axis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    axis.setAttribute('x1', padL); axis.setAttribute('x2', w - padR);
+    axis.setAttribute('y1', padT); axis.setAttribute('y2', padT);
+    axis.setAttribute('stroke', '#E6EBF3');
+    svg.appendChild(axis);
+    data.forEach(function (d, i) {
+      var y = padT + i * rowH + 3;
+      var lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', padL - 8); lbl.setAttribute('y', y + barH * 0.7);
+      lbl.setAttribute('text-anchor', 'end');
+      lbl.setAttribute('font-family', 'Jost,sans-serif');
+      lbl.setAttribute('font-size', '11'); lbl.setAttribute('fill', '#324354');
+      lbl.textContent = d.label || '';
+      svg.appendChild(lbl);
+      var isHi = widget.highlight && d.label === widget.highlight;
+      var bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      var bw = ((Number(d.value) || 0) / max) * (w - padL - padR - 50);
+      bar.setAttribute('x', padL); bar.setAttribute('y', y);
+      bar.setAttribute('width', Math.max(2, bw)); bar.setAttribute('height', barH);
+      bar.setAttribute('rx', '3'); bar.setAttribute('fill', isHi ? '#55BFAF' : '#04264E');
+      svg.appendChild(bar);
+      var vlbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      vlbl.setAttribute('x', padL + bw + 6); vlbl.setAttribute('y', y + barH * 0.7);
+      vlbl.setAttribute('font-family', 'JetBrains Mono,monospace');
+      vlbl.setAttribute('font-size', '10'); vlbl.setAttribute('fill', '#04264E');
+      vlbl.setAttribute('font-weight', '600');
+      vlbl.textContent = formatValue(d.value, widget.unit);
+      svg.appendChild(vlbl);
+    });
+    return svg;
+  }
+  function buildLineSVG(widget) {
+    var data = widget.data || [];
+    if (!data.length) return null;
+    var w = 520, h = 240, padL = 40, padR = 16, padT = 16, padB = 32;
+    var values = data.map(function (d) { return Number(d.value) || 0; });
+    var max = Math.max.apply(null, values), min = Math.min.apply(null, values);
+    if (max === min) max = min + 1;
+    var innerW = w - padL - padR, innerH = h - padT - padB;
+    function x(i) { return padL + (i / (data.length - 1 || 1)) * innerW; }
+    function y(v) { return padT + (1 - (v - min) / (max - min)) * innerH; }
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h); svg.setAttribute('class', 'wgt-svg');
+    var grid = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    grid.setAttribute('x1', padL); grid.setAttribute('x2', w - padR);
+    grid.setAttribute('y1', h - padB); grid.setAttribute('y2', h - padB);
+    grid.setAttribute('stroke', '#D6DFEB'); svg.appendChild(grid);
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    path.setAttribute('points', data.map(function (d, i) { return x(i) + ',' + y(Number(d.value) || 0); }).join(' '));
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke', '#55BFAF');
+    path.setAttribute('stroke-width', '2.5'); path.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(path);
+    data.forEach(function (d, i) {
+      var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', x(i)); c.setAttribute('cy', y(Number(d.value) || 0));
+      c.setAttribute('r', '4'); c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#55BFAF'); c.setAttribute('stroke-width', '2.5');
+      svg.appendChild(c);
+      var t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', x(i)); t.setAttribute('y', h - 10);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-family', 'Jost,sans-serif'); t.setAttribute('font-size', '10'); t.setAttribute('fill', '#6B7B8C');
+      t.textContent = d.label || '';
+      svg.appendChild(t);
+    });
+    return svg;
+  }
+  function formatValue(v, unit) {
+    if (v == null) return '';
+    var num = Number(v);
+    if (Number.isNaN(num)) return String(v);
+    var rounded;
+    switch (unit) {
+      case 'pct':       rounded = (num.toFixed(1) + '%'); break;
+      case 'per_1k':    rounded = num.toFixed(1) + ' /1k'; break;
+      case 'per_10k':   rounded = num.toFixed(1) + ' /10k'; break;
+      case 'per_100k':  rounded = num.toFixed(1) + ' /100k'; break;
+      case 'aud':       rounded = '$' + num.toLocaleString('en-AU', { maximumFractionDigits: 0 }); break;
+      case 'count':     rounded = num.toLocaleString('en-AU'); break;
+      default:          rounded = num.toLocaleString('en-AU', { maximumFractionDigits: 1 });
+    }
+    return rounded;
+  }
+  function buildKpiNode(widget) {
+    var data = (widget.data || [])[0] || {};
+    var wrap = document.createElement('div'); wrap.className = 'wgt-kpi';
+    var v = document.createElement('div'); v.className = 'v';
+    v.textContent = formatValue(data.value, widget.unit);
+    var d = document.createElement('div'); d.className = 'd';
+    if (widget.delta) {
+      var down = String(widget.delta).startsWith('-');
+      var dchip = document.createElement('span'); dchip.className = 'delta ' + (down ? 'down' : 'up');
+      dchip.textContent = widget.delta;
+      d.appendChild(dchip);
+    }
+    wrap.appendChild(v); wrap.appendChild(d);
+    return wrap;
+  }
+  function buildTableNode(widget) {
+    var rows = widget.data || [];
+    if (!rows.length) return null;
+    var cols = Object.keys(rows[0]);
+    var tbl = document.createElement('table'); tbl.className = 'wgt-table';
+    var thead = document.createElement('thead'); var trh = document.createElement('tr');
+    cols.forEach(function (c) { var th = document.createElement('th'); th.textContent = c; trh.appendChild(th); });
+    thead.appendChild(trh); tbl.appendChild(thead);
+    var tbody = document.createElement('tbody');
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      cols.forEach(function (c) {
+        var td = document.createElement('td'); var val = r[c];
+        if (typeof val === 'number') { td.className = 'num'; td.textContent = formatValue(val, widget.unit); }
+        else { td.textContent = val == null ? '' : String(val); }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    return tbl;
+  }
+
+  function buildWidgetCard(widget, onDelete) {
+    var card = document.createElement('div'); card.className = 'wgt-card wgt-type-' + (widget.type || 'unknown');
+    // Head
+    var head = document.createElement('div'); head.className = 'wgt-head';
+    var title = document.createElement('div'); title.className = 'wgt-title';
+    var t = document.createElement('div'); t.className = 'wgt-t'; t.textContent = widget.title || 'Untitled widget';
+    var s = document.createElement('div'); s.className = 'wgt-s'; s.textContent = widget.subtitle || '';
+    title.appendChild(t); if (widget.subtitle) title.appendChild(s);
+    var actions = document.createElement('div'); actions.className = 'wgt-actions';
+    var del = document.createElement('button'); del.type = 'button'; del.title = 'Delete widget'; del.textContent = '×';
+    del.addEventListener('click', onDelete);
+    actions.appendChild(del);
+    head.appendChild(title); head.appendChild(actions);
+    card.appendChild(head);
+    // Body
+    var body = document.createElement('div'); body.className = 'wgt-body';
+    var node = null;
+    if (widget.type === 'bar')       node = buildBarSVG(widget);
+    else if (widget.type === 'line') node = buildLineSVG(widget);
+    else if (widget.type === 'kpi')  node = buildKpiNode(widget);
+    else if (widget.type === 'table')node = buildTableNode(widget);
+    if (!node) { node = document.createElement('div'); node.className = 'wgt-empty'; node.textContent = 'Unable to render widget of type "' + (widget.type || '?') + '".'; }
+    body.appendChild(node);
+    card.appendChild(body);
+    // Foot
+    if (widget.source_id) {
+      var foot = document.createElement('div'); foot.className = 'wgt-foot';
+      foot.textContent = 'Source · ' + widget.source_id;
+      card.appendChild(foot);
+    }
+    return card;
+  }
+
+  function renderWidgets() {
+    var grid = document.getElementById('widget-grid');
+    if (!grid) return;
+    var page = pageId();
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
+    var widgets = readWidgets(page);
+    var empty = document.getElementById('widget-empty');
+    if (empty) empty.hidden = widgets.length > 0;
+    widgets.forEach(function (w, idx) {
+      var card = buildWidgetCard(w, function () {
+        var arr = readWidgets(page);
+        arr.splice(idx, 1);
+        writeWidgets(page, arr);
+        renderWidgets();
+        showToast('Widget removed', 'success');
+      });
+      grid.appendChild(card);
+    });
+  }
+  function addWidget(widget) {
+    if (!widget) return;
+    var page = pageId();
+    var arr = readWidgets(page);
+    arr.push(widget);
+    writeWidgets(page, arr);
+    renderWidgets();
+    showToast('Widget added to dashboard', 'success');
+  }
+  // Expose for the chat handler to call after extracting from reply
+  window.__addWidget = addWidget;
+  window.__renderWidgets = renderWidgets;
+  window.__extractWidget = extractWidget;
 
   /* ============================================================
    * Storage helpers
@@ -585,6 +827,17 @@
         var data = await res.json();
         var reply = (data && data.reply) || (data && data.error) || 'No response.';
 
+        // On the Dashboards builder, the model may return a ```widget JSON
+        // block. Extract it, render the tile on the canvas, and strip
+        // it from the visible chat reply so the prose stays clean.
+        if (pageId() === 'dashboards' && typeof window.__extractWidget === 'function') {
+          var parsed = window.__extractWidget(reply);
+          if (parsed.widget) {
+            window.__addWidget(parsed.widget);
+            reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '" to your dashboard.');
+          }
+        }
+
         turn.summary = reply;
         turn.thinking = false;
         setPageTurns(pageId(), turns);
@@ -802,6 +1055,9 @@
     updateStatus('idle');
     refreshSavedLabel();
     setInterval(refreshSavedLabel, 30000);
+    if (pageId() === 'dashboards' && typeof window.__renderWidgets === 'function') {
+      window.__renderWidgets();
+    }
   }
 
   if (document.readyState === 'loading') {
