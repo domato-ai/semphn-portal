@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1780800000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1780900000" />
 
 <!-- Leaflet · real interactive map for choropleths, points and overlays.
      Real OSM tiles + actual SEMPHN LGA polygons from ABS LGA 2016 boundaries
@@ -83,47 +83,75 @@
     align-items: stretch;
   }
 
-  /* Empty state */
-  .widget-empty {
-    max-width: 480px;
-    margin: 4rem auto 2rem;
-    text-align: center;
-    padding: 3rem 2rem;
+  /* Default state · live SEMPHN catchment map (replaces empty-state). */
+  .maps-default {
     background: var(--paper);
-    border: 1px dashed var(--rule);
+    border: 1px solid var(--rule);
     border-radius: var(--r-lg);
+    overflow: hidden;
   }
-  .widget-empty .ico {
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    background: var(--ink);
-    color: white;
-    display: grid; place-items: center;
-    margin: 0 auto 1.1rem;
-    font-family: var(--mono); font-size: 1.05rem; font-weight: 600;
+  .maps-default-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    padding: 1.2rem 1.4rem 1.1rem;
+    border-bottom: 1px solid var(--rule-soft);
   }
-  .widget-empty h3 {
-    font-size: 1.1rem; font-weight: 600;
+  .maps-default-head h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
     color: var(--ink);
     letter-spacing: -0.015em;
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.25rem;
   }
-  .widget-empty p {
+  .maps-default-head p {
+    font-size: 0.85rem;
     color: var(--slate-soft);
-    font-size: 0.88rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
+    line-height: 1.5;
+    max-width: 60ch;
   }
-  .widget-empty p strong { color: var(--ink); font-weight: 500; }
-  .widget-empty .hint {
+  .maps-default-pill {
     display: inline-flex; align-items: center; gap: 0.4rem;
-    font-size: 0.76rem;
-    color: var(--slate-mute);
-    font-family: var(--mono);
+    padding: 0.35rem 0.7rem;
+    background: var(--rule-soft);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    color: var(--slate);
+    font-weight: 500;
+    flex: none;
   }
-  .widget-empty .hint::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%;
+  .maps-default-pill .d {
+    width: 6px; height: 6px; border-radius: 50%;
     background: var(--positive, #10B981);
+  }
+  .maps-default-canvas {
+    width: 100%;
+    height: 520px;
+    background: var(--rule-soft);
+    position: relative;
+    z-index: 0;
+  }
+  .maps-default-tips {
+    display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    padding: 0.95rem 1.4rem;
+    border-top: 1px solid var(--rule-soft);
+    background: var(--rule-bg);
+  }
+  .maps-default-tips .tip {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    font-size: 0.82rem;
+    color: var(--slate);
+    font-weight: 400;
+  }
+  .maps-default-tips .tip .kbd {
+    font-family: var(--mono); font-size: 0.74rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 0.12rem 0.45rem;
+    border-radius: 4px;
+    color: var(--ink); font-weight: 500;
+  }
+  .maps-default-tips .tip .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--positive, #10B981);
   }
 </style>
 </head>
@@ -212,15 +240,29 @@
           </div>
         </div>
 
-        <div id="widget-empty" class="widget-empty">
-          <div class="ico">M</div>
-          <h3>Empty canvas.</h3>
-          <p>
-            Pick a suggestion in the chat on the left, or type your own request like
-            <strong>"map MH conditions per 1k by LGA"</strong> or
-            <strong>"choropleth of SEIFA disadvantage"</strong>.
-          </p>
-          <span class="hint">Type in the chat to begin</span>
+        <!-- DEFAULT STATE · the SEMPHN catchment is shown as a real
+             Leaflet map from page-load. Chat replies color the LGAs
+             with metric data; this preview is hidden once any widget
+             lands on the canvas. -->
+        <div id="widget-empty" class="maps-default">
+          <div class="maps-default-head">
+            <div>
+              <h3>South-Eastern Melbourne PHN catchment</h3>
+              <p>10 LGAs · 2,935 km² · 1.56M residents. Type a metric in the chat to color this map.</p>
+            </div>
+            <span class="maps-default-pill"><span class="d"></span>Live · ABS LGA boundaries</span>
+          </div>
+          <div id="maps-default-canvas" class="maps-default-canvas"></div>
+          <div class="maps-default-tips">
+            <div class="tip">
+              <span class="kbd">/</span>
+              <span>Type a slash to open chart templates</span>
+            </div>
+            <div class="tip">
+              <span class="dot"></span>
+              <span>Pick a suggestion in the chat for an instant choropleth</span>
+            </div>
+          </div>
         </div>
 
         <div id="widget-grid"></div>
@@ -243,6 +285,7 @@
 </footer>
 <script>
 (function () {
+  /* Clear-all button */
   var btn = document.getElementById('widget-clear');
   if (btn) btn.addEventListener('click', function () {
     if (!confirm('Remove all widgets from this map canvas?')) return;
@@ -252,10 +295,68 @@
       s.maps = [];
       localStorage.setItem('semphn.workbench.widgets.v1', JSON.stringify(s));
       if (typeof window.__renderWidgets === 'function') window.__renderWidgets();
+      initDefaultMap();
     } catch (_) {}
   });
+
+  /* DEFAULT STATE · render the SEMPHN catchment as a real Leaflet map
+   * when no widgets exist. Polls for Leaflet to load (defer + CDN race). */
+  var defaultMap = null;
+  function initDefaultMap() {
+    var div = document.getElementById('maps-default-canvas');
+    if (!div) return;
+    // Already initialised? Just resize.
+    if (defaultMap) { try { defaultMap.invalidateSize(); } catch (_) {} return; }
+    if (typeof window.L === 'undefined') {
+      // Leaflet not yet loaded — poll briefly
+      return setTimeout(initDefaultMap, 120);
+    }
+    fetch('/_assets/semphn-catchment.geojson')
+      .then(function (r) { return r.json(); })
+      .then(function (geojson) {
+        defaultMap = L.map(div, {
+          zoomControl: true,
+          attributionControl: true,
+          scrollWheelZoom: false,
+          dragging: true,
+        });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 19,
+        }).addTo(defaultMap);
+        var layer = L.geoJSON(geojson, {
+          style: { fillColor: '#82D9C4', fillOpacity: 0.18, weight: 1.5, color: '#04264E', opacity: 0.85 },
+          onEachFeature: function (feature, lyr) {
+            var name = feature.properties.name;
+            lyr.bindTooltip(
+              '<div style="font-family:Geist,system-ui,sans-serif;padding:2px 4px;">' +
+                '<div style="font-weight:600;font-size:0.92rem;color:#0A0A0A;">' + name + '</div>' +
+                '<div style="font-size:0.74rem;color:#6B7280;margin-top:0.18rem;">type "/map" to color this LGA</div>' +
+              '</div>',
+              { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' }
+            );
+            lyr.on({
+              mouseover: function (e) { e.target.setStyle({ fillOpacity: 0.42, weight: 2 }); },
+              mouseout:  function (e) { layer.resetStyle(e.target); },
+            });
+          },
+        }).addTo(defaultMap);
+        try { defaultMap.fitBounds(layer.getBounds(), { padding: [12, 12] }); } catch (_) {}
+        setTimeout(function () { try { defaultMap.invalidateSize(); } catch (_) {} }, 200);
+      })
+      .catch(function (e) { console.error('[default-map] load failed', e); });
+  }
+  // Kick off init after the deferred Leaflet script has had a chance
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(initDefaultMap, 100); });
+  } else {
+    setTimeout(initDefaultMap, 100);
+  }
+  // Expose for re-initialization after Clear all
+  window.__initMapsDefault = initDefaultMap;
 })();
 </script>
-<script src="/_assets/shell.js?v=1780800000"></script>
+<script src="/_assets/shell.js?v=1780900000"></script>
 </body>
 </html>
