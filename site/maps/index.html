@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1781000000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1781100000" />
 
 <!-- Leaflet · real interactive map for choropleths, points and overlays.
      Real OSM tiles + actual SEMPHN LGA polygons from ABS LGA 2016 boundaries
@@ -29,133 +29,55 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
 
 <style>
-  /* Maps builder · canvas-specific styles
-     (shared widget styles + chrome live in shell.css) */
+  /* Maps builder · full-bleed map fills the canvas-body. */
 
-  .builder-head {
-    display: flex; align-items: flex-end; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap;
-    margin-bottom: 1.8rem;
-    padding-bottom: 1.2rem;
-    border-bottom: 1px solid var(--rule);
+  /* Override the default canvas-body padding so the map can fill edge-to-edge.
+     The map IS the page; chrome lives only in the global nav + canvas-head. */
+  .canvas-body-flush {
+    padding: 0 !important;
+    overflow: hidden;  /* no scroll when map is the only content */
+    position: relative;
   }
-  .builder-head h1 {
-    font-size: 1.65rem;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: -0.022em;
-    line-height: 1.15;
-    margin-bottom: 0.35rem;
+
+  /* Default state · map fills the canvas-body entirely. Using absolute
+     positioning so we don't depend on flex propagation through deep nesting. */
+  .maps-default {
+    position: absolute;
+    inset: 0;
   }
-  .builder-head p {
-    color: var(--slate-soft);
-    font-size: 0.9rem;
-    font-weight: 400;
-    max-width: 60ch;
+  .maps-default[hidden] { display: none; }
+  .maps-default-canvas {
+    width: 100%; height: 100%;
+    background: var(--rule-soft);
+    position: relative;
+    z-index: 0;
   }
-  .builder-head .count {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    padding: 0.35rem 0.7rem;
+  /* When widgets exist, the empty state hides and widget-grid takes over.
+     Tiles get padding back so they don't go edge-to-edge. */
+  .widget-grid-padded {
+    display: none;  /* hidden by default */
+  }
+  .widget-grid-padded:not(:empty) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    overflow-y: auto;
+    position: absolute; inset: 0;
+    background: var(--rule-bg);
+  }
+
+  /* Tighter canvas-head pills · widget count + clear in the toolbar */
+  .canvas-pill {
+    display: inline-flex; align-items: center;
+    padding: 0.32rem 0.7rem;
     background: var(--rule-soft);
     border-radius: 999px;
     font-size: 0.74rem;
     color: var(--slate);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-  }
-  .builder-head .clear {
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    color: var(--slate);
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--r-sm);
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--motion-fast, 130ms);
-  }
-  .builder-head .clear:hover {
-    color: var(--ink); border-color: var(--slate-mute);
-    background: var(--rule-soft);
-  }
-
-  /* Widget grid · single column wide for maps so choropleth has space */
-  #widget-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.1rem;
-    align-items: stretch;
-  }
-
-  /* Default state · live SEMPHN catchment map (replaces empty-state). */
-  .maps-default {
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: var(--r-lg);
-    overflow: hidden;
-  }
-  .maps-default-head {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap;
-    padding: 1.2rem 1.4rem 1.1rem;
-    border-bottom: 1px solid var(--rule-soft);
-  }
-  .maps-default-head h3 {
-    font-size: 1.02rem;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: -0.015em;
-    margin-bottom: 0.25rem;
-  }
-  .maps-default-head p {
-    font-size: 0.85rem;
-    color: var(--slate-soft);
-    line-height: 1.5;
-    max-width: 60ch;
-  }
-  .maps-default-pill {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.35rem 0.7rem;
-    background: var(--rule-soft);
-    border-radius: 999px;
-    font-size: 0.7rem;
-    color: var(--slate);
-    font-weight: 500;
-    flex: none;
-  }
-  .maps-default-pill .d {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--positive, #10B981);
-  }
-  .maps-default-canvas {
-    width: 100%;
-    height: 520px;
-    background: var(--rule-soft);
-    position: relative;
-    z-index: 0;
-  }
-  .maps-default-tips {
-    display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
-    padding: 0.95rem 1.4rem;
-    border-top: 1px solid var(--rule-soft);
-    background: var(--rule-bg);
-  }
-  .maps-default-tips .tip {
-    display: inline-flex; align-items: center; gap: 0.55rem;
-    font-size: 0.82rem;
-    color: var(--slate);
-    font-weight: 400;
-  }
-  .maps-default-tips .tip .kbd {
-    font-family: var(--mono); font-size: 0.74rem;
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    padding: 0.12rem 0.45rem;
-    border-radius: 4px;
-    color: var(--ink); font-weight: 500;
-  }
-  .maps-default-tips .tip .dot {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--positive, #10B981);
+    margin-right: 0.15rem;
   }
 </style>
 </head>
@@ -226,51 +148,25 @@
         <small>· catchment choropleth &amp; overlays</small>
       </span>
       <div class="canvas-actions">
+        <span class="canvas-pill" id="widget-count">0 widgets</span>
+        <button type="button" id="widget-clear" title="Clear all widgets">Clear</button>
         <button type="button">Export PNG</button>
         <button type="button" class="primary">Embed in HNA</button>
       </div>
     </header>
 
-    <div class="canvas-body">
-      <div class="canvas-pane">
-        <div class="builder-head">
-          <div>
-            <h1>Catchment Maps</h1>
-            <p>Type a metric in the chat → a SEMPHN-themed choropleth lands here. Mix with KPI tiles, donuts and tables for a full geo report.</p>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <span class="count" id="widget-count">0 widgets</span>
-            <button type="button" class="clear" id="widget-clear">Clear all</button>
-          </div>
-        </div>
-
-        <!-- DEFAULT STATE · the SEMPHN catchment is shown as a real
-             Leaflet map from page-load. Chat replies color the LGAs
-             with metric data; this preview is hidden once any widget
-             lands on the canvas. -->
-        <div id="widget-empty" class="maps-default">
-          <div class="maps-default-head">
-            <div>
-              <h3>South-Eastern Melbourne PHN catchment</h3>
-              <p>10 LGAs · 2,935 km² · 1.56M residents. Type a metric in the chat to color this map.</p>
-            </div>
-            <span class="maps-default-pill"><span class="d"></span>Live · ABS LGA boundaries</span>
-          </div>
-          <div id="maps-default-canvas" class="maps-default-canvas"></div>
-          <div class="maps-default-tips">
-            <div class="tip">
-              <span class="kbd">/</span>
-              <span>Type a slash to open chart templates</span>
-            </div>
-            <div class="tip">
-              <span class="dot"></span>
-              <span>Pick a suggestion in the chat for an instant choropleth</span>
-            </div>
-          </div>
-        </div>
-
-        <div id="widget-grid"></div>
+    <!-- Full-bleed canvas body · the map fills the entire viewport. -->
+    <div class="canvas-body canvas-body-flush">
+      <!-- DEFAULT STATE · interactive SEMPHN catchment map. No wrapper
+           card, no header, no tips. The map IS the page. Hidden when
+           any widget lands. -->
+      <div id="widget-empty" class="maps-default">
+        <div id="maps-default-canvas" class="maps-default-canvas"></div>
       </div>
+
+      <!-- Widget grid · only shown when widgets exist. Padded so tiles
+           don't go edge-to-edge. -->
+      <div id="widget-grid" class="widget-grid-padded"></div>
     </div>
   </section>
 </div>
@@ -335,6 +231,6 @@
   window.__initMapsDefault = initDefaultMap;
 })();
 </script>
-<script src="/_assets/shell.js?v=1781000000"></script>
+<script src="/_assets/shell.js?v=1781100000"></script>
 </body>
 </html>

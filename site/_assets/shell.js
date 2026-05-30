@@ -512,11 +512,13 @@
       var streetTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19,
       });
-      lightTiles.addTo(map);
+      // Streets is the default — color + road labels make the map immediately
+      // recognisable. Light + Satellite still in the layer toggle.
+      streetTiles.addTo(map);
 
       if (opts.showLayerToggle !== false) {
         L.control.layers(
-          { 'Light': lightTiles, 'Satellite': satTiles, 'Streets': streetTiles },
+          { 'Streets': streetTiles, 'Light': lightTiles, 'Satellite': satTiles },
           {}, { position: 'topright', collapsed: true }
         ).addTo(map);
       }

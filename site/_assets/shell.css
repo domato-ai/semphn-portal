@@ -681,6 +681,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   text-transform: none;
 }
 .canvas-actions { display: flex; align-items: center; gap: 0.35rem; }
+.canvas-actions .canvas-pill {
+  display: inline-flex; align-items: center;
+  padding: 0.32rem 0.7rem;
+  background: var(--rule-soft);
+  border-radius: 999px;
+  font-size: 0.74rem;
+  color: var(--slate);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.25rem;
+}
 .canvas-actions button {
   background: var(--paper); border: 1px solid var(--rule);
   color: var(--ink);
