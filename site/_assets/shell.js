@@ -242,40 +242,91 @@
    * ============================================================ */
   var SEMPHN_THEME_NAME = 'semphn';
   var semphnThemeRegistered = false;
+
+  /* SEMPHN-themed but vibrant categorical palette. Mixes the brand
+   * navy + teal with attention colours (amber/violet/coral/sky/emerald).
+   * Used for bar / line / donut series. Choropleths use the separate
+   * sequential teal→ink ramp (which is a heatmap, not categorical). */
+  var SEMPHN_PALETTE = [
+    '#04264E', // navy (SEMPHN primary)
+    '#55BFAF', // teal (SEMPHN primary)
+    '#4C86FF', // cobalt blue
+    '#F59E0B', // amber
+    '#8B5CF6', // violet
+    '#10B981', // emerald
+    '#EC4899', // pink
+    '#06B6D4', // cyan
+    '#F472B6', // soft pink
+    '#84CC16', // lime
+  ];
+  /* Lighter end-stop for the vertical gradient fill on each bar */
+  var SEMPHN_PALETTE_LIGHT = [
+    '#0E4E80', '#82D9C4', '#7DA8FF', '#FBBF55', '#B69AF0',
+    '#5BD4A6', '#F58EBE', '#5BDFEE', '#F8A5CE', '#B5E063',
+  ];
+
+  /* Build a vertical-gradient ECharts color stop pair for a palette index.
+   * Solid colour at the start of the bar, ~80% opacity at the end —
+   * gives every bar a subtle depth without competing with the data. */
+  function semphnGradient(idx, opts) {
+    opts = opts || {};
+    var solid = SEMPHN_PALETTE[idx % SEMPHN_PALETTE.length];
+    var light = SEMPHN_PALETTE_LIGHT[idx % SEMPHN_PALETTE_LIGHT.length];
+    return {
+      type: 'linear',
+      x: 0, y: 0, x2: opts.horizontal ? 1 : 0, y2: opts.horizontal ? 0 : 1,
+      colorStops: [
+        { offset: 0, color: solid },
+        { offset: 1, color: light },
+      ],
+    };
+  }
+
   function ensureSemphnTheme() {
     if (semphnThemeRegistered || typeof window.echarts === 'undefined') return semphnThemeRegistered;
     window.echarts.registerTheme(SEMPHN_THEME_NAME, {
-      color: ['#0A0A0A', '#55BFAF', '#04264E', '#82D9C4', '#003D69', '#9CA3AF'],
+      color: SEMPHN_PALETTE,
       backgroundColor: 'transparent',
       textStyle: {
         fontFamily: '"Geist", -apple-system, "Segoe UI", system-ui, sans-serif',
         color: '#0A0A0A',
       },
-      title: { textStyle: { color: '#0A0A0A', fontWeight: 600, fontSize: 13 } },
+      title:  { textStyle: { color: '#0A0A0A', fontWeight: 600, fontSize: 13 } },
       legend: { textStyle: { color: '#4B5563', fontSize: 11 } },
       categoryAxis: {
-        axisLine:   { show: false },
-        axisTick:   { show: false },
-        axisLabel:  { color: '#6B7280', fontSize: 11 },
-        splitLine:  { show: false },
-        splitArea:  { show: false },
+        axisLine:  { show: false },
+        axisTick:  { show: false },
+        axisLabel: { color: '#6B7280', fontSize: 11 },
+        splitLine: { show: false },
+        splitArea: { show: false },
       },
       valueAxis: {
-        axisLine:   { show: false },
-        axisTick:   { show: false },
-        axisLabel:  { color: '#9CA3AF', fontSize: 11 },
-        splitLine:  { lineStyle: { color: '#F3F4F6', type: 'solid' } },
-        splitArea:  { show: false },
+        axisLine:  { show: false },
+        axisTick:  { show: false },
+        axisLabel: { color: '#9CA3AF', fontSize: 11 },
+        splitLine: { lineStyle: { color: '#F3F4F6', type: 'solid' } },
+        splitArea: { show: false },
       },
-      bar:  { itemStyle: { borderRadius: [4, 4, 4, 4] } },
+      bar: {
+        itemStyle: {
+          borderRadius: [4, 4, 4, 4],
+          shadowBlur:    8,
+          shadowColor:   'rgba(10,10,10,0.10)',
+          shadowOffsetY: 1.5,
+        },
+      },
       line: {
         smooth: true,
-        symbol: 'circle', symbolSize: 6,
-        lineStyle: { width: 2 },
+        symbol: 'circle', symbolSize: 7,
+        lineStyle: { width: 2.5 },
         itemStyle: { borderColor: '#FFFFFF', borderWidth: 2 },
       },
       pie: {
-        itemStyle: { borderColor: '#FFFFFF', borderWidth: 2 },
+        itemStyle: {
+          borderColor: '#FFFFFF', borderWidth: 3,
+          shadowBlur:    10,
+          shadowColor:   'rgba(10,10,10,0.08)',
+        },
         label: { color: '#0A0A0A', fontSize: 11 },
       },
       tooltip: {
@@ -327,11 +378,28 @@
   function barOption(widget) {
     var data = (widget.data || []);
     var labels = data.map(function (d) { return d.label || ''; });
+    // Each bar gets its OWN palette colour (cycled) with a horizontal
+    // gradient fill. The highlight bar gets a teal-mint glow + ink
+    // outline so it pops as the standout.
     var values = data.map(function (d, i) {
       var v = Number(d.value) || 0;
+      var isHi = widget.highlight && d.label === widget.highlight;
+      if (isHi) {
+        return {
+          value: v,
+          itemStyle: {
+            color: semphnGradient(1, { horizontal: true }),   // teal gradient
+            borderColor: '#04264E',
+            borderWidth: 1.5,
+            shadowBlur:    18,
+            shadowColor:   'rgba(85,191,175,0.55)',
+            shadowOffsetX: 2,
+          },
+        };
+      }
       return {
         value: v,
-        itemStyle: { color: (widget.highlight && d.label === widget.highlight) ? '#55BFAF' : '#0A0A0A' },
+        itemStyle: { color: semphnGradient(i, { horizontal: true }) },
       };
     });
     return {
@@ -349,15 +417,16 @@
       series: [{
         type: 'bar',
         data: values,
-        barMaxWidth: 22,
+        barMaxWidth: 24,
         label: {
-          show: true, position: 'right',
+          show: true, position: 'right', distance: 8,
           formatter: function (p) { return formatValue(p.value, widget.unit); },
-          color: '#0A0A0A', fontSize: 11, fontWeight: 500,
+          color: '#0A0A0A', fontSize: 11, fontWeight: 600,
           fontFamily: '"Geist Mono", ui-monospace, monospace',
         },
-        animationDuration: 500,
-        animationEasing: 'cubicOut',
+        animationDuration:    900,
+        animationEasing:      'cubicOut',
+        animationDelay:       function (i) { return i * 50; },  // stagger
       }],
     };
   }
@@ -367,13 +436,14 @@
     var data = widget.data || [];
     var labels = data.map(function (d) { return d.label || ''; });
     var values = data.map(function (d) { return Number(d.value) || 0; });
+    // Line uses SEMPHN teal as primary (vibrant on white background)
     var areaStyle = opts.area ? {
       areaStyle: {
         color: {
           type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
           colorStops: [
-            { offset: 0, color: 'rgba(10,10,10,0.18)' },
-            { offset: 1, color: 'rgba(10,10,10,0)' },
+            { offset: 0, color: 'rgba(85,191,175,0.32)' },
+            { offset: 1, color: 'rgba(85,191,175,0)' },
           ],
         },
       },
@@ -396,17 +466,31 @@
         data: values,
         smooth: true,
         showSymbol: true,
-        lineStyle: { width: 2, color: '#0A0A0A' },
-        itemStyle: { color: '#0A0A0A', borderColor: '#FFFFFF', borderWidth: 2 },
+        lineStyle: { width: 2.5, color: '#04264E', shadowBlur: 8, shadowColor: 'rgba(4,38,78,0.25)' },
+        itemStyle: { color: '#55BFAF', borderColor: '#FFFFFF', borderWidth: 2.5 },
         emphasis: { focus: 'series' },
-        animationDuration: 600,
+        animationDuration: 1000,
+        animationEasing: 'cubicOut',
       }, areaStyle)],
     };
   }
 
   function donutOption(widget) {
-    var data = (widget.data || []).map(function (d) {
-      return { name: d.label || '', value: Number(d.value) || 0 };
+    // Each slice gets a palette-cycled gradient (radial: solid center, soft outer)
+    var data = (widget.data || []).map(function (d, i) {
+      return {
+        name: d.label || '',
+        value: Number(d.value) || 0,
+        itemStyle: {
+          color: {
+            type: 'radial', x: 0.5, y: 0.5, r: 0.85,
+            colorStops: [
+              { offset: 0, color: SEMPHN_PALETTE[i % SEMPHN_PALETTE.length] },
+              { offset: 1, color: SEMPHN_PALETTE_LIGHT[i % SEMPHN_PALETTE_LIGHT.length] },
+            ],
+          },
+        },
+      };
     });
     return {
       tooltip: {
@@ -426,12 +510,17 @@
         radius: ['52%', '78%'],
         center: ['35%', '50%'],
         avoidLabelOverlap: true,
-        padAngle: 1,
-        itemStyle: { borderRadius: 3, borderColor: '#FFFFFF', borderWidth: 2 },
+        padAngle: 2,
+        itemStyle: { borderRadius: 4, borderColor: '#FFFFFF', borderWidth: 3 },
         label: { show: false },
         labelLine: { show: false },
+        emphasis: {
+          scale: true, scaleSize: 6,
+          itemStyle: { shadowBlur: 18, shadowColor: 'rgba(10,10,10,0.18)' },
+        },
         data: data,
-        animationDuration: 600,
+        animationDuration: 900,
+        animationEasing: 'cubicOut',
       }],
     };
   }
@@ -1221,17 +1310,41 @@
     }
     return rounded;
   }
+  /* Hash a string → stable palette index (so the same KPI gets the
+   * same colour every render, instead of cycling on each rebuild). */
+  function paletteIndexFor(s) {
+    var str = String(s || '');
+    var h = 0;
+    for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+    return Math.abs(h) % SEMPHN_PALETTE.length;
+  }
   function buildKpiNode(widget) {
     var data = (widget.data || [])[0] || {};
+    var idx = paletteIndexFor(widget.title || data.label || '');
+    var colorSolid = SEMPHN_PALETTE[idx];
+    var colorLight = SEMPHN_PALETTE_LIGHT[idx];
+
     var wrap = document.createElement('div'); wrap.className = 'wgt-kpi';
+    wrap.style.setProperty('--kpi-color',       colorSolid);
+    wrap.style.setProperty('--kpi-color-light', colorLight);
+    // Colored accent stripe at the top of the value (left edge)
+    var accent = document.createElement('span'); accent.className = 'wgt-kpi-accent';
+    wrap.appendChild(accent);
+
     var v = document.createElement('div'); v.className = 'v';
     v.textContent = formatValue(data.value, widget.unit);
+
     var d = document.createElement('div'); d.className = 'd';
     if (widget.delta) {
       var down = String(widget.delta).startsWith('-');
       var dchip = document.createElement('span'); dchip.className = 'delta ' + (down ? 'down' : 'up');
       dchip.textContent = widget.delta;
       d.appendChild(dchip);
+    }
+    if (data.label) {
+      var lbl = document.createElement('span'); lbl.className = 'l';
+      lbl.textContent = data.label;
+      d.appendChild(lbl);
     }
     wrap.appendChild(v); wrap.appendChild(d);
     return wrap;
