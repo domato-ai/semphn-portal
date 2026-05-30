@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1781100000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1781200000" />
 
 <!-- Leaflet · real interactive map for choropleths, points and overlays.
      Real OSM tiles + actual SEMPHN LGA polygons from ABS LGA 2016 boundaries
@@ -220,8 +220,12 @@
       showLocate: true,
       showLayerToggle: true,
       showServicePoints: true,
-    }).then(function (map) { defaultMap = map; })
-      .catch(function (e) { console.error('[default-map] mount failed', e); });
+    }).then(function (mapApi) {
+      defaultMap = mapApi.map;
+      // Expose the mapApi globally so the chat handler can overlay data
+      // layers onto this map when the user types something.
+      window.__defaultMapApi = mapApi;
+    }).catch(function (e) { console.error('[default-map] mount failed', e); });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { setTimeout(initDefaultMap, 200); });
@@ -231,6 +235,6 @@
   window.__initMapsDefault = initDefaultMap;
 })();
 </script>
-<script src="/_assets/shell.js?v=1781100000"></script>
+<script src="/_assets/shell.js?v=1781200000"></script>
 </body>
 </html>

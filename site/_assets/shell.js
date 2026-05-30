@@ -87,16 +87,20 @@
       ]},
     ],
     maps: [
-      { section: 'Choropleth', items: [
-        { icon: '◐', label: 'MH prevalence',            prompt: 'Build a choropleth of MH conditions per 1,000 residents across the 10 SEMPHN LGAs. Highlight Frankston (116.1) as the standout. Unit per_1k.' },
-        { icon: '▮', label: 'Bulk-billing by LGA',      prompt: 'Build a choropleth of bulk-billing percentage by LGA. Unit pct.' },
-        { icon: '▦', label: 'Homelessness rate',        prompt: 'Build a choropleth of homeless + marginal housing rate per 10k by LGA. Highlight Greater Dandenong. Unit per_10k.' },
-        { icon: '◌', label: 'Bowel screening rate',     prompt: 'Build a choropleth of bowel cancer screening participation by LGA. Unit pct. Lower is worse.' },
+      { section: 'Health & wellbeing', items: [
+        { icon: '◐', label: 'MH prevalence',            prompt: 'Map MH conditions per 1,000 residents by LGA. Highlight Frankston (highest at 116.1).' },
+        { icon: '◌', label: 'Bowel screening rate',     prompt: 'Map bowel cancer screening participation by LGA. Highlight lowest LGAs.' },
+        { icon: '+',  label: 'GP encounters per resident', prompt: 'Map GP encounters per resident per year by LGA.' },
       ]},
-      { section: 'Build context', items: [
-        { icon: '#', label: 'KPI for max LGA',          prompt: 'Add a KPI tile for the LGA with the highest MH conditions rate (Frankston, 116.1 per 1k).' },
-        { icon: '▮', label: 'Bar · ranked LGAs',        prompt: 'Add a bar chart of MH conditions per 1,000 by LGA, ranked highest to lowest.' },
-        { icon: '▤', label: 'Table · all 10 LGAs',      prompt: 'Add a table showing all 10 LGAs with population, MH rate, and SEIFA score.' },
+      { section: 'ABS · disadvantage & population', items: [
+        { icon: '▦', label: 'SEIFA disadvantage',       prompt: 'Map ABS SEIFA disadvantage index by LGA. Highlight Greater Dandenong (most disadvantaged).' },
+        { icon: '#', label: 'Catchment population',     prompt: 'Map ABS 2021 Census population by LGA.' },
+        { icon: '↗', label: 'Population growth pa',     prompt: 'Map annual population growth rate (2016-2021 ABS Census) by LGA.' },
+      ]},
+      { section: 'Access & equity', items: [
+        { icon: '▮', label: 'Bulk-billing %',           prompt: 'Map bulk-billing percentage by LGA.' },
+        { icon: '▦', label: 'Homelessness rate',        prompt: 'Map homeless + marginal housing rate per 10k by LGA. Highlight Greater Dandenong.' },
+        { icon: '◌', label: 'Refugee settlement density', prompt: 'Map humanitarian-arrival settlement density by LGA. Casey + Greater Dandenong dominate.' },
       ]},
     ],
   };
@@ -705,29 +709,131 @@
           cluster.addTo(map);
         }
 
-        // Floating legend (choropleth mode only)
-        if (opts.mode === 'choropleth' && opts.widget && byLga) {
-          var values2 = Object.values(byLga);
-          var min2 = values2.length ? Math.min.apply(null, values2) : 0;
-          var max2 = values2.length ? Math.max.apply(null, values2) : 1;
-          if (min2 === max2) max2 = min2 + 1;
-          var LegendCtl = L.Control.extend({
+        /* ── Build the mapApi that callers use to apply data layers ── */
+        var mapApi = {
+          map: map,
+          lgaLayer: lgaLayer,
+          extraLayers: [],   // point overlays, etc. — additive
+          currentLegend: null,
+          currentIndicator: null,
+          currentDataWidget: null,
+        };
+
+        function removeLegend() {
+          if (mapApi.currentLegend) { try { map.removeControl(mapApi.currentLegend); } catch (_) {} mapApi.currentLegend = null; }
+        }
+        function removeIndicator() {
+          if (mapApi.currentIndicator) { try { map.removeControl(mapApi.currentIndicator); } catch (_) {} mapApi.currentIndicator = null; }
+        }
+
+        function applyChoropleth(w) {
+          mapApi.currentDataWidget = w;
+          var byLgaW = {};
+          (w.data || []).forEach(function (d) { byLgaW[(d.label || '').trim()] = Number(d.value) || 0; });
+          var values = Object.values(byLgaW);
+          var minW = values.length ? Math.min.apply(null, values) : 0;
+          var maxW = values.length ? Math.max.apply(null, values) : 1;
+          if (minW === maxW) maxW = minW + 1;
+          var rampW = function (v) {
+            var t = Math.max(0, Math.min(1, (v - minW) / (maxW - minW)));
+            if (t < 0.33)  return blendHex('#E5F4F0', '#82D9C4', t / 0.33);
+            if (t < 0.66)  return blendHex('#82D9C4', '#04264E', (t - 0.33) / 0.33);
+            return blendHex('#04264E', '#0A0A0A', (t - 0.66) / 0.34);
+          };
+          lgaLayer.eachLayer(function (lyr) {
+            var name = lyr.feature.properties.name;
+            var has = name in byLgaW;
+            lyr.setStyle({
+              fillColor:   has ? rampW(byLgaW[name]) : '#F3F4F6',
+              weight:      w.highlight === name ? 2.5 : 1.25,
+              color:       w.highlight === name ? '#0A0A0A' : '#FFFFFF',
+              fillOpacity: has ? 0.85 : 0.35,
+            });
+            // Rebind tooltip with the new data
+            var safeName = escHtml(name);
+            var tt =
+              '<div style="font-family:Geist,system-ui,sans-serif;min-width:140px;">' +
+                '<div style="font-weight:600;font-size:0.95rem;color:#0A0A0A;">' + safeName + '</div>' +
+                (has
+                  ? '<div style="font-family:Geist Mono,ui-monospace,monospace;font-size:1.15rem;font-weight:600;color:#0A0A0A;margin-top:0.18rem;">' + escHtml(formatValue(byLgaW[name], w.unit)) + '</div>' +
+                    '<div style="font-size:0.7rem;color:#6B7280;margin-top:0.2rem;">' + escHtml(w.unit_label || w.unit || '') + '</div>'
+                  : '<div style="font-size:0.78rem;color:#9CA3AF;font-style:italic;margin-top:0.2rem;">no data</div>') +
+              '</div>';
+            lyr.unbindTooltip();
+            lyr.bindTooltip(tt, { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' });
+          });
+          // Replace legend
+          removeLegend();
+          var LegCtl = L.Control.extend({
             options: { position: 'bottomleft' },
             onAdd: function () {
               var d = L.DomUtil.create('div', 'semphn-leaflet-legend');
               d.innerHTML =
-                '<div class="row"><span class="v">' + escHtml(formatValue(min2, opts.widget.unit)) + '</span>' +
+                '<div class="row"><span class="v">' + escHtml(formatValue(minW, w.unit)) + '</span>' +
                 '<span class="bar"></span>' +
-                '<span class="v">' + escHtml(formatValue(max2, opts.widget.unit)) + '</span></div>' +
-                '<div class="lbl">' + escHtml(opts.widget.unit_label || opts.widget.unit || '') + '</div>';
+                '<span class="v">' + escHtml(formatValue(maxW, w.unit)) + '</span></div>' +
+                '<div class="lbl">' + escHtml(w.unit_label || w.unit || w.title || '') + '</div>';
               return d;
             },
           });
-          new LegendCtl().addTo(map);
+          mapApi.currentLegend = new LegCtl();
+          mapApi.currentLegend.addTo(map);
+          // Replace indicator (top-left, below search)
+          removeIndicator();
+          var IndCtl = L.Control.extend({
+            options: { position: 'topleft' },
+            onAdd: function () {
+              var d = L.DomUtil.create('div', 'semphn-leaflet-indicator');
+              d.innerHTML =
+                '<span class="d"></span>' +
+                '<span class="lab">' + escHtml(w.title || 'Data layer') + '</span>' +
+                '<button type="button" title="Remove layer" aria-label="Remove layer">×</button>';
+              var btn = d.querySelector('button');
+              L.DomEvent.disableClickPropagation(d);
+              L.DomEvent.on(btn, 'click', function () { mapApi.clearData(); });
+              return d;
+            },
+          });
+          mapApi.currentIndicator = new IndCtl();
+          mapApi.currentIndicator.addTo(map);
+        }
+
+        function clearData() {
+          mapApi.currentDataWidget = null;
+          // Restore default tint + tooltip
+          lgaLayer.eachLayer(function (lyr) {
+            lyr.setStyle({ fillColor: '#82D9C4', fillOpacity: 0.16, weight: 1.5, color: '#04264E', opacity: 0.85 });
+            var safeName = escHtml(lyr.feature.properties.name);
+            var tt =
+              '<div style="font-family:Geist,system-ui,sans-serif;padding:2px 4px;">' +
+                '<div style="font-weight:600;font-size:0.92rem;color:#0A0A0A;">' + safeName + '</div>' +
+                '<div style="font-size:0.74rem;color:#6B7280;margin-top:0.18rem;">type a metric in the chat to color this LGA</div>' +
+              '</div>';
+            lyr.unbindTooltip();
+            lyr.bindTooltip(tt, { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' });
+          });
+          removeLegend();
+          removeIndicator();
+          // Remove any additive point overlays too
+          mapApi.extraLayers.forEach(function (l) { try { map.removeLayer(l); } catch (_) {} });
+          mapApi.extraLayers = [];
+        }
+
+        mapApi.applyData = function (w) {
+          if (!w) return;
+          if (w.type === 'choropleth' || w.type === 'map') applyChoropleth(w);
+          // (Future: handle 'points' type for additive marker layers)
+        };
+        mapApi.clearData = clearData;
+
+        // If the initial mount was given a widget (choropleth tile use-case),
+        // apply it now so the legend + indicator render via the same path.
+        if (opts.mode === 'choropleth' && opts.widget) {
+          applyChoropleth(opts.widget);
         }
 
         setTimeout(function () { try { map.invalidateSize(); } catch (_) {} }, 200);
-        resolve(map);
+        resolve(mapApi);
       }).catch(function (e) { reject(e); });
     });
   }
@@ -2089,13 +2195,24 @@
         // block. Extract it, render the tile on the canvas, and strip
         // it from the visible chat reply so the prose stays clean.
         var producedWidget = null;
-        if (pageId() === 'dashboards' && typeof window.__extractWidget === 'function') {
+        if (typeof window.__extractWidget === 'function') {
           try {
             var parsed = window.__extractWidget(reply);
             if (parsed.widget) {
               producedWidget = parsed.widget;
-              window.__addWidget(parsed.widget);
-              reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '" to your dashboard.');
+              var page = pageId();
+              var t = parsed.widget.type;
+              // On /maps/, choropleth-style widgets overlay onto the live
+              // default map instead of spawning a separate widget tile.
+              if (page === 'maps' && (t === 'choropleth' || t === 'map') && window.__defaultMapApi) {
+                window.__defaultMapApi.applyData(parsed.widget);
+                reply = parsed.stripped || ('Map coloured by ' + (parsed.widget.title || 'data layer') + '.');
+              } else if (page === 'dashboards' || page === 'maps') {
+                // Non-choropleth on /maps/ falls back to a widget tile,
+                // and any widget on /dashboards/ becomes a tile.
+                window.__addWidget(parsed.widget);
+                reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '".');
+              }
             }
           } catch (e) { console.error('[widget] extract/add failed', e); }
         }

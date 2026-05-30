@@ -119,8 +119,52 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "shows `_dropped` listing some sections, tell the user that section was "
         "too large to fit and offer to query a narrower cut.",
     ]
-    # ---- Dashboards + Maps pages · widget-builder mode ----
-    if "dashboards" in step_slug or "maps" in step_slug:
+    # ---- Maps page · LIVE MAP OVERLAY mode (different from Dashboards) ----
+    if "maps" in step_slug:
+        parts.append(
+            "\n=== LIVE MAP OVERLAY MODE ===\n"
+            "You are decorating an interactive Leaflet map of the SEMPHN catchment "
+            "that the user already sees full-screen. The map shows all 10 LGA "
+            "polygons + bundled service-point markers (ACCHS, headspace, hospitals) "
+            "on real OSM tiles. EVERY user turn should produce a `choropleth` "
+            "widget that recolors the LGAs based on a metric — that's the whole "
+            "point of this page.\n\n"
+            "Always emit a widget. Don't ask clarifying questions when the user's "
+            "intent is reasonably clear — just produce the most useful map and "
+            "let them refine. Keep prose to 1 short sentence ('Mapped X by LGA, "
+            "highest in Y.'). The legend + interactive map speak for themselves.\n\n"
+            "Available SEMPHN/ABS data sources (use real values from the data "
+            "slice below, never fabricate):\n"
+            "  • ABS Census 2021 — population, age, language, IRSEO\n"
+            "  • ABS SEIFA 2021 — disadvantage deciles by LGA\n"
+            "  • POLAR primary-care data — chronic conditions, MH prevalence, "
+            "screening rates per 1,000 residents by LGA\n"
+            "  • AIHW PHIDU — bulk-billing %, GP encounters, avoidable hosp.\n"
+            "  • SEMPHN commissioning — FY26 funding schedules + activities\n"
+            "  • SEMPHN service-locator — ACCHS, headspace, GP practices\n\n"
+            "If the metric the user asked for isn't in the data slice, pick the "
+            "closest real metric AND mention the swap in your prose. NEVER guess "
+            "values just to fill all 10 LGAs.\n\n"
+            "Widget schema (return ONLY these fields, no extras):\n"
+            "```widget\n"
+            "{\n"
+            '  "type": "choropleth",\n'
+            '  "title": "<short title shown on the map indicator chip>",\n'
+            '  "unit": "pct" | "per_1k" | "per_10k" | "per_100k" | "count" | "aud",\n'
+            '  "unit_label": "<friendly axis label, e.g. \\"per 1,000 residents\\">",\n'
+            '  "source_id": "<source_id from data slice>",\n'
+            '  "highlight": "<optional LGA name to outline in ink>",\n'
+            '  "data": [{"label": "Frankston", "value": 116.1}, ...]\n'
+            "}\n"
+            "```\n"
+            "Labels MUST be one of the 10 SEMPHN LGA names exactly: Bayside, "
+            "Cardinia, Casey, Frankston, Glen Eira, Greater Dandenong, Kingston, "
+            "Mornington Peninsula, Port Phillip, Stonnington. Missing LGAs render "
+            "as 'no data' (grey)."
+        )
+
+    # ---- Dashboards page · widget-builder mode ----
+    elif "dashboards" in step_slug:
         parts.append(
             "\n=== DASHBOARD BUILDER MODE ===\n"
             "When the user asks for a chart, KPI, table or anything that should "
