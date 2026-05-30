@@ -888,6 +888,124 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .wgt-leaflet-tt::before { display: none !important; }
 
+/* Layer toggle (top-right) · refined to match the rest of the app */
+.wgt-leaflet .leaflet-control-layers {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--ink);
+  box-shadow: 0 4px 12px -2px rgba(10,10,10,0.08);
+}
+.wgt-leaflet .leaflet-control-layers-toggle {
+  background-color: var(--paper) !important;
+  width: 28px; height: 28px;
+}
+.wgt-leaflet .leaflet-control-layers label {
+  font-size: 0.82rem; font-weight: 500; color: var(--ink);
+}
+.wgt-leaflet .leaflet-control-layers-expanded {
+  padding: 0.45rem 0.65rem;
+}
+
+/* Locate-me + custom-button (top-right, stacked) */
+.semphn-leaflet-ctl {
+  display: block;
+  width: 30px; height: 30px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  border-radius: var(--r-sm);
+  margin-top: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px -2px rgba(10,10,10,0.08);
+  display: grid; place-items: center;
+  transition: background var(--motion-fast);
+}
+.semphn-leaflet-ctl:hover { background: var(--rule-soft); }
+.semphn-leaflet-ctl.is-loading { opacity: 0.5; pointer-events: none; }
+
+/* Search bar (top-left) */
+.semphn-leaflet-search {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  padding: 2px;
+  box-shadow: 0 4px 12px -2px rgba(10,10,10,0.08);
+}
+.semphn-leaflet-search input {
+  width: 220px;
+  border: none; outline: none; background: transparent;
+  font-family: var(--sans); font-size: 0.82rem;
+  color: var(--ink);
+  padding: 0.4rem 0.55rem;
+}
+.semphn-leaflet-search input::placeholder { color: var(--slate-mute); }
+.semphn-leaflet-search button {
+  background: var(--ink); color: var(--paper);
+  border: none; border-radius: var(--r-xs);
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.semphn-leaflet-search button:hover { background: #1f1f1f; }
+.semphn-leaflet-search button.is-loading { opacity: 0.5; pointer-events: none; }
+
+/* Service-point markers · circular pin, glyph centered */
+.semphn-marker { background: transparent !important; border: none !important; }
+.semphn-marker-pin {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  color: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--sans); font-weight: 700; font-size: 12px;
+  line-height: 1;
+  box-shadow: 0 3px 8px -2px rgba(10,10,10,0.4);
+}
+
+/* Cluster pin */
+.semphn-cluster { background: transparent !important; border: none !important; }
+.semphn-cluster-pin {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  display: grid; place-items: center;
+  font-family: var(--mono); font-weight: 600; font-size: 13px;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 4px 12px -2px rgba(10,10,10,0.32);
+}
+
+/* Floating choropleth legend */
+.semphn-leaflet-legend {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  padding: 0.55rem 0.75rem;
+  font-family: var(--sans);
+  box-shadow: 0 4px 12px -2px rgba(10,10,10,0.08);
+}
+.semphn-leaflet-legend .row {
+  display: flex; align-items: center; gap: 0.55rem;
+  font-size: 0.78rem; color: var(--ink);
+}
+.semphn-leaflet-legend .v {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 0.74rem;
+}
+.semphn-leaflet-legend .bar {
+  width: 110px; height: 8px; border-radius: 999px;
+  background: linear-gradient(90deg, #E5F4F0, #82D9C4 35%, #04264E 78%, #0A0A0A);
+}
+.semphn-leaflet-legend .lbl {
+  font-size: 0.68rem; color: var(--slate-soft);
+  margin-top: 0.25rem; text-align: center;
+}
+
 /* SVG-cartogram fallback (kept for "cartogram" widget type) */
 .wgt-choro-wrap { display: flex; flex-direction: column; gap: 0.7rem; }
 svg.wgt-choro { width: 100%; height: auto; max-height: 380px; display: block; }

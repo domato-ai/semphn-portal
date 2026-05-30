@@ -431,7 +431,16 @@
     { name: 'Mornington Peninsula', x: 175, y: 245, w: 400, h: 100 },
   ];
 
-  /* Cache the SEMPHN catchment GeoJSON across all map widgets · single fetch */
+  /* HTML-escape helper · defense-in-depth for Leaflet bindPopup/bindTooltip
+   * which take strings. All interpolated values pass through escHtml. */
+  function escHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  /* Cache catchment GeoJSON + bundled service points across all map widgets */
   var SEMPHN_GEOJSON = null;
   var SEMPHN_GEOJSON_PROMISE = null;
   function loadSemphnGeoJSON() {
@@ -442,110 +451,308 @@
       .then(function (g) { SEMPHN_GEOJSON = g; return g; });
     return SEMPHN_GEOJSON_PROMISE;
   }
+  var SEMPHN_SERVICES = null;
+  var SEMPHN_SERVICES_PROMISE = null;
+  function loadSemphnServices() {
+    if (SEMPHN_SERVICES) return Promise.resolve(SEMPHN_SERVICES);
+    if (SEMPHN_SERVICES_PROMISE) return SEMPHN_SERVICES_PROMISE;
+    SEMPHN_SERVICES_PROMISE = fetch('/_assets/semphn-services.json')
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (g) { SEMPHN_SERVICES = g; return g; });
+    return SEMPHN_SERVICES_PROMISE;
+  }
 
-  /* Build a Leaflet choropleth widget node */
+  /* Service-type → marker color + glyph */
+  var SERVICE_STYLE = {
+    acchs:     { color: '#0A0A0A', glyph: 'A', label: 'ACCHS' },
+    headspace: { color: '#55BFAF', glyph: 'h', label: 'headspace' },
+    hospital:  { color: '#04264E', glyph: '+', label: 'Hospital' },
+    gp:        { color: '#82D9C4', glyph: 'G', label: 'GP practice' },
+    racf:      { color: '#6B7280', glyph: 'R', label: 'RACF' },
+  };
+  function semphnMarkerIcon(type) {
+    var s = SERVICE_STYLE[type] || { color: '#6B7280', glyph: '.', label: type };
+    // Color + glyph are from our trusted SERVICE_STYLE constants only
+    return L.divIcon({
+      className: 'semphn-marker',
+      html: '<div class="semphn-marker-pin" style="background:' + s.color + ';">' + escHtml(s.glyph) + '</div>',
+      iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14],
+    });
+  }
+
+  /* ============================================================
+   * Shared Leaflet mounter · used by /maps/ default preview AND
+   * every choropleth widget. Returns Promise<L.Map>.
+   *
+   * Features: layer toggle (Light/Satellite/Streets), Nominatim search,
+   * Locate Me button, clustered SEMPHN service-point markers, choropleth
+   * fill (when mode==='choropleth'), per-LGA hover tooltips.
+   * ============================================================ */
+  function mountSemphnLeaflet(div, opts) {
+    opts = opts || {};
+    return new Promise(function (resolve, reject) {
+      if (typeof window.L === 'undefined') return reject(new Error('Leaflet not loaded'));
+
+      var map = L.map(div, {
+        zoomControl: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: true,
+        dragging: true,
+      });
+      L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+      // Tile-layer base options
+      var lightTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd', maxZoom: 19,
+      });
+      var satTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri', maxZoom: 19,
+      });
+      var streetTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19,
+      });
+      lightTiles.addTo(map);
+
+      if (opts.showLayerToggle !== false) {
+        L.control.layers(
+          { 'Light': lightTiles, 'Satellite': satTiles, 'Streets': streetTiles },
+          {}, { position: 'topright', collapsed: true }
+        ).addTo(map);
+      }
+
+      // Locate Me button (top-right, below layer toggle)
+      if (opts.showLocate !== false) {
+        var LocateCtl = L.Control.extend({
+          options: { position: 'topright' },
+          onAdd: function () {
+            var btn = L.DomUtil.create('button', 'semphn-leaflet-ctl');
+            // Static SVG only — no interpolation
+            btn.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><line x1="8" y1="1" x2="8" y2="3"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="1" y1="8" x2="3" y2="8"/><line x1="13" y1="8" x2="15" y2="8"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>';
+            btn.title = 'Locate me';
+            L.DomEvent.disableClickPropagation(btn);
+            L.DomEvent.on(btn, 'click', function () {
+              if (!navigator.geolocation) { showToast && showToast('Geolocation not available', 'warn'); return; }
+              btn.classList.add('is-loading');
+              navigator.geolocation.getCurrentPosition(function (pos) {
+                btn.classList.remove('is-loading');
+                var ll = [pos.coords.latitude, pos.coords.longitude];
+                L.circleMarker(ll, { radius: 8, color: '#FFFFFF', weight: 2, fillColor: '#EF4444', fillOpacity: 1 })
+                  .addTo(map)
+                  .bindPopup('<b>You are here</b><br/>' + escHtml(pos.coords.latitude.toFixed(4)) + ', ' + escHtml(pos.coords.longitude.toFixed(4)))
+                  .openPopup();
+                map.flyTo(ll, 13);
+              }, function () {
+                btn.classList.remove('is-loading');
+                showToast && showToast('Location denied or unavailable', 'error');
+              });
+            });
+            return btn;
+          },
+        });
+        new LocateCtl().addTo(map);
+      }
+
+      // Nominatim search (top-left)
+      if (opts.showSearch !== false) {
+        var SearchCtl = L.Control.extend({
+          options: { position: 'topleft' },
+          onAdd: function () {
+            var wrap = L.DomUtil.create('div', 'semphn-leaflet-search');
+            // Static markup only — input + svg button, no interpolation
+            wrap.innerHTML =
+              '<input type="text" placeholder="Search a place…" aria-label="Search a place"/>' +
+              '<button type="button" aria-label="Search">' +
+              '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><line x1="14" y1="14" x2="10.5" y2="10.5"/></svg>' +
+              '</button>';
+            L.DomEvent.disableClickPropagation(wrap);
+            L.DomEvent.disableScrollPropagation(wrap);
+            var input = wrap.querySelector('input');
+            var button = wrap.querySelector('button');
+            var marker;
+            function run() {
+              var q = (input.value || '').trim();
+              if (!q) return;
+              button.classList.add('is-loading');
+              fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q + ' Victoria Australia'))
+                .then(function (r) { return r.json(); })
+                .then(function (results) {
+                  button.classList.remove('is-loading');
+                  if (!results.length) { showToast && showToast('No matches for "' + q + '"', 'warn'); return; }
+                  var hit = results[0];
+                  var ll = [parseFloat(hit.lat), parseFloat(hit.lon)];
+                  if (marker) marker.remove();
+                  // escHtml protects against any markup in Nominatim's display_name
+                  marker = L.marker(ll).addTo(map)
+                    .bindPopup('<b>' + escHtml(hit.display_name || q) + '</b>')
+                    .openPopup();
+                  map.flyTo(ll, 13);
+                })
+                .catch(function () {
+                  button.classList.remove('is-loading');
+                  showToast && showToast('Search failed — try again', 'error');
+                });
+            }
+            L.DomEvent.on(button, 'click', run);
+            L.DomEvent.on(input, 'keypress', function (e) { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+            return wrap;
+          },
+        });
+        new SearchCtl().addTo(map);
+      }
+
+      var loaders = [loadSemphnGeoJSON()];
+      if (opts.showServicePoints !== false) loaders.push(loadSemphnServices());
+      Promise.all(loaders).then(function (results) {
+        var geojson = results[0];
+        var services = results[1];
+
+        // Style function: choropleth fill or default tint
+        var fillStyleFor;
+        var byLga;
+        if (opts.mode === 'choropleth' && opts.widget) {
+          byLga = {};
+          (opts.widget.data || []).forEach(function (d) { byLga[(d.label || '').trim()] = Number(d.value) || 0; });
+          var values = Object.values(byLga);
+          var min = values.length ? Math.min.apply(null, values) : 0;
+          var max = values.length ? Math.max.apply(null, values) : 1;
+          if (min === max) max = min + 1;
+          var ramp = function (v) {
+            var t = Math.max(0, Math.min(1, (v - min) / (max - min)));
+            if (t < 0.33)  return blendHex('#E5F4F0', '#82D9C4', t / 0.33);
+            if (t < 0.66)  return blendHex('#82D9C4', '#04264E', (t - 0.33) / 0.33);
+            return blendHex('#04264E', '#0A0A0A', (t - 0.66) / 0.34);
+          };
+          fillStyleFor = function (feature) {
+            var name = feature.properties.name, has = name in byLga;
+            return {
+              fillColor:   has ? ramp(byLga[name]) : '#F3F4F6',
+              weight:      opts.widget.highlight === name ? 2.5 : 1.25,
+              color:       opts.widget.highlight === name ? '#0A0A0A' : '#FFFFFF',
+              fillOpacity: has ? 0.85 : 0.35,
+            };
+          };
+        } else {
+          fillStyleFor = function () {
+            return { fillColor: '#82D9C4', fillOpacity: 0.16, weight: 1.5, color: '#04264E', opacity: 0.85 };
+          };
+        }
+
+        var lgaLayer = L.geoJSON(geojson, {
+          style: fillStyleFor,
+          onEachFeature: function (feature, lyr) {
+            // Feature names come from our trusted bundled GeoJSON
+            var name = feature.properties.name;
+            var safeName = escHtml(name);
+            var tooltipHtml;
+            if (opts.mode === 'choropleth' && opts.widget && byLga) {
+              var has = name in byLga;
+              tooltipHtml =
+                '<div style="font-family:Geist,system-ui,sans-serif;min-width:140px;">' +
+                  '<div style="font-weight:600;font-size:0.95rem;color:#0A0A0A;">' + safeName + '</div>' +
+                  (has
+                    ? '<div style="font-family:Geist Mono,ui-monospace,monospace;font-size:1.15rem;font-weight:600;color:#0A0A0A;margin-top:0.18rem;">' + escHtml(formatValue(byLga[name], opts.widget.unit)) + '</div>' +
+                      '<div style="font-size:0.7rem;color:#6B7280;margin-top:0.2rem;">' + escHtml(opts.widget.unit_label || opts.widget.unit || '') + '</div>'
+                    : '<div style="font-size:0.78rem;color:#9CA3AF;font-style:italic;margin-top:0.2rem;">no data</div>') +
+                '</div>';
+            } else {
+              tooltipHtml =
+                '<div style="font-family:Geist,system-ui,sans-serif;padding:2px 4px;">' +
+                  '<div style="font-weight:600;font-size:0.92rem;color:#0A0A0A;">' + safeName + '</div>' +
+                  '<div style="font-size:0.74rem;color:#6B7280;margin-top:0.18rem;">type "/map" in the chat to color this LGA</div>' +
+                '</div>';
+            }
+            lyr.bindTooltip(tooltipHtml, { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' });
+            lyr.on({
+              mouseover: function (e) { e.target.setStyle({ weight: 2.4, color: '#0A0A0A' }); e.target.bringToFront(); },
+              mouseout: function (e) { lgaLayer.resetStyle(e.target); },
+            });
+          },
+        }).addTo(map);
+        try { map.fitBounds(lgaLayer.getBounds(), { padding: [16, 16] }); } catch (_) {}
+
+        // Service-point markers (clustered)
+        if (services && opts.showServicePoints !== false && typeof L.markerClusterGroup === 'function') {
+          var cluster = L.markerClusterGroup({
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true,
+            maxClusterRadius: 40,
+            iconCreateFunction: function (c) {
+              var n = c.getChildCount();
+              // n is a Number from getChildCount() — safe to string-concat
+              return L.divIcon({
+                className: 'semphn-cluster',
+                html: '<div class="semphn-cluster-pin">' + n + '</div>',
+                iconSize: [34, 34],
+              });
+            },
+          });
+          (services.services || []).forEach(function (s) {
+            var m = L.marker([s.lat, s.lng], { icon: semphnMarkerIcon(s.type) });
+            var typeLabel = (SERVICE_STYLE[s.type] || {}).label || s.type;
+            m.bindPopup(
+              '<div style="font-family:Geist,system-ui,sans-serif;min-width:200px;">' +
+                '<div style="font-size:0.68rem;font-weight:500;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.15rem;">' + escHtml(typeLabel) + '</div>' +
+                '<div style="font-weight:600;font-size:0.96rem;color:#0A0A0A;margin-bottom:0.25rem;">' + escHtml(s.name) + '</div>' +
+                '<div style="font-size:0.82rem;color:#4B5563;">' + escHtml(s.suburb || '') + '</div>' +
+                (s.phone ? '<div style="font-family:Geist Mono,ui-monospace,monospace;font-size:0.78rem;color:#0A0A0A;margin-top:0.4rem;">' + escHtml(s.phone) + '</div>' : '') +
+              '</div>'
+            );
+            cluster.addLayer(m);
+          });
+          cluster.addTo(map);
+        }
+
+        // Floating legend (choropleth mode only)
+        if (opts.mode === 'choropleth' && opts.widget && byLga) {
+          var values2 = Object.values(byLga);
+          var min2 = values2.length ? Math.min.apply(null, values2) : 0;
+          var max2 = values2.length ? Math.max.apply(null, values2) : 1;
+          if (min2 === max2) max2 = min2 + 1;
+          var LegendCtl = L.Control.extend({
+            options: { position: 'bottomleft' },
+            onAdd: function () {
+              var d = L.DomUtil.create('div', 'semphn-leaflet-legend');
+              d.innerHTML =
+                '<div class="row"><span class="v">' + escHtml(formatValue(min2, opts.widget.unit)) + '</span>' +
+                '<span class="bar"></span>' +
+                '<span class="v">' + escHtml(formatValue(max2, opts.widget.unit)) + '</span></div>' +
+                '<div class="lbl">' + escHtml(opts.widget.unit_label || opts.widget.unit || '') + '</div>';
+              return d;
+            },
+          });
+          new LegendCtl().addTo(map);
+        }
+
+        setTimeout(function () { try { map.invalidateSize(); } catch (_) {} }, 200);
+        resolve(map);
+      }).catch(function (e) { reject(e); });
+    });
+  }
+  window.__mountSemphnLeaflet = mountSemphnLeaflet;
+
+  /* Choropleth widget · uses the shared mounter */
   function buildLeafletChoropleth(widget) {
-    var data = widget.data || [];
-    var byLga = {};
-    data.forEach(function (d) { byLga[(d.label || '').trim()] = Number(d.value) || 0; });
-    var values = Object.values(byLga);
-    var min = values.length ? Math.min.apply(null, values) : 0;
-    var max = values.length ? Math.max.apply(null, values) : 1;
-    if (min === max) max = min + 1;
-
-    function rampColor(v) {
-      var t = Math.max(0, Math.min(1, (v - min) / (max - min)));
-      if (t < 0.33)  return blendHex('#E5F4F0', '#82D9C4', t / 0.33);
-      if (t < 0.66)  return blendHex('#82D9C4', '#04264E', (t - 0.33) / 0.33);
-      return blendHex('#04264E', '#0A0A0A', (t - 0.66) / 0.34);
-    }
-
-    // Outer wrapper · the chart goes inside the .wgt-map (sized by CSS),
-    // legend strip sits below.
     var wrap = document.createElement('div');
     wrap.className = 'wgt-leaflet-wrap';
-
     var mapDiv = document.createElement('div');
     mapDiv.className = 'wgt-leaflet';
     wrap.appendChild(mapDiv);
-
-    var legend = document.createElement('div');
-    legend.className = 'wgt-choro-legend';
-    var lo = document.createElement('span'); lo.className = 'v'; lo.textContent = formatValue(min, widget.unit);
-    var bar = document.createElement('span'); bar.className = 'bar';
-    bar.style.background = 'linear-gradient(90deg, #E5F4F0, #82D9C4 35%, #04264E 78%, #0A0A0A)';
-    var hi = document.createElement('span'); hi.className = 'v'; hi.textContent = formatValue(max, widget.unit);
-    var unit = document.createElement('span'); unit.className = 'unit'; unit.textContent = widget.unit_label || widget.unit || '';
-    legend.appendChild(lo); legend.appendChild(bar); legend.appendChild(hi); legend.appendChild(unit);
-    wrap.appendChild(legend);
-
-    // Defer init until container is in DOM + Leaflet is loaded
     setTimeout(function () {
-      if (typeof window.L === 'undefined') {
-        // Leaflet missing — fall back to the cartogram
+      if (typeof window.L === 'undefined' || typeof L.markerClusterGroup === 'undefined') {
         var fallback = buildChoroplethSVG(widget);
         wrap.replaceChild(fallback, mapDiv);
         return;
       }
-      var map = L.map(mapDiv, {
-        zoomControl: true,
-        attributionControl: true,
-        scrollWheelZoom: false,  // prevent stealing page scroll
-        doubleClickZoom: true,
-        dragging: true,
-      });
-      // Light + minimal tile layer — CartoDB Positron complements the refined aesthetic
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19,
-      }).addTo(map);
-
-      loadSemphnGeoJSON().then(function (geojson) {
-        var layer = L.geoJSON(geojson, {
-          style: function (feature) {
-            var name  = feature.properties.name;
-            var has   = name in byLga;
-            var value = byLga[name];
-            return {
-              fillColor:   has ? rampColor(value) : '#F3F4F6',
-              weight:      widget.highlight === name ? 2.5 : 1.25,
-              color:       widget.highlight === name ? '#0A0A0A' : '#FFFFFF',
-              fillOpacity: has ? 0.85 : 0.4,
-            };
-          },
-          onEachFeature: function (feature, lyr) {
-            var name  = feature.properties.name;
-            var has   = name in byLga;
-            var html  =
-              '<div style="font-family:Geist,system-ui,sans-serif;min-width:140px;">' +
-                '<div style="font-weight:600;font-size:0.95rem;color:#0A0A0A;margin-bottom:0.2rem;">' + name + '</div>' +
-                (has
-                  ? '<div style="font-family:Geist Mono,ui-monospace,monospace;font-size:1.15rem;font-weight:600;color:#0A0A0A;">' + formatValue(byLga[name], widget.unit) + '</div>' +
-                    '<div style="font-size:0.7rem;color:#6B7280;margin-top:0.25rem;">' + (widget.unit_label || widget.unit || '') + '</div>'
-                  : '<div style="font-size:0.78rem;color:#9CA3AF;font-style:italic;">no data</div>') +
-              '</div>';
-            lyr.bindTooltip(html, { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' });
-            lyr.on({
-              mouseover: function (e) {
-                e.target.setStyle({ weight: 2.5, color: '#0A0A0A' });
-                e.target.bringToFront();
-              },
-              mouseout: function (e) { layer.resetStyle(e.target); },
-            });
-          },
-        }).addTo(map);
-        try { map.fitBounds(layer.getBounds(), { padding: [12, 12] }); } catch (_) {}
+      mountSemphnLeaflet(mapDiv, {
+        mode: 'choropleth', widget: widget,
+        showSearch: true, showLocate: true, showLayerToggle: true, showServicePoints: true,
       }).catch(function (e) {
-        console.error('[choropleth] geojson load failed', e);
+        console.error('[choropleth] mount failed', e);
         var fallback = buildChoroplethSVG(widget);
         wrap.replaceChild(fallback, mapDiv);
       });
-
-      // Resize map when card resizes / DOM settles
-      setTimeout(function () { try { map.invalidateSize(); } catch (_) {} }, 200);
     }, 0);
-
     return wrap;
   }
 

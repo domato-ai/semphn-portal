@@ -1,0 +1,24 @@
+{
+  "_note": "SEMPHN catchment service points. Coordinates are approximate (geocoded from public service-locator data, suburb-level accuracy). Replace with authoritative SEMPHN service-locator export for production.",
+  "_updated": "2026-05-30",
+  "services": [
+    {"type": "acchs",     "name": "Dandenong & District Aborigines Co-operative",       "suburb": "Dandenong",          "lat": -37.9874, "lng": 145.2156, "phone": "(03) 9794 5511"},
+    {"type": "acchs",     "name": "Bunurong Aboriginal Land Council Co-op (clinic)",     "suburb": "Frankston",          "lat": -38.1413, "lng": 145.1228, "phone": "(03) 9786 3344"},
+    {"type": "headspace", "name": "headspace Bentleigh",                                  "suburb": "Bentleigh",          "lat": -37.9180, "lng": 145.0383},
+    {"type": "headspace", "name": "headspace Frankston",                                  "suburb": "Frankston",          "lat": -38.1414, "lng": 145.1228},
+    {"type": "headspace", "name": "headspace Dandenong",                                  "suburb": "Dandenong",          "lat": -37.9870, "lng": 145.2147},
+    {"type": "headspace", "name": "headspace Cranbourne",                                 "suburb": "Cranbourne",         "lat": -38.0986, "lng": 145.2839},
+    {"type": "headspace", "name": "headspace Narre Warren",                               "suburb": "Narre Warren",       "lat": -38.0269, "lng": 145.3025},
+    {"type": "headspace", "name": "headspace Rosebud",                                    "suburb": "Rosebud",            "lat": -38.3556, "lng": 144.9069},
+    {"type": "headspace", "name": "headspace South Melbourne",                            "suburb": "South Melbourne",    "lat": -37.8324, "lng": 144.9576},
+    {"type": "headspace", "name": "headspace Elsternwick",                                "suburb": "Elsternwick",        "lat": -37.8852, "lng": 145.0036},
+    {"type": "headspace", "name": "headspace Hastings",                                   "suburb": "Hastings",           "lat": -38.3094, "lng": 145.1933},
+    {"type": "hospital",  "name": "Frankston Hospital",                                   "suburb": "Frankston",          "lat": -38.1413, "lng": 145.1162},
+    {"type": "hospital",  "name": "Monash Medical Centre",                                "suburb": "Clayton",            "lat": -37.9189, "lng": 145.1216},
+    {"type": "hospital",  "name": "Dandenong Hospital",                                   "suburb": "Dandenong",          "lat": -37.9876, "lng": 145.2155},
+    {"type": "hospital",  "name": "Casey Hospital",                                       "suburb": "Berwick",            "lat": -38.0419, "lng": 145.3494},
+    {"type": "hospital",  "name": "Alfred Hospital",                                      "suburb": "Prahran",            "lat": -37.8463, "lng": 144.9826},
+    {"type": "hospital",  "name": "Sandringham Hospital",                                 "suburb": "Sandringham",        "lat": -37.9554, "lng": 145.0102},
+    {"type": "hospital",  "name": "Rosebud Hospital",                                     "suburb": "Rosebud",            "lat": -38.3613, "lng": 144.9038}
+  ]
+}

@@ -9,17 +9,21 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1780900000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1781000000" />
 
 <!-- Leaflet · real interactive map for choropleths, points and overlays.
      Real OSM tiles + actual SEMPHN LGA polygons from ABS LGA 2016 boundaries
-     (bundled as /_assets/semphn-catchment.geojson, ~5.7 KB). -->
+     (bundled as /_assets/semphn-catchment.geojson, ~5.7 KB).
+     Plus: Leaflet.markercluster for clustered service-point overlays. -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin="" defer></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
 
 <!-- ECharts for the bar/donut/kpi/table widgets that also work on the Maps page. -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
@@ -299,64 +303,38 @@
     } catch (_) {}
   });
 
-  /* DEFAULT STATE · render the SEMPHN catchment as a real Leaflet map
-   * when no widgets exist. Polls for Leaflet to load (defer + CDN race). */
+  /* DEFAULT STATE · full-featured Leaflet GIS preview of the SEMPHN catchment.
+   * Includes: light/satellite/streets layer toggle, Nominatim search,
+   * Locate Me, clustered SEMPHN service-point markers, LGA polygons. */
   var defaultMap = null;
   function initDefaultMap() {
     var div = document.getElementById('maps-default-canvas');
     if (!div) return;
-    // Already initialised? Just resize.
     if (defaultMap) { try { defaultMap.invalidateSize(); } catch (_) {} return; }
-    if (typeof window.L === 'undefined') {
-      // Leaflet not yet loaded — poll briefly
+    // Wait for Leaflet AND markercluster (both deferred CDN loads)
+    if (typeof window.L === 'undefined' || typeof L.markerClusterGroup === 'undefined') {
       return setTimeout(initDefaultMap, 120);
     }
-    fetch('/_assets/semphn-catchment.geojson')
-      .then(function (r) { return r.json(); })
-      .then(function (geojson) {
-        defaultMap = L.map(div, {
-          zoomControl: true,
-          attributionControl: true,
-          scrollWheelZoom: false,
-          dragging: true,
-        });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: 'abcd',
-          maxZoom: 19,
-        }).addTo(defaultMap);
-        var layer = L.geoJSON(geojson, {
-          style: { fillColor: '#82D9C4', fillOpacity: 0.18, weight: 1.5, color: '#04264E', opacity: 0.85 },
-          onEachFeature: function (feature, lyr) {
-            var name = feature.properties.name;
-            lyr.bindTooltip(
-              '<div style="font-family:Geist,system-ui,sans-serif;padding:2px 4px;">' +
-                '<div style="font-weight:600;font-size:0.92rem;color:#0A0A0A;">' + name + '</div>' +
-                '<div style="font-size:0.74rem;color:#6B7280;margin-top:0.18rem;">type "/map" to color this LGA</div>' +
-              '</div>',
-              { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' }
-            );
-            lyr.on({
-              mouseover: function (e) { e.target.setStyle({ fillOpacity: 0.42, weight: 2 }); },
-              mouseout:  function (e) { layer.resetStyle(e.target); },
-            });
-          },
-        }).addTo(defaultMap);
-        try { defaultMap.fitBounds(layer.getBounds(), { padding: [12, 12] }); } catch (_) {}
-        setTimeout(function () { try { defaultMap.invalidateSize(); } catch (_) {} }, 200);
-      })
-      .catch(function (e) { console.error('[default-map] load failed', e); });
+    if (typeof window.__mountSemphnLeaflet !== 'function') {
+      return setTimeout(initDefaultMap, 120);
+    }
+    window.__mountSemphnLeaflet(div, {
+      mode: 'default',
+      showSearch: true,
+      showLocate: true,
+      showLayerToggle: true,
+      showServicePoints: true,
+    }).then(function (map) { defaultMap = map; })
+      .catch(function (e) { console.error('[default-map] mount failed', e); });
   }
-  // Kick off init after the deferred Leaflet script has had a chance
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(initDefaultMap, 100); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(initDefaultMap, 200); });
   } else {
-    setTimeout(initDefaultMap, 100);
+    setTimeout(initDefaultMap, 200);
   }
-  // Expose for re-initialization after Clear all
   window.__initMapsDefault = initDefaultMap;
 })();
 </script>
-<script src="/_assets/shell.js?v=1780900000"></script>
+<script src="/_assets/shell.js?v=1781000000"></script>
 </body>
 </html>
