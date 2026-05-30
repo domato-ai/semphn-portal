@@ -168,7 +168,13 @@
    * The JSON block is stripped from the visible chat reply.
    * ============================================================ */
   var WIDGET_KEY = 'semphn.workbench.widgets.v1';
-  var WIDGET_RE = /```widget\s*\n([\s\S]*?)```/;
+  // Match ANY fenced code block (```widget, ```json, ```js, or bare ```)
+  // — global flag so we extract every block, not just the first.
+  // Validity is checked downstream: content must JSON-parse + have a
+  // recognised widget type. Non-widget code blocks pass through to prose.
+  var WIDGET_RE_ALL    = /```(?:widget|json|js)?\s*\n?([\s\S]*?)```/g;
+  var WIDGET_RE_SINGLE = /```widget\s*\n([\s\S]*?)```/;
+  var WIDGET_TYPES = { bar: 1, line: 1, area: 1, donut: 1, pie: 1, kpi: 1, table: 1, choropleth: 1, map: 1 };
 
   function readWidgets(page) {
     try {
@@ -185,16 +191,45 @@
       localStorage.setItem(WIDGET_KEY, JSON.stringify(s));
     } catch (_) {}
   }
-  function extractWidget(text) {
-    if (!text) return { stripped: '', widget: null };
-    var m = text.match(WIDGET_RE);
-    if (!m) return { stripped: text, widget: null };
-    try {
-      var w = JSON.parse(m[1].trim());
-      return { stripped: text.replace(WIDGET_RE, '').trim(), widget: w };
-    } catch (e) {
-      return { stripped: text, widget: null };
+  /* Extract ALL widget blocks from a chat reply.
+   * Returns { widgets: [...], stripped: '<prose with widget blocks removed>' }.
+   * Code blocks whose content doesn't JSON-parse to a recognised widget
+   * shape pass through untouched (so the model can still show regular code).
+   *
+   * Implementation uses matchAll to avoid regex stateful .exec() calls.
+   */
+  function extractWidgets(text) {
+    if (!text) return { stripped: '', widgets: [] };
+    var widgets = [];
+    var keptParts = [];
+    var lastEnd = 0;
+    var matches = Array.from(text.matchAll(WIDGET_RE_ALL));
+    for (var i = 0; i < matches.length; i++) {
+      var m = matches[i];
+      var raw = (m[1] || '').trim();
+      var widget = null;
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && parsed.type && WIDGET_TYPES[parsed.type]) {
+          widget = parsed;
+        }
+      } catch (_) { /* not JSON or not a widget — leave block in prose */ }
+      if (widget) {
+        widgets.push(widget);
+        keptParts.push(text.slice(lastEnd, m.index));
+        lastEnd = m.index + m[0].length;
+      }
     }
+    if (widgets.length === 0) return { stripped: text, widgets: [] };
+    keptParts.push(text.slice(lastEnd));
+    // Tidy: collapse multiple consecutive blank lines left by removal
+    var stripped = keptParts.join('').replace(/\n{3,}/g, '\n\n').trim();
+    return { stripped: stripped, widgets: widgets };
+  }
+  /* Singular wrapper · returns just the first widget (older call sites) */
+  function extractWidget(text) {
+    var r = extractWidgets(text);
+    return { stripped: r.stripped, widget: r.widgets[0] || null };
   }
 
   /* ============================================================
@@ -1528,7 +1563,8 @@
   // Expose for the chat handler to call after extracting from reply
   window.__addWidget = addWidget;
   window.__renderWidgets = renderWidgets;
-  window.__extractWidget = extractWidget;
+  window.__extractWidget  = extractWidget;
+  window.__extractWidgets = extractWidgets;
 
   /* ============================================================
    * Storage helpers
@@ -2195,24 +2231,38 @@
         // block. Extract it, render the tile on the canvas, and strip
         // it from the visible chat reply so the prose stays clean.
         var producedWidget = null;
-        if (typeof window.__extractWidget === 'function') {
+        if (typeof window.__extractWidgets === 'function') {
           try {
-            var parsed = window.__extractWidget(reply);
-            if (parsed.widget) {
-              producedWidget = parsed.widget;
+            // Extract EVERY widget block in the reply (model may emit
+            // multiple in one turn when user asks for a full dashboard).
+            var parsed = window.__extractWidgets(reply);
+            if (parsed.widgets.length) {
               var page = pageId();
-              var t = parsed.widget.type;
-              // On /maps/, choropleth-style widgets overlay onto the live
-              // default map instead of spawning a separate widget tile.
-              if (page === 'maps' && (t === 'choropleth' || t === 'map') && window.__defaultMapApi) {
-                window.__defaultMapApi.applyData(parsed.widget);
-                reply = parsed.stripped || ('Map coloured by ' + (parsed.widget.title || 'data layer') + '.');
-              } else if (page === 'dashboards' || page === 'maps') {
-                // Non-choropleth on /maps/ falls back to a widget tile,
-                // and any widget on /dashboards/ becomes a tile.
-                window.__addWidget(parsed.widget);
-                reply = parsed.stripped || ('Added the widget "' + (parsed.widget.title || 'untitled') + '".');
+              var addedToMap = 0, addedAsTiles = 0;
+              parsed.widgets.forEach(function (w) {
+                var t = w.type;
+                // On /maps/, choropleth-style widgets overlay onto the live
+                // default map. The first one wins; later choropleths replace it.
+                if (page === 'maps' && (t === 'choropleth' || t === 'map') && window.__defaultMapApi) {
+                  window.__defaultMapApi.applyData(w);
+                  addedToMap++;
+                } else {
+                  window.__addWidget(w);
+                  addedAsTiles++;
+                }
+              });
+              producedWidget = parsed.widgets[parsed.widgets.length - 1];
+              // Build a short confirmation if the model didn't leave any prose
+              var msg = parsed.stripped;
+              if (!msg) {
+                var bits = [];
+                if (addedAsTiles)
+                  bits.push('Added ' + addedAsTiles + ' tile' + (addedAsTiles === 1 ? '' : 's') + ' to your dashboard.');
+                if (addedToMap)
+                  bits.push('Coloured the map with the latest data layer.');
+                msg = bits.join(' ') || 'Done.';
               }
+              reply = msg;
             }
           } catch (e) { console.error('[widget] extract/add failed', e); }
         }

@@ -55,7 +55,9 @@ log = logging.getLogger("chat")
 
 DEFAULT_TIMEOUT_S = 25
 MAX_HISTORY = 10
-MAX_OUTPUT_TOKENS = 600
+MAX_OUTPUT_TOKENS = 2200  # raised from 600 — a 6-tile dashboard reply
+                          # serialises to ~1.8K tokens of JSON. Cost impact
+                          # per request: ~$0.001 at gpt-4o-mini rates.
 RATE_LIMIT_REQUESTS_PER_DAY = 200
 
 DEFAULT_DEPLOYMENTS = {
@@ -168,9 +170,20 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         parts.append(
             "\n=== DASHBOARD BUILDER MODE ===\n"
             "When the user asks for a chart, KPI, table or anything that should "
-            "land as a tile on their dashboard, end your reply with a fenced "
-            "```widget code block containing a JSON object. The frontend will "
-            "parse this and render the tile.\n\n"
+            "land as a tile on their dashboard, emit one or more fenced "
+            "```widget code blocks each containing a JSON object. The frontend "
+            "parses every ```widget block and renders each as a tile.\n\n"
+            "IMPORTANT — multi-widget responses:\n"
+            "  • If the user asks for a 'complete dashboard', 'full dashboard', "
+            "'multiple widgets', or anything that calls for more than one tile, "
+            "emit ALL widgets in the same reply, each in its own ```widget block.\n"
+            "  • A good catchment dashboard is 4-6 tiles: 1-2 KPIs, 1-2 bars, "
+            "1 donut or table. Mix types — don't repeat the same chart.\n"
+            "  • Use ```widget for EVERY widget block. NEVER use bare ``` or "
+            "```json — those won't be picked up by the renderer.\n"
+            "  • Keep prose to ONE short sentence at the very start "
+            "('Here's a 5-tile dashboard…') and put NOTHING between blocks. "
+            "Don't title or number the tiles in prose — the title field does that.\n\n"
             "Widget schema (return ONLY these fields, no extras):\n"
             "```widget\n"
             "{\n"
