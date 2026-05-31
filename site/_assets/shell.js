@@ -623,7 +623,7 @@
 
       var map = L.map(div, {
         zoomControl: false,
-        scrollWheelZoom: false,
+        scrollWheelZoom: true,
         doubleClickZoom: true,
         dragging: true,
       });
@@ -2365,17 +2365,28 @@
                 }
               });
               producedWidget = parsed.widgets[parsed.widgets.length - 1];
-              // Build a short confirmation if the model didn't leave any prose
-              var msg = parsed.stripped;
-              if (!msg) {
-                var bits = [];
-                if (addedAsTiles)
-                  bits.push('Added ' + addedAsTiles + ' tile' + (addedAsTiles === 1 ? '' : 's') + ' to your dashboard.');
-                if (addedToMap)
-                  bits.push('Coloured the map with the latest data layer.');
-                msg = bits.join(' ') || 'Done.';
+              // ALWAYS use a generated one-line confirmation when widgets
+              // were produced. The widgets ARE the answer — chat just
+              // narrates what happened, not what's in each tile.
+              // This is a frontend safeguard against the model ignoring
+              // the "one sentence" rule in the system prompt.
+              var bits = [];
+              if (addedAsTiles) {
+                bits.push('Added ' + addedAsTiles + ' tile' + (addedAsTiles === 1 ? '' : 's') + ' to your dashboard.');
               }
-              reply = msg;
+              if (addedToMap) {
+                bits.push('Updated the map' + (producedWidget.title ? ' — ' + producedWidget.title : '') + '.');
+              }
+              var generated = bits.join(' ');
+
+              // If the model produced an extremely short prose (< 90 chars),
+              // it followed the rule — keep it. Otherwise use ours.
+              var stripped = (parsed.stripped || '').trim();
+              if (stripped && stripped.length < 90 && stripped.indexOf('\n') < 0) {
+                reply = stripped;
+              } else {
+                reply = generated || 'Done.';
+              }
             }
           } catch (e) { console.error('[widget] extract/add failed', e); }
         }

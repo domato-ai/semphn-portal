@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1781400000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1781500000" />
 
 <!-- Apache ECharts · widget rendering for the dashboard builder.
      Why ECharts: enterprise-grade defaults, single CDN, themeable. -->
@@ -27,105 +27,89 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
 
 <style>
-  /* Dashboards builder · canvas-specific styles
-     (shared widget styles + chrome live in shell.css) */
+  /* Dashboards builder · full-bleed canvas (matches Maps page).
+     Chrome lives in the global toolbar; tiles fill the page. */
 
-  .builder-head {
-    display: flex; align-items: flex-end; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap;
-    margin-bottom: 1.8rem;
-    padding-bottom: 1.2rem;
-    border-bottom: 1px solid var(--rule);
+  .canvas-body-flush {
+    padding: 0 !important;
+    overflow: hidden;
+    position: relative;
+    /* Subtle blue-grey wash so widget cards pop slightly */
+    background:
+      radial-gradient(circle at 10% 0%, rgba(85,191,175,0.04), transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(76,134,255,0.04), transparent 40%),
+      var(--rule-bg);
   }
-  .builder-head h1 {
-    font-size: 1.65rem;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: -0.022em;
-    line-height: 1.15;
-    margin-bottom: 0.35rem;
+
+  /* Empty state · centered card overlay */
+  .dashboards-default {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    padding: 2rem;
   }
-  .builder-head p {
-    color: var(--slate-soft);
-    font-size: 0.9rem;
-    font-weight: 400;
-    max-width: 60ch;
-  }
-  .builder-head .count {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    padding: 0.35rem 0.7rem;
-    background: var(--rule-soft);
-    border-radius: 999px;
-    font-size: 0.74rem;
-    color: var(--slate);
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-  .builder-head .clear {
+  .dashboards-default[hidden] { display: none; }
+  .dashboards-default-inner {
+    max-width: 460px; width: 100%;
+    text-align: center;
+    padding: 3.2rem 2.4rem;
     background: var(--paper);
     border: 1px solid var(--rule);
-    color: var(--slate);
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--r-sm);
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--motion-fast, 130ms);
-  }
-  .builder-head .clear:hover {
-    color: var(--ink); border-color: var(--slate-mute);
-    background: var(--rule-soft);
-  }
-
-  /* The widget grid · auto-fit cards at ~360px min, equal gaps */
-  #widget-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-    gap: 1.1rem;
-    align-items: stretch;
-  }
-
-  /* Empty state · centered card with quiet copy */
-  .widget-empty {
-    max-width: 480px;
-    margin: 4rem auto 2rem;
-    text-align: center;
-    padding: 3rem 2rem;
-    background: var(--paper);
-    border: 1px dashed var(--rule);
     border-radius: var(--r-lg);
+    box-shadow: 0 24px 64px -32px rgba(10,10,10,0.12);
   }
-  .widget-empty .ico {
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    background: var(--ink);
+  .dashboards-default .ico {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #04264E, #4C86FF);
     color: white;
     display: grid; place-items: center;
-    margin: 0 auto 1.1rem;
-    font-family: var(--mono); font-size: 1.05rem; font-weight: 600;
+    margin: 0 auto 1.4rem;
+    font-family: var(--mono); font-size: 1.15rem; font-weight: 700;
+    box-shadow: 0 8px 20px -6px rgba(4,38,78,0.32);
   }
-  .widget-empty h3 {
-    font-size: 1.1rem; font-weight: 600;
+  .dashboards-default h3 {
+    font-size: 1.25rem; font-weight: 600;
     color: var(--ink);
-    letter-spacing: -0.015em;
-    margin-bottom: 0.45rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.6rem;
   }
-  .widget-empty p {
+  .dashboards-default p {
     color: var(--slate-soft);
-    font-size: 0.88rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin-bottom: 1.6rem;
   }
-  .widget-empty p strong { color: var(--ink); font-weight: 500; }
-  .widget-empty .hint {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    font-size: 0.76rem;
-    color: var(--slate-mute);
-    font-family: var(--mono);
+  .dashboards-default p strong { color: var(--ink); font-weight: 500; }
+  .dashboards-default-tips {
+    display: flex; justify-content: center; gap: 1.4rem; flex-wrap: wrap;
   }
-  .widget-empty .hint::before {
-    content: ""; width: 6px; height: 6px; border-radius: 50%;
+  .dashboards-default .tip {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    font-size: 0.78rem; color: var(--slate);
+  }
+  .dashboards-default .tip .kbd {
+    font-family: var(--mono); font-size: 0.72rem;
+    background: var(--rule-soft); border: 1px solid var(--rule);
+    padding: 0.12rem 0.45rem; border-radius: 4px;
+    color: var(--ink); font-weight: 500;
+  }
+  .dashboards-default .tip .dot {
+    width: 6px; height: 6px; border-radius: 50%;
     background: var(--positive, #10B981);
+  }
+
+  /* The widget grid · tighter tiles, generous gap, fills the canvas */
+  .widget-grid-padded {
+    display: none;
+  }
+  .widget-grid-padded:not(:empty) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.25rem;
+    padding: clamp(1.5rem, 2.5vw, 2.25rem);
+    overflow-y: auto;
+    position: absolute; inset: 0;
+    align-content: start;  /* stack to top — don't stretch tiles vertically */
   }
 </style>
 </head>
@@ -196,38 +180,35 @@
         <small>· chat-built tiles</small>
       </span>
       <div class="canvas-actions">
+        <span class="canvas-pill" id="widget-count">0 widgets</span>
+        <button type="button" id="widget-test" title="Drop a sample widget">+ Test</button>
+        <button type="button" id="widget-clear" title="Clear all widgets">Clear</button>
         <button type="button" id="dash-export">Export</button>
         <button type="button" class="primary" id="dash-publish">Publish</button>
       </div>
     </header>
 
-    <div class="canvas-body">
-      <div class="canvas-pane">
-        <div class="builder-head">
-          <div>
-            <h1>Your Dashboard</h1>
-            <p>Type a request in the chat → a tile lands here. Pin, edit, delete any time.</p>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.6rem;">
-            <span class="count" id="widget-count">0 widgets</span>
-            <button type="button" class="clear" id="widget-test">+ Test widget</button>
-            <button type="button" class="clear" id="widget-clear">Clear all</button>
-          </div>
-        </div>
-
-        <div id="widget-empty" class="widget-empty">
+    <!-- Full-bleed canvas body — the widget grid fills edge-to-edge. -->
+    <div class="canvas-body canvas-body-flush">
+      <!-- DEFAULT STATE · refined empty card, centered. Hidden when any
+           widget lands. -->
+      <div id="widget-empty" class="dashboards-default">
+        <div class="dashboards-default-inner">
           <div class="ico">D</div>
           <h3>Empty dashboard.</h3>
           <p>
-            Pick a suggestion in the chat on the left, or type your own request like
-            <strong>"add a KPI tile for catchment population"</strong> or
-            <strong>"bar chart of bulk-billing by LGA"</strong>.
+            Pick a suggestion in the chat on the left, or ask for a
+            <strong>complete SEMPHN dashboard</strong> to land 4–6 tiles at once.
           </p>
-          <span class="hint">Type in the chat to begin</span>
+          <div class="dashboards-default-tips">
+            <span class="tip"><span class="kbd">/</span><span>chart templates</span></span>
+            <span class="tip"><span class="dot"></span><span>or pick a suggestion</span></span>
+          </div>
         </div>
-
-        <div id="widget-grid"></div>
       </div>
+
+      <!-- Widget grid · only shown when widgets exist -->
+      <div id="widget-grid" class="widget-grid-padded"></div>
     </div>
   </section>
 </div>
@@ -299,6 +280,6 @@
   refresh();
 })();
 </script>
-<script src="/_assets/shell.js?v=1781400000"></script>
+<script src="/_assets/shell.js?v=1781500000"></script>
 </body>
 </html>
