@@ -2574,6 +2574,29 @@
     setTimeout(function () { input.focus(); }, 0);
   }
 
+  /* Wire the "New chat" button in the chat-toolbar.
+   * Clears the per-page turn list and re-renders the empty state. */
+  function wireNewChatButton() {
+    var btn = document.getElementById('chat-new');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var page = pageId();
+      var turns = getPageTurns(page);
+      if (turns.length === 0) {
+        showToast('Chat is already empty', 'success');
+        return;
+      }
+      if (!confirm('Start a new chat? The conversation in this panel will be cleared.')) return;
+      var s = readState();
+      s.byPage[page] = [];
+      writeState(s);
+      renderFeed();
+      var input = document.getElementById('chat-input');
+      if (input) { input.value = ''; input.dispatchEvent(new Event('input')); input.focus(); }
+      showToast('Chat cleared', 'success');
+    });
+  }
+
   function wireGlobalShortcuts() {
     window.addEventListener('keydown', function (e) {
       var meta = e.metaKey || e.ctrlKey;
@@ -2607,6 +2630,7 @@
     wireComposer(contextSummary);
     wireResize();
     wireGlobalShortcuts();
+    wireNewChatButton();
     updateStatus('idle');
     refreshSavedLabel();
     setInterval(refreshSavedLabel, 30000);

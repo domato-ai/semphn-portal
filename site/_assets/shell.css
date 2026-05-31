@@ -221,22 +221,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   overflow: hidden;
   position: relative;
 }
-.chat-collapse {
-  position: absolute;
-  right: 0.6rem; top: 0.6rem;
-  z-index: 60;
-  background: var(--paper);
-  border: 1px solid var(--rule);
+/* Chat panel top toolbar · New chat + collapse */
+.chat-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.55rem 0.7rem 0.45rem;
+  border-bottom: 1px solid var(--rule-soft);
+  flex: none;
+  gap: 0.4rem;
+}
+.chat-tool {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: none;
+  border: 1px solid transparent;
   color: var(--slate);
-  width: 22px; height: 22px;
-  border-radius: var(--r-xs);
-  display: grid; place-items: center;
+  padding: 0.32rem 0.55rem;
+  border-radius: var(--r-sm);
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: inherit;
   cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 600;
   transition: all var(--motion-fast);
 }
-.chat-collapse:hover { color: var(--ink); border-color: var(--slate-mute); background: var(--rule-soft); }
+.chat-tool:hover { color: var(--ink); background: var(--rule-soft); border-color: var(--rule); }
+.chat-tool svg { display: block; }
+.chat-tool.chat-collapse {
+  width: 28px; padding: 0; justify-content: center;
+  font-size: 0.8rem; font-weight: 600;
+}
 .chat-feed {
   flex: 1; min-height: 0;
   overflow-y: auto;
@@ -566,24 +577,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin: 0 0.15rem;
 }
 
-/* ─────────────────── COMPOSER ─────────────────── */
+/* ─────────────────── COMPOSER (minimal · textarea + send) ─────────────────── */
 .composer {
   flex: none;
   border-top: 1px solid var(--rule);
   background: var(--paper);
-  padding: 0.9rem 1rem 1rem;
-}
-.composer-prompt {
-  font-size: 0.78rem;
-  color: var(--slate-soft);
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-  margin-left: 0.15rem;
+  padding: 0.85rem 0.9rem 0.95rem;
 }
 .composer-wrap {
+  display: flex; align-items: flex-end;
+  gap: 0.4rem;
   border: 1px solid var(--rule);
   border-radius: var(--r);
   background: var(--paper);
+  padding: 0.35rem 0.4rem 0.35rem 0.2rem;
   transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
 }
 .composer-wrap:focus-within {
@@ -591,60 +598,36 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow: 0 0 0 3px var(--rule-soft);
 }
 .composer textarea {
-  width: 100%;
+  flex: 1;
   border: none; outline: none; background: transparent;
   resize: none;
-  padding: 0.85rem 1rem 0.6rem;
+  padding: 0.55rem 0.65rem 0.55rem 0.75rem;
   font-family: var(--sans);
   font-size: 0.94rem; color: var(--ink);
   line-height: 1.5;
-  min-height: 2.5em; max-height: 10em;
+  min-height: 2.4em; max-height: 10em;
   overflow-y: auto;
 }
 .composer textarea::placeholder { color: var(--slate-mute); }
-.composer-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.25rem 0.5rem 0.4rem 0.6rem;
-  border-top: 1px solid var(--rule-soft);
-}
-.composer-foot-left, .composer-foot-right { display: inline-flex; align-items: center; gap: 0.1rem; }
-.composer-foot button.icon {
-  background: none; border: none;
-  color: var(--slate-mute); cursor: pointer;
-  width: 28px; height: 28px;
-  border-radius: var(--r-xs);
-  display: grid; place-items: center;
-  font-size: 1rem;
-  transition: all var(--motion-fast);
-}
-.composer-foot button.icon:hover { background: var(--rule-soft); color: var(--ink); }
-.composer-foot .mode {
-  display: inline-flex; align-items: center; gap: 0.25rem;
-  background: none; border: none;
-  color: var(--slate); font-size: 0.76rem; font-weight: 500;
-  padding: 0.3rem 0.55rem;
-  border-radius: var(--r-xs);
-  cursor: pointer;
-  transition: all var(--motion-fast);
-}
-.composer-foot .mode:hover { background: var(--rule-soft); color: var(--ink); }
-.composer-foot .mode .caret { font-size: 0.65rem; color: var(--slate-mute); }
-.composer-foot .send {
+.composer .send {
+  flex: none;
   background: var(--ink); color: white;
   border: none;
-  padding: 0.42rem 0.85rem;
+  width: 32px; height: 32px;
   border-radius: var(--r-sm);
-  font-size: 0.8rem; font-weight: 500;
   cursor: pointer;
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  margin-left: 0.3rem;
+  display: grid; place-items: center;
   transition: background var(--motion-fast), opacity var(--motion-fast), transform 60ms;
 }
-.composer-foot .send:hover { background: #1F1F1F; }
-.composer-foot .send:active { transform: scale(0.96); }
-.composer-foot .send:disabled { opacity: 0.35; cursor: not-allowed; }
-.composer-foot .send .arr {
+.composer .send:hover { background: #1F1F1F; }
+.composer .send:active { transform: scale(0.96); }
+.composer .send:disabled { opacity: 0.35; cursor: not-allowed; }
+.composer .send svg { color: white; }
+/* Legacy hidden — old composer-foot is no longer rendered */
+.composer-foot, .composer-prompt {
+  display: none !important;
+}
+.composer-foot .arr {
   background: transparent;
   width: auto; height: auto;
   font-weight: 500; font-size: 0.85rem;
