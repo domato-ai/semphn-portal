@@ -376,9 +376,17 @@
       bar: {
         itemStyle: {
           borderRadius: [4, 4, 4, 4],
-          shadowBlur:    8,
-          shadowColor:   'rgba(10,10,10,0.10)',
-          shadowOffsetY: 1.5,
+          shadowBlur:    6,
+          shadowColor:   'rgba(10,10,10,0.08)',
+          shadowOffsetY: 1,
+        },
+        // Subtle hover · brighten + a touch more shadow, NOT a halo
+        emphasis: {
+          focus: 'none',
+          itemStyle: {
+            shadowBlur: 10,
+            shadowColor: 'rgba(10,10,10,0.12)',
+          },
         },
       },
       line: {
@@ -396,11 +404,15 @@
         label: { color: '#0A0A0A', fontSize: 11 },
       },
       tooltip: {
-        backgroundColor: '#0A0A0A',
-        borderColor: 'transparent',
-        textStyle: { color: '#FFFFFF', fontSize: 12, fontFamily: '"Geist", system-ui' },
-        padding: [8, 12],
-        extraCssText: 'box-shadow: 0 8px 24px -8px rgba(0,0,0,0.2); border-radius: 8px;',
+        // Light + minimal · white card with hairline border, small text,
+        // soft drop-shadow. Replaces the previous ink-black pill that
+        // could overpower the chart on hover.
+        backgroundColor: 'rgba(255, 255, 255, 0.97)',
+        borderColor: '#E5E7EB',
+        borderWidth: 1,
+        textStyle: { color: '#0A0A0A', fontSize: 11, fontFamily: '"Geist", system-ui' },
+        padding: [6, 10],
+        extraCssText: 'box-shadow: 0 6px 16px -6px rgba(10,10,10,0.14), 0 2px 4px -2px rgba(10,10,10,0.05); border-radius: 8px; line-height: 1.45;',
       },
     });
     semphnThemeRegistered = true;
@@ -475,8 +487,10 @@
         confine: true,            // keep tooltip inside the chart bounds
         appendToBody: false,
         formatter: function (p) {
-          return '<span style="font-weight:500;">' + p.name + '</span>'
-               + '<br/><span style="opacity:0.8;">' + formatValue(p.value, widget.unit) + '</span>';
+          // Single tight line · "Frankston · 116.1 /1k"
+          return '<span style="font-weight:600;">' + p.name + '</span>'
+               + '<span style="opacity:0.5; margin: 0 6px;">·</span>'
+               + '<span style="font-family: \'Geist Mono\', ui-monospace, monospace;">' + formatValue(p.value, widget.unit) + '</span>';
         },
       },
       yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { fontSize: 11.5, color: '#4B5563' } },
