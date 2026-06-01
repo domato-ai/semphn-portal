@@ -471,11 +471,12 @@
     return {
       grid: { left: 4, right: 56, top: 8, bottom: 0, containLabel: true },
       tooltip: {
-        trigger: 'axis', axisPointer: { type: 'shadow' },
+        trigger: 'item',          // hover a specific bar, not the row band
+        confine: true,            // keep tooltip inside the chart bounds
+        appendToBody: false,
         formatter: function (p) {
-          var row = p[0];
-          return '<span style="font-weight:500;">' + row.name + '</span>'
-               + '<br/><span style="opacity:0.8;">' + formatValue(row.value, widget.unit) + '</span>';
+          return '<span style="font-weight:500;">' + p.name + '</span>'
+               + '<br/><span style="opacity:0.8;">' + formatValue(p.value, widget.unit) + '</span>';
         },
       },
       yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { fontSize: 11.5, color: '#4B5563' } },
@@ -518,6 +519,7 @@
       grid: { left: 8, right: 20, top: 20, bottom: 6, containLabel: true },
       tooltip: {
         trigger: 'axis',
+        confine: true,
         axisPointer: { type: 'line', lineStyle: { color: '#9CA3AF', width: 1, type: 'dashed' } },
         formatter: function (p) {
           var row = p[0];
@@ -561,6 +563,7 @@
     return {
       tooltip: {
         trigger: 'item',
+        confine: true,
         formatter: function (p) {
           return '<span style="font-weight:500;">' + p.name + '</span>'
                + '<br/><span style="opacity:0.8;">' + formatValue(p.value, widget.unit) + ' · ' + p.percent.toFixed(1) + '%</span>';
