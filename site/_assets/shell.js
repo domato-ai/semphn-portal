@@ -404,18 +404,18 @@
         label: { color: '#0A0A0A', fontSize: 11 },
       },
       tooltip: {
-        // Light + minimal · constrained-width white chip near the cursor.
-        backgroundColor: 'rgba(255, 255, 255, 0.97)',
+        // Tiny single-line white chip · text-content sized, never grows.
+        backgroundColor: 'rgba(255, 255, 255, 0.98)',
         borderColor: '#E5E7EB',
         borderWidth: 1,
-        textStyle: { color: '#0A0A0A', fontSize: 11, fontFamily: '"Geist", system-ui' },
-        padding: [5, 9],
-        // max-width forces the tooltip to a small chip · width:auto + display:inline-block
-        // collapses to content size · white-space:nowrap keeps one-liner formatters on one line.
+        textStyle: { color: '#0A0A0A', fontSize: 11, fontFamily: '"Geist", system-ui', lineHeight: 14 },
+        padding: [4, 8],
         extraCssText:
-          'box-shadow: 0 6px 16px -6px rgba(10,10,10,0.14), 0 2px 4px -2px rgba(10,10,10,0.05);' +
-          ' border-radius: 8px; line-height: 1.4;' +
-          ' max-width: 220px !important; width: auto !important;' +
+          'box-shadow: 0 4px 12px -4px rgba(10,10,10,0.12);' +
+          ' border-radius: 6px;' +
+          ' width: auto !important; height: auto !important;' +
+          ' min-width: 0 !important; min-height: 0 !important;' +
+          ' max-width: 220px !important;' +
           ' white-space: nowrap;' +
           ' pointer-events: none;',
       },
@@ -491,10 +491,9 @@
         trigger: 'item',
         confine: true,
         enterable: false,
+        // Plain-text formatter so no HTML can introduce stray height
         formatter: function (p) {
-          return '<b>' + p.name + '</b>'
-               + '<span style="opacity:0.5; margin:0 5px;">·</span>'
-               + '<span style="font-family:\'Geist Mono\',ui-monospace,monospace;">' + formatValue(p.value, widget.unit) + '</span>';
+          return p.name + ' · ' + formatValue(p.value, widget.unit);
         },
       },
       yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { fontSize: 11.5, color: '#4B5563' } },
@@ -541,8 +540,7 @@
         axisPointer: { type: 'line', lineStyle: { color: '#9CA3AF', width: 1, type: 'dashed' } },
         formatter: function (p) {
           var row = p[0];
-          return '<span style="font-weight:500;">' + row.axisValue + '</span>'
-               + '<br/><span style="opacity:0.8;">' + formatValue(row.value, widget.unit) + '</span>';
+          return row.axisValue + ' · ' + formatValue(row.value, widget.unit);
         },
       },
       xAxis: { type: 'category', data: labels, boundaryGap: false, axisLabel: { fontSize: 10.5 } },
@@ -583,8 +581,7 @@
         trigger: 'item',
         confine: true,
         formatter: function (p) {
-          return '<span style="font-weight:500;">' + p.name + '</span>'
-               + '<br/><span style="opacity:0.8;">' + formatValue(p.value, widget.unit) + ' · ' + p.percent.toFixed(1) + '%</span>';
+          return p.name + ' · ' + formatValue(p.value, widget.unit) + ' (' + p.percent.toFixed(1) + '%)';
         },
       },
       legend: {
