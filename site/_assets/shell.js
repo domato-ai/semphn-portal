@@ -2397,12 +2397,14 @@
         turn.followups = pickFollowups(turn, producedWidget);
         setPageTurns(pageId(), turns);
         renderFeed();
+        renderSuggestStrip();    // refresh the persistent strip with new follow-ups
         updateLastSaved();
       } catch (err) {
         turn.summary = 'Sorry — the assist is unreachable right now. Please retry.';
         turn.thinking = false;
         setPageTurns(pageId(), turns);
         renderFeed();
+        renderSuggestStrip();
         showToast('Chat backend unreachable — retry', 'error');
       } finally {
         setBusy(false);
@@ -2591,11 +2593,102 @@
       s.byPage[page] = [];
       writeState(s);
       renderFeed();
+      renderSuggestStrip();
       var input = document.getElementById('chat-input');
       if (input) { input.value = ''; input.dispatchEvent(new Event('input')); input.focus(); }
       showToast('Chat cleared', 'success');
     });
   }
+
+  /* ============================================================
+   * Contextual suggestion strip · above the composer
+   *
+   * Before any turns: starter prompts from SUGGESTIONS dict (mixed
+   *   across sections so the user sees variety in the first row).
+   * After each turn: 4-5 follow-ups based on the last produced widget
+   *   type (drawn from FOLLOWUPS + page-aware extras like
+   *   'Map this on Maps' that bridge between pages).
+   *
+   * Re-renders whenever turns change (init, send complete, New chat).
+   * ============================================================ */
+  function flattenStarterChips(page, n) {
+    n = n || 7;
+    var sugs = SUGGESTIONS[page] || [];
+    // SUGGESTIONS may be grouped sections OR a flat array.
+    var flat = [];
+    if (Array.isArray(sugs) && sugs.length && sugs[0].section) {
+      // Interleave: take 2 from each section so first row shows diversity
+      var perSection = Math.ceil(n / sugs.length);
+      sugs.forEach(function (g) {
+        (g.items || []).slice(0, perSection).forEach(function (s) { flat.push(s); });
+      });
+    } else {
+      flat = (sugs || []).slice();
+    }
+    return flat.slice(0, n);
+  }
+
+  /* Cross-page follow-ups that bridge widgets to other surfaces. */
+  function crossPageFollowups(page, lastWidget) {
+    var arr = [];
+    if (page === 'dashboards') {
+      arr.push({ label: 'Map this on Maps',  prompt: 'Switch to the Maps page and map the same metric as a choropleth.' });
+      arr.push({ label: 'Cite in HNA Ch 4',  prompt: 'Add a citation for this figure to HNA Chapter 4 (First Nations people).' });
+    }
+    if (page === 'maps') {
+      arr.push({ label: 'Show as ranked bar', prompt: 'Add a ranked bar chart of the same metric by LGA.' });
+      arr.push({ label: 'Cite in HNA',       prompt: 'Open the HNA page and draft a one-paragraph commentary on this map for Chapter 4.' });
+    }
+    if (page === 'hna') {
+      arr.push({ label: 'Map cited metric',  prompt: 'Switch to the Maps page and choropleth the metric cited in this paragraph.' });
+      arr.push({ label: 'KPI in dashboard',  prompt: 'Add a KPI tile to the dashboard for the headline figure in this paragraph.' });
+    }
+    return arr;
+  }
+
+  function renderSuggestStrip() {
+    var el = document.getElementById('chat-suggest');
+    if (!el) return;
+    while (el.firstChild) el.removeChild(el.firstChild);
+    var page = pageId();
+    var turns = getPageTurns(page);
+    var chips, labelText;
+    if (turns.length === 0) {
+      // Starter set — diverse mix from per-page SUGGESTIONS
+      chips = flattenStarterChips(page, 7);
+      labelText = 'Try';
+    } else {
+      // Follow-ups · per-turn FOLLOWUPS dict + cross-page bridges
+      var last = turns[turns.length - 1];
+      var base = (last && last.followups) || pickFollowups(last, null);
+      chips = (base || []).slice(0, 3).concat(crossPageFollowups(page, last));
+      labelText = 'Next';
+    }
+    if (!chips.length) { el.setAttribute('hidden', ''); return; }
+    el.removeAttribute('hidden');
+    var lab = document.createElement('span'); lab.className = 'chat-suggest-label';
+    lab.textContent = labelText;
+    el.appendChild(lab);
+    chips.forEach(function (s) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chat-suggest-chip';
+      var arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = '→';
+      var t = document.createElement('span'); t.textContent = s.label;
+      btn.appendChild(arr); btn.appendChild(t);
+      btn.addEventListener('click', function () {
+        var input = document.getElementById('chat-input');
+        var send  = document.getElementById('chat-send');
+        if (!input) return;
+        input.value = s.prompt;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        if (send && !send.disabled) send.click();
+      });
+      el.appendChild(btn);
+    });
+  }
+  window.__renderSuggestStrip = renderSuggestStrip;
 
   function wireGlobalShortcuts() {
     window.addEventListener('keydown', function (e) {
@@ -2631,6 +2724,7 @@
     wireResize();
     wireGlobalShortcuts();
     wireNewChatButton();
+    renderSuggestStrip();    // initial starter chips (or follow-ups if turns persisted)
     updateStatus('idle');
     refreshSavedLabel();
     setInterval(refreshSavedLabel, 30000);

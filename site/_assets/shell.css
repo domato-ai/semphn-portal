@@ -577,6 +577,57 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin: 0 0.15rem;
 }
 
+/* ─────────────────── CONTEXTUAL SUGGESTION STRIP ───────────────────
+   Sits between the chat-feed and composer. Empty state = starter
+   prompts. After each turn = follow-ups based on what was just built. */
+.chat-suggest {
+  flex: none;
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.6rem 0.9rem 0.55rem;
+  border-top: 1px solid var(--rule-soft);
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Fade the right edge so users see there's more to scroll */
+  mask-image: linear-gradient(to right, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, black 90%, transparent);
+}
+.chat-suggest::-webkit-scrollbar { display: none; }
+.chat-suggest[hidden] { display: none; }
+.chat-suggest-label {
+  flex: none;
+  font-size: 0.66rem;
+  color: var(--slate-mute);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-right: 0.3rem;
+}
+.chat-suggest-chip {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--slate);
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--motion-fast);
+}
+.chat-suggest-chip:hover {
+  background: var(--ink); color: var(--paper);
+  border-color: var(--ink);
+}
+.chat-suggest-chip .arr {
+  font-size: 0.72rem; color: var(--slate-mute);
+  transition: color var(--motion-fast);
+}
+.chat-suggest-chip:hover .arr { color: var(--teal-mint); }
+
 /* ─────────────────── COMPOSER (minimal · textarea + send) ─────────────────── */
 .composer {
   flex: none;
