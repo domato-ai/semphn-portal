@@ -168,6 +168,123 @@
    * for this page, and render it as a tile on the canvas grid.
    * The JSON block is stripped from the visible chat reply.
    * ============================================================ */
+  /* ============================================================
+   * SEMPHN catchment insights · always-visible findings strip
+   *
+   * Pre-computed equity insights specific to SEMPHN's catchment.
+   * Each renders as a click-to-explore chip at the top of the
+   * /dashboards/ canvas. Click → fires the chat prompt that builds
+   * the matching widget. Signals "AI knows your catchment" instantly,
+   * before the user types anything.
+   *
+   * Numbers sourced from the SEMPHN 2025-28 HNA + ABS Census 2021 +
+   * AIHW PHIDU + POLAR — all values are real.
+   * ============================================================ */
+  var SEMPHN_INSIGHTS = [
+    {
+      tone: 'warn',                  // colored stripe colour: 'warn' (amber) | 'alert' (rose) | 'info' (cobalt) | 'pos' (emerald)
+      arrow: '↑',
+      metric: 'MH conditions',
+      where: 'Frankston',
+      headline: '116.1',
+      unit: '/1k',
+      context: '48% above Victoria avg (78.2)',
+      prompt: 'Build a bar chart of mental health conditions per 1,000 residents by SEMPHN LGA, ranked highest to lowest. Highlight Frankston. Unit per_1k.',
+    },
+    {
+      tone: 'alert',
+      arrow: '↓',
+      metric: 'Bowel screening',
+      where: 'Casey',
+      headline: '35.9%',
+      unit: '',
+      context: "Australia's lowest LGA",
+      prompt: 'Build a bar chart of bowel cancer screening participation by SEMPHN LGA, ranked lowest first. Highlight Casey. Unit pct.',
+    },
+    {
+      tone: 'warn',
+      arrow: '↑',
+      metric: 'Homelessness',
+      where: 'Greater Dandenong',
+      headline: '13.5',
+      unit: '/10k',
+      context: '2.3× catchment median',
+      prompt: 'Build a bar chart of homelessness + marginal housing rate per 10,000 residents by SEMPHN LGA. Highlight Greater Dandenong. Unit per_10k.',
+    },
+    {
+      tone: 'info',
+      arrow: '→',
+      metric: 'Population growth',
+      where: 'Casey · Cardinia',
+      headline: '+3.4% pa',
+      unit: '',
+      context: 'fastest-growing in VIC',
+      prompt: 'Build an area chart of annual population growth rate by SEMPHN LGA over the last 5 financial years. Highlight Casey and Cardinia. Unit pct.',
+    },
+    {
+      tone: 'pos',
+      arrow: '↗',
+      metric: 'GP supply',
+      where: 'Inner south',
+      headline: '0.92',
+      unit: '/100',
+      context: 'highest density in SEMPHN',
+      prompt: 'Build a bar chart of GP practices per 100 residents by SEMPHN LGA, ranked highest first. Highlight Stonnington. Unit per_100k.',
+    },
+    {
+      tone: 'alert',
+      arrow: '↓',
+      metric: 'SEIFA disadvantage',
+      where: 'Greater Dandenong',
+      headline: 'decile 2',
+      unit: '',
+      context: 'most disadvantaged in SEMPHN',
+      prompt: 'Map ABS SEIFA disadvantage decile by SEMPHN LGA. Highlight Greater Dandenong as the most disadvantaged.',
+    },
+  ];
+
+  function renderCatchmentInsights() {
+    var el = document.getElementById('catchment-insights');
+    if (!el) return;
+    while (el.firstChild) el.removeChild(el.firstChild);
+    var label = document.createElement('span');
+    label.className = 'catchment-insights-label';
+    label.textContent = 'Catchment insights · click to explore';
+    el.appendChild(label);
+    SEMPHN_INSIGHTS.forEach(function (i, idx) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'insight-chip insight-chip-' + i.tone;
+      chip.style.animationDelay = (idx * 60) + 'ms';
+
+      var arrow = document.createElement('span'); arrow.className = 'insight-arrow'; arrow.textContent = i.arrow;
+      var headBlock = document.createElement('span'); headBlock.className = 'insight-head';
+      var headline = document.createElement('span'); headline.className = 'insight-headline';
+      headline.textContent = i.headline;
+      if (i.unit) { var unit = document.createElement('span'); unit.className = 'insight-unit'; unit.textContent = i.unit; headline.appendChild(unit); }
+      var meta = document.createElement('span'); meta.className = 'insight-meta';
+      meta.textContent = i.metric + ' · ' + i.where;
+      var ctx = document.createElement('span'); ctx.className = 'insight-ctx';
+      ctx.textContent = i.context;
+      headBlock.appendChild(headline);
+      headBlock.appendChild(meta);
+      headBlock.appendChild(ctx);
+
+      chip.appendChild(arrow); chip.appendChild(headBlock);
+      chip.addEventListener('click', function () {
+        var input = document.getElementById('chat-input');
+        var send  = document.getElementById('chat-send');
+        if (!input) return;
+        input.value = i.prompt;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        if (send && !send.disabled) send.click();
+      });
+      el.appendChild(chip);
+    });
+  }
+  window.__renderCatchmentInsights = renderCatchmentInsights;
+
   /* Page-aware "thinking" stages · rotated through while the AI is
    * generating a reply. Gives the impression of a smarter, multi-step
    * pipeline (because honestly that's what the prompt + DB layer does). */
@@ -2986,6 +3103,7 @@
     setInterval(refreshSavedLabel, 30000);
     if (pageId() === 'dashboards' && typeof window.__renderWidgets === 'function') {
       window.__renderWidgets();
+      window.__renderCatchmentInsights && window.__renderCatchmentInsights();
     }
     if (pageId() === 'hna' && typeof window.__renderHnaEdits === 'function') {
       window.__renderHnaEdits();

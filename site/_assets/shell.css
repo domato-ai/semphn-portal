@@ -909,6 +909,107 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .canvas-pane { padding: clamp(2rem, 3.5vw, 3rem); max-width: 1280px; margin: 0 auto; }
 
 /* ═══════════════════════════════════════════════════════════════════
+ * CATCHMENT INSIGHTS STRIP (Dashboards canvas top)
+ * AI-surfaced SEMPHN-specific equity findings · click to explore.
+ * ═══════════════════════════════════════════════════════════════════ */
+.catchment-insights {
+  display: flex; align-items: stretch; gap: 0.7rem;
+  padding: 0.85rem 1.4rem 0.95rem;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule-soft);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: none;
+  mask-image: linear-gradient(to right, black 94%, transparent);
+  -webkit-mask-image: linear-gradient(to right, black 94%, transparent);
+}
+.catchment-insights::-webkit-scrollbar { display: none; }
+.catchment-insights:empty { display: none; }
+.catchment-insights-label {
+  flex: none;
+  align-self: center;
+  font-size: 0.66rem;
+  color: var(--slate-mute);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding-right: 0.4rem;
+  margin-right: 0.1rem;
+  border-right: 1px solid var(--rule);
+}
+
+/* The insight chip · gradient stripe left, headline number + meta + ctx stacked */
+.insight-chip {
+  flex: none;
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 0.85rem 0.55rem 0.7rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left-width: 3px;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: transform var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast);
+  animation: chip-in 320ms cubic-bezier(0.2, 0.6, 0.2, 1) both;
+  min-width: 0;
+}
+.insight-chip:hover {
+  border-color: var(--ink);
+  box-shadow: 0 6px 16px -8px rgba(10,10,10,0.18);
+  transform: translateY(-1px);
+}
+.insight-chip:active { transform: translateY(0); }
+
+/* Tone-coloured left stripe + arrow */
+.insight-chip-warn  { border-left-color: #F59E0B; }
+.insight-chip-alert { border-left-color: #EF4444; }
+.insight-chip-info  { border-left-color: #4C86FF; }
+.insight-chip-pos   { border-left-color: #10B981; }
+.insight-chip-warn  .insight-arrow { color: #F59E0B; }
+.insight-chip-alert .insight-arrow { color: #EF4444; }
+.insight-chip-info  .insight-arrow { color: #4C86FF; }
+.insight-chip-pos   .insight-arrow { color: #10B981; }
+
+.insight-arrow {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  flex: none;
+}
+.insight-head {
+  display: flex; flex-direction: column; min-width: 0;
+  line-height: 1.15;
+}
+.insight-headline {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex; align-items: baseline; gap: 0.2rem;
+}
+.insight-unit {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--slate-soft);
+}
+.insight-meta {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink);
+  margin-top: 0.1rem;
+}
+.insight-ctx {
+  font-size: 0.66rem;
+  color: var(--slate-soft);
+  margin-top: 0.06rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
  * WIDGET CARDS (Dashboards builder)
  * Figma-quality: white card, hairline border, no shadow at rest,
  * generous padding, big bold numbers
