@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1782000000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1782100000" />
 
 <!-- Apache ECharts · widget rendering for the dashboard builder.
      Why ECharts: enterprise-grade defaults, single CDN, themeable. -->
@@ -98,18 +98,32 @@
     background: var(--positive, #10B981);
   }
 
-  /* The widget grid · tighter tiles, generous gap, fills the canvas */
+  /* The widget grid · 12-col responsive grid with size-aware tiles.
+     KPIs compact (4 cols), charts default (6 cols), choropleth/table full row. */
   .widget-grid-padded {
     display: none;
   }
   .widget-grid-padded:not(:empty) {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    grid-template-columns: repeat(12, 1fr);
     gap: 1.25rem;
     padding: clamp(1.5rem, 2.5vw, 2.25rem);
     overflow-y: auto;
     position: absolute; inset: 0;
-    align-content: start;  /* stack to top — don't stretch tiles vertically */
+    align-content: start;
+  }
+  .widget-grid-padded .wgt-card[data-size="sm"] { grid-column: span 4; }
+  .widget-grid-padded .wgt-card[data-size="md"] { grid-column: span 6; }
+  .widget-grid-padded .wgt-card[data-size="lg"] { grid-column: span 12; }
+
+  /* Narrow viewports — collapse to single column */
+  @media (max-width: 920px) {
+    .widget-grid-padded .wgt-card[data-size] { grid-column: 1 / -1; }
+  }
+  /* Mid viewports — KPIs side-by-side, charts full-row */
+  @media (max-width: 1280px) and (min-width: 921px) {
+    .widget-grid-padded .wgt-card[data-size="sm"] { grid-column: span 6; }
+    .widget-grid-padded .wgt-card[data-size="md"] { grid-column: span 12; }
   }
 </style>
 </head>
@@ -274,8 +288,31 @@
   // Watch storage to keep the count in sync after widget add/delete
   setInterval(refresh, 800);
   refresh();
+
+  // Export → opens browser print preview. The @media print styles in
+  // shell.css hide chat/nav/toolbar and show widget-grid full-width.
+  var exportBtn = document.getElementById('dash-export');
+  if (exportBtn) exportBtn.addEventListener('click', function () {
+    var raw = localStorage.getItem('semphn.workbench.widgets.v1');
+    var s = raw ? JSON.parse(raw) : {};
+    var arr = Array.isArray(s.dashboards) ? s.dashboards : [];
+    if (!arr.length) {
+      if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Add a widget first — nothing to export', 'warn');
+      return;
+    }
+    if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Opening print preview — Save as PDF', 'success');
+    setTimeout(function () { window.print(); }, 400);
+  });
+
+  // Publish → toast (real PPERS lodgement endpoint comes in Phase 1.5)
+  var publishBtn = document.getElementById('dash-publish');
+  if (publishBtn) publishBtn.addEventListener('click', function () {
+    if (window.SEMPHN && window.SEMPHN.toast) {
+      window.SEMPHN.toast('Publish to SEMPHN tenant · coming in Phase 1.5', 'warn');
+    }
+  });
 })();
 </script>
-<script src="/_assets/shell.js?v=1782000000"></script>
+<script src="/_assets/shell.js?v=1782100000"></script>
 </body>
 </html>

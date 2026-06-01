@@ -80,6 +80,59 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: var(--r-xs);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+ * PRINT STYLESHEET · clean PDF export from the browser print dialog
+ * Triggered by the dashboards Export button → window.print()
+ * ═══════════════════════════════════════════════════════════════════ */
+@media print {
+  @page { margin: 14mm; size: A4 landscape; }
+  html, body { height: auto !important; overflow: visible !important; }
+  /* Hide all chrome */
+  .nav, .chat, .split-handle, .statusbar, .canvas-head,
+  .chat-toolbar, .composer, .chat-suggest, .canvas-pill,
+  .canvas-actions, .turn-followups, .wgt-actions { display: none !important; }
+  /* Maps default preview · hide too (PDF should be widget tiles) */
+  .maps-default, .dashboards-default { display: none !important; }
+  /* Show widget grid full-width, no overflow scrolling */
+  .canvas, .canvas-body, .canvas-body-flush {
+    background: white !important;
+    position: static !important;
+    inset: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    height: auto !important;
+  }
+  .widget-grid-padded, .widget-grid-padded:not(:empty) {
+    position: static !important;
+    inset: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+    display: grid !important;
+  }
+  /* Force all sizes to consistent 2-col print layout */
+  .wgt-card[data-size="lg"] { grid-column: span 2 !important; }
+  .wgt-card[data-size="sm"], .wgt-card[data-size="md"] { grid-column: span 1 !important; }
+  .wgt-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    box-shadow: none !important;
+    border-color: #D1D5DB !important;
+  }
+  /* Print header — page title + date */
+  body::before {
+    content: "SEMPHN Workbench · Dashboard export · " attr(data-page-print);
+    display: block;
+    font-family: var(--sans);
+    font-size: 10pt;
+    color: #4B5563;
+    margin-bottom: 8mm;
+    padding-bottom: 4mm;
+    border-bottom: 1px solid #D1D5DB;
+  }
+}
+
 /* Page entrance */
 @keyframes page-in {
   from { opacity: 0; transform: translateY(2px); }

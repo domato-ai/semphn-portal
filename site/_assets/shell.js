@@ -1445,6 +1445,16 @@
     callbacks = callbacks || {};
     var card = document.createElement('div'); card.className = 'wgt-card wgt-type-' + (widget.type || 'unknown');
     card.setAttribute('draggable', 'true');
+    // Size hint · widget.size override OR derived from type.
+    //   sm  → compact (KPI)
+    //   md  → default flex item (bar/line/donut/area)
+    //   lg  → full-row span (choropleth/table)
+    var size = widget.size || (
+      widget.type === 'kpi' ? 'sm' :
+      (widget.type === 'choropleth' || widget.type === 'map' || widget.type === 'table') ? 'lg' :
+      'md'
+    );
+    card.setAttribute('data-size', size);
 
     // Head
     var head = document.createElement('div'); head.className = 'wgt-head';
@@ -2943,6 +2953,11 @@
     if (!sess) return;
     hydrateUserPill(sess);
     highlightNav(pageId());
+    // Stamp the body with a print header label (page + locale date)
+    try {
+      var d = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+      document.body.setAttribute('data-page-print', pageId().toUpperCase() + ' · ' + d);
+    } catch (_) {}
     renderFeed();
     var contextSummary = document.body.getAttribute('data-context')
       || 'SEMPHN catchment: 1.56M residents across 10 LGAs (Bayside, Cardinia, Casey, Frankston, Glen Eira, Greater Dandenong, Kingston, Mornington Peninsula, Port Phillip, Stonnington). First Nations IRSEO 25 vs Vic 14. MH prevalence above 18.3% in Port Phillip (23.3), Frankston (22.0), Greater Dandenong (21.4). Lowest bowel screening: Casey South 35.9%, Dandenong 38.3%, Frankston 39.3%. Frankston highest MH conditions at 116.1/1k.';
