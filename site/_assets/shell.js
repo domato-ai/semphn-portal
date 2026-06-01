@@ -404,15 +404,20 @@
         label: { color: '#0A0A0A', fontSize: 11 },
       },
       tooltip: {
-        // Light + minimal · white card with hairline border, small text,
-        // soft drop-shadow. Replaces the previous ink-black pill that
-        // could overpower the chart on hover.
+        // Light + minimal · constrained-width white chip near the cursor.
         backgroundColor: 'rgba(255, 255, 255, 0.97)',
         borderColor: '#E5E7EB',
         borderWidth: 1,
         textStyle: { color: '#0A0A0A', fontSize: 11, fontFamily: '"Geist", system-ui' },
-        padding: [6, 10],
-        extraCssText: 'box-shadow: 0 6px 16px -6px rgba(10,10,10,0.14), 0 2px 4px -2px rgba(10,10,10,0.05); border-radius: 8px; line-height: 1.45;',
+        padding: [5, 9],
+        // max-width forces the tooltip to a small chip · width:auto + display:inline-block
+        // collapses to content size · white-space:nowrap keeps one-liner formatters on one line.
+        extraCssText:
+          'box-shadow: 0 6px 16px -6px rgba(10,10,10,0.14), 0 2px 4px -2px rgba(10,10,10,0.05);' +
+          ' border-radius: 8px; line-height: 1.4;' +
+          ' max-width: 220px !important; width: auto !important;' +
+          ' white-space: nowrap;' +
+          ' pointer-events: none;',
       },
     });
     semphnThemeRegistered = true;
@@ -483,14 +488,13 @@
     return {
       grid: { left: 4, right: 56, top: 8, bottom: 0, containLabel: true },
       tooltip: {
-        trigger: 'item',          // hover a specific bar, not the row band
-        confine: true,            // keep tooltip inside the chart bounds
-        appendToBody: false,
+        trigger: 'item',
+        confine: true,
+        enterable: false,
         formatter: function (p) {
-          // Single tight line · "Frankston · 116.1 /1k"
-          return '<span style="font-weight:600;">' + p.name + '</span>'
-               + '<span style="opacity:0.5; margin: 0 6px;">·</span>'
-               + '<span style="font-family: \'Geist Mono\', ui-monospace, monospace;">' + formatValue(p.value, widget.unit) + '</span>';
+          return '<b>' + p.name + '</b>'
+               + '<span style="opacity:0.5; margin:0 5px;">·</span>'
+               + '<span style="font-family:\'Geist Mono\',ui-monospace,monospace;">' + formatValue(p.value, widget.unit) + '</span>';
         },
       },
       yAxis: { type: 'category', data: labels, inverse: true, axisLabel: { fontSize: 11.5, color: '#4B5563' } },
