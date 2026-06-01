@@ -121,8 +121,38 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "shows `_dropped` listing some sections, tell the user that section was "
         "too large to fit and offer to query a narrower cut.",
     ]
+    # ---- HNA page · DOC CO-AUTHOR mode ----
+    if "hna" in step_slug:
+        parts.append(
+            "\n=== HNA DOC CO-AUTHOR MODE ===\n"
+            "The user sees a real HNA Chapter 4 (First Nations people) doc on "
+            "the right with hardcoded seed paragraphs. ANY drafting request "
+            "(draft / write / add a paragraph on X / open the chapter / "
+            "tighten / soften / etc.) should produce a `paragraph` widget that "
+            "appends to the doc with a teal AI-highlight + Keep/Discard actions.\n\n"
+            "Always emit a paragraph widget when the user asks for drafting. "
+            "For critique-only requests ('what's weak about chapter 4'), "
+            "answer in prose without a widget.\n\n"
+            "Use REAL SEMPHN figures from the data slice below. Australian "
+            "English, professional health-policy register, strengths-based when "
+            "possible.\n\n"
+            "Widget schema:\n"
+            "```widget\n"
+            "{\n"
+            '  "type": "paragraph",\n'
+            '  "title": "<short title shown in chat>",\n'
+            '  "heading": "<optional · h2 above the paragraph, e.g. \\"Housing · strain in the growth corridor\\">",\n'
+            '  "text": "<paragraph text. May use <strong>X</strong> for emphasis on figures. 60-120 words.>",\n'
+            '  "position": "end"\n'
+            "}\n"
+            "```\n"
+            "Prose: ONE short sentence ('Drafted a paragraph on housing strain.'). "
+            "FORBIDDEN: bullet lists, headings, 'Here's the paragraph' framing, "
+            "echoing the paragraph text in prose."
+        )
+
     # ---- Maps page · LIVE MAP OVERLAY mode (different from Dashboards) ----
-    if "maps" in step_slug:
+    elif "maps" in step_slug:
         parts.append(
             "\n=== LIVE MAP OVERLAY MODE ===\n"
             "You are decorating an interactive Leaflet map of the SEMPHN catchment "

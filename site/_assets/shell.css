@@ -628,6 +628,55 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .chat-suggest-chip:hover .arr { color: var(--teal-mint); }
 
+/* ───────── HNA · AI-edited paragraph highlight + actions ───────── */
+.hna-ai-edit {
+  position: relative;
+  padding-left: 1.1rem !important;
+  margin-left: -0.4rem;
+  border-left: 3px solid var(--teal, #55BFAF);
+  background: linear-gradient(90deg, rgba(85,191,175,0.06), transparent 80%);
+  animation: hna-ai-edit-in 420ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.hna-ai-edit::after {
+  content: "AI";
+  position: absolute;
+  top: -8px; right: -4px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+.hna-ai-edit h2 + & { margin-top: 0.4rem; }
+.hna-ai-edit-actions {
+  display: inline-flex; gap: 0.35rem;
+  margin-top: 0.45rem;
+  font-family: var(--sans);
+}
+.hna-ai-edit-actions button {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--slate);
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--r-xs);
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--motion-fast);
+}
+.hna-ai-edit-actions button:hover {
+  color: var(--ink); border-color: var(--slate-mute); background: var(--rule-soft);
+}
+.hna-ai-edit-actions button.danger:hover {
+  color: var(--negative); border-color: var(--negative);
+}
+@keyframes hna-ai-edit-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ─────────────────── COMPOSER (minimal · textarea + send) ─────────────────── */
 .composer {
   flex: none;

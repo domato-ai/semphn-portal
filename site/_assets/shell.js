@@ -57,15 +57,16 @@
    * on the right canvas. */
   var SUGGESTIONS = {
     hna: [
-      { section: 'Draft', items: [
-        { icon: '✎', label: 'Open Chapter 4',         prompt: 'Draft the opening paragraph for Chapter 4: First Nations people, anchored on IRSEO 25 (vs Victoria 14) and MH prevalence above 18.3% in Port Phillip, Frankston and Greater Dandenong.' },
-        { icon: '✎', label: 'Executive summary',      prompt: 'In 3 sentences I can drop into the executive summary, what is the strongest cross-chapter finding for SEMPHN this cycle?' },
-        { icon: '⟳', label: 'Soften the tone',        prompt: 'Rewrite the Greater Dandenong housing-strain paragraph in a more strengths-based voice while keeping every figure.' },
+      { section: 'Draft new paragraphs', items: [
+        { icon: '✎', label: 'Bowel-screening gap',    prompt: 'Draft a paragraph on the bowel cancer screening gap for First Nations residents in the SEMPHN catchment. Anchor on real participation rates and name the lowest LGAs. Heading: "Bowel screening · the equity gap".' },
+        { icon: '✎', label: 'Workforce pressure',     prompt: 'Draft a paragraph on workforce pressure facing the 2 ACCHS in the catchment. Heading: "Workforce · two ACCHS, stretched". Use real figures.' },
+        { icon: '✎', label: 'Smoking & MH overlap',   prompt: 'Draft a paragraph on the overlap of smoking and mental-health conditions for First Nations residents in SEMPHN. Heading: "Smoking + mental health · co-occurring need".' },
+        { icon: '✎', label: 'Cardio-metabolic risk',  prompt: 'Draft a paragraph on cardio-metabolic risk (diabetes + hypertension prevalence) by LGA for First Nations residents. Heading: "Cardio-metabolic · prevention pathway".' },
       ]},
-      { section: 'Critique', items: [
-        { icon: '⚑', label: 'DoH rubric flags',       prompt: 'Looking at the current Chapter 4 draft, what data or framing is the DoH Performance Rubric most likely to flag as missing or thin?' },
-        { icon: '↔', label: 'Cross-reference Ch 7',   prompt: 'Where does the First Nations chapter (4) need a cross-reference to the Mental health chapter (7) for coherence?' },
-        { icon: '◉', label: 'Pre-flight check',       prompt: 'Run the DoH Compliance Checklist + Performance Rubric on the current Chapter 4 draft. Flag warnings.' },
+      { section: 'Critique + sharpen', items: [
+        { icon: '⚑', label: 'DoH rubric flags',       prompt: 'Looking at the current Chapter 4 draft, what data or framing is the DoH Performance Rubric most likely to flag as missing or thin? Reply in prose, no widget.' },
+        { icon: '↔', label: 'Cross-reference Ch 7',   prompt: 'Where does Chapter 4 need a cross-reference to Chapter 7 (Mental health) for coherence? Reply in prose, no widget.' },
+        { icon: '◉', label: 'Pre-flight check',       prompt: 'Run the DoH Compliance Checklist + Performance Rubric on the current Chapter 4 draft. Flag warnings. Reply in prose, no widget.' },
       ]},
     ],
     dashboards: [
@@ -174,7 +175,7 @@
   // recognised widget type. Non-widget code blocks pass through to prose.
   var WIDGET_RE_ALL    = /```(?:widget|json|js)?\s*\n?([\s\S]*?)```/g;
   var WIDGET_RE_SINGLE = /```widget\s*\n([\s\S]*?)```/;
-  var WIDGET_TYPES = { bar: 1, line: 1, area: 1, donut: 1, pie: 1, kpi: 1, table: 1, choropleth: 1, map: 1 };
+  var WIDGET_TYPES = { bar: 1, line: 1, area: 1, donut: 1, pie: 1, kpi: 1, table: 1, choropleth: 1, map: 1, paragraph: 1 };
 
   function readWidgets(page) {
     try {
@@ -1680,6 +1681,131 @@
   window.__extractWidgets = extractWidgets;
 
   /* ============================================================
+   * HNA · chat-edits-the-doc
+   *
+   * `paragraph` widgets emitted on the /hna/ page are appended to the
+   * current chapter doc with a teal left-border highlight + AI badge.
+   * Persisted to localStorage so refresh keeps them.
+   *
+   * Widget shape:
+   *   { type: "paragraph", title: "...", heading: "<optional h2>",
+   *     text: "<paragraph text · plain or with <strong>>",
+   *     position: "end" }
+   * ============================================================ */
+  var HNA_EDITS_KEY = 'semphn.hna.edits.v1';
+  function readHnaEdits() {
+    try { return JSON.parse(localStorage.getItem(HNA_EDITS_KEY) || '[]'); }
+    catch (_) { return []; }
+  }
+  function writeHnaEdits(arr) {
+    try { localStorage.setItem(HNA_EDITS_KEY, JSON.stringify(arr)); }
+    catch (_) {}
+  }
+
+  /* Safe HTML for paragraph text · strip tags except <strong>/<em>.
+   * Defense in depth — paragraph text comes from the model. */
+  function sanitiseParagraphHtml(html) {
+    if (!html) return '';
+    // Allowlist <strong> and <em>; escape everything else.
+    var tmp = document.createElement('div');
+    tmp.textContent = String(html);
+    var escaped = tmp.innerHTML;
+    return escaped
+      .replace(/&lt;(strong|em|b|i)&gt;/gi, function (_, t) { return '<' + t.toLowerCase() + '>'; })
+      .replace(/&lt;\/(strong|em|b|i)&gt;/gi, function (_, t) { return '</' + t.toLowerCase() + '>'; });
+  }
+
+  function buildHnaEditNode(edit, index) {
+    var wrap = document.createElement('div');
+    wrap.className = 'hna-ai-edit-wrap';
+    wrap.setAttribute('data-edit-index', String(index));
+    if (edit.heading) {
+      var h = document.createElement('h2');
+      h.textContent = edit.heading;
+      wrap.appendChild(h);
+    }
+    var p = document.createElement('p');
+    p.className = 'hna-ai-edit';
+    p.innerHTML = sanitiseParagraphHtml(edit.text || '');
+    wrap.appendChild(p);
+    // Actions bar
+    var bar = document.createElement('div');
+    bar.className = 'hna-ai-edit-actions';
+    function btn(label, opts, handler) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      if (opts && opts.danger) b.className = 'danger';
+      b.addEventListener('click', handler);
+      bar.appendChild(b);
+    }
+    btn('Keep', {}, function () {
+      // Remove the AI badge styling — promote to "seed" content
+      p.classList.remove('hna-ai-edit');
+      bar.remove();
+      // Mark as accepted in storage (still persisted)
+      var arr = readHnaEdits();
+      if (arr[index]) { arr[index].accepted = true; writeHnaEdits(arr); }
+      showToast('Paragraph kept', 'success');
+    });
+    btn('Discard', { danger: true }, function () {
+      var arr = readHnaEdits();
+      arr.splice(index, 1);
+      writeHnaEdits(arr);
+      renderHnaEdits();
+      showToast('Paragraph removed', 'success');
+    });
+    wrap.appendChild(bar);
+    return wrap;
+  }
+
+  function renderHnaEdits() {
+    var body = document.getElementById('hna-doc-body');
+    if (!body) return;
+    // Remove all previously-rendered AI edits
+    Array.prototype.slice.call(body.querySelectorAll('.hna-ai-edit-wrap'))
+      .forEach(function (el) { el.remove(); });
+    var edits = readHnaEdits();
+    edits.forEach(function (e, idx) {
+      var node = buildHnaEditNode(e, idx);
+      if (e.accepted) {
+        // Render without the highlight class
+        var p = node.querySelector('.hna-ai-edit');
+        if (p) p.classList.remove('hna-ai-edit');
+        var bar = node.querySelector('.hna-ai-edit-actions');
+        if (bar) bar.remove();
+      }
+      body.appendChild(node);
+    });
+  }
+
+  function applyHnaParagraph(widget) {
+    if (!widget || widget.type !== 'paragraph') return false;
+    var edit = {
+      heading: widget.heading || '',
+      text:    widget.text || widget.value || '',
+      title:   widget.title || '',
+      ts:      Date.now(),
+      accepted: false,
+    };
+    if (!edit.text) return false;
+    var arr = readHnaEdits();
+    arr.push(edit);
+    writeHnaEdits(arr);
+    renderHnaEdits();
+    // Scroll the new paragraph into view
+    setTimeout(function () {
+      var body = document.getElementById('hna-doc-body');
+      if (!body) return;
+      var last = body.querySelector('.hna-ai-edit-wrap:last-child');
+      if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+    return true;
+  }
+  window.__applyHnaParagraph = applyHnaParagraph;
+  window.__renderHnaEdits    = renderHnaEdits;
+
+  /* ============================================================
    * Storage helpers
    * ============================================================ */
   function readSession() {
@@ -2077,10 +2203,19 @@
       return getFollowups(widget);
     }
     if (page === 'hna') {
+      // If we just produced a paragraph widget, suggest follow-ups that
+      // build on it. Otherwise (critique replies), suggest drafting next.
+      if (widget && widget.type === 'paragraph') {
+        return [
+          { label: 'Tighten by 25%',        prompt: 'Draft a tightened version of the paragraph you just wrote — 25% shorter without losing any figure. New paragraph, append to doc.' },
+          { label: 'Strengths-based rewrite', prompt: 'Draft a strengths-based rewrite of the paragraph you just wrote. Same figures, more agency-centred framing. New paragraph.' },
+          { label: 'Add a methods footnote', prompt: 'Draft a methods footnote paragraph for the figures in the paragraph you just wrote. Heading: "Methods · sources + caveats".' },
+        ];
+      }
       return [
-        { label: 'Critique this paragraph', prompt: 'Critique the paragraph you just produced — what is weak, what is strong, what would a DoH reviewer flag?' },
-        { label: 'Cite the SEMPHN data',    prompt: 'Add inline citations to the paragraph for every figure, pointing to the SEMPHN source.' },
-        { label: 'Tighten it',              prompt: 'Tighten the paragraph by 25% without losing any figure.' },
+        { label: 'Draft next section',   prompt: 'Draft the next section of Chapter 4 — pick the area that is weakest in the current draft.' },
+        { label: 'Executive summary',    prompt: 'Draft a 3-sentence executive summary of Chapter 4 — paragraph, heading: "Executive summary".' },
+        { label: 'DoH critique',         prompt: 'Critique the current draft against the DoH Performance Rubric. Reply in prose, no widget.' },
       ];
     }
     if (page === 'maps') {
@@ -2351,7 +2486,7 @@
             var parsed = window.__extractWidgets(reply);
             if (parsed.widgets.length) {
               var page = pageId();
-              var addedToMap = 0, addedAsTiles = 0;
+              var addedToMap = 0, addedAsTiles = 0, addedToDoc = 0;
               parsed.widgets.forEach(function (w) {
                 var t = w.type;
                 // On /maps/, choropleth-style widgets overlay onto the live
@@ -2359,6 +2494,11 @@
                 if (page === 'maps' && (t === 'choropleth' || t === 'map') && window.__defaultMapApi) {
                   window.__defaultMapApi.applyData(w);
                   addedToMap++;
+                } else if (page === 'hna' && t === 'paragraph' && window.__applyHnaParagraph) {
+                  // On /hna/, paragraph widgets are inserted into the doc
+                  if (window.__applyHnaParagraph(w)) addedToDoc++;
+                } else if (t === 'paragraph') {
+                  // paragraph widget on a non-HNA page → no-op (skip silently)
                 } else {
                   window.__addWidget(w);
                   addedAsTiles++;
@@ -2376,6 +2516,9 @@
               }
               if (addedToMap) {
                 bits.push('Updated the map' + (producedWidget.title ? ' — ' + producedWidget.title : '') + '.');
+              }
+              if (addedToDoc) {
+                bits.push('Drafted ' + addedToDoc + ' paragraph' + (addedToDoc === 1 ? '' : 's') + ' into Chapter 4.');
               }
               var generated = bits.join(' ');
 
@@ -2730,6 +2873,9 @@
     setInterval(refreshSavedLabel, 30000);
     if (pageId() === 'dashboards' && typeof window.__renderWidgets === 'function') {
       window.__renderWidgets();
+    }
+    if (pageId() === 'hna' && typeof window.__renderHnaEdits === 'function') {
+      window.__renderHnaEdits();
     }
   }
 
