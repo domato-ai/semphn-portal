@@ -215,7 +215,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
  * CHAT PANEL (LEFT)
  * ═══════════════════════════════════════════════════════════════════ */
 .chat {
-  background: var(--paper);
+  /* Subtle gradient backdrop — breathes life into the chat panel
+     without competing with the content. */
+  background:
+    radial-gradient(circle at 0% 0%, rgba(85,191,175,0.045), transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(76,134,255,0.035), transparent 45%),
+    var(--paper);
   display: flex; flex-direction: column;
   min-height: 0;
   overflow: hidden;
@@ -317,6 +322,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .turn-body {
   font-size: 0.95rem; line-height: 1.65;
   color: var(--ink);
+  position: relative;
+  padding-left: 1.1rem;
+}
+/* AI author pip · small gradient dot to the left of every AI reply */
+.turn-body::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.5em;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), #4C86FF);
+  box-shadow: 0 0 0 2px rgba(85,191,175,0.18);
 }
 .turn-body p + p, .turn-body p + ul, .turn-body p + ol, .turn-body ul + p, .turn-body ol + p { margin-top: 0.6rem; }
 .turn-body strong { font-weight: 600; color: var(--ink); }
@@ -354,9 +371,32 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .turn-body a:hover { text-decoration-color: var(--ink); }
 
 .turn-thinking {
-  display: inline-flex; align-items: center; gap: 0.55rem;
+  display: inline-flex; align-items: center; gap: 0.6rem;
   font-size: 0.88rem; color: var(--slate);
-  padding: 0.25rem 0;
+  padding: 0.4rem 0.8rem 0.4rem 0.7rem;
+  background: linear-gradient(135deg, rgba(85,191,175,0.08), rgba(76,134,255,0.06));
+  border: 1px solid rgba(85,191,175,0.25);
+  border-radius: 999px;
+  align-self: flex-start;
+  position: relative;
+  overflow: hidden;
+}
+.turn-thinking::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: translateX(-100%);
+  animation: thinking-shimmer 2.2s infinite;
+}
+@keyframes thinking-shimmer {
+  to { transform: translateX(100%); }
+}
+.turn-thinking-label {
+  position: relative; z-index: 1;
+  font-weight: 500;
+  color: var(--ink);
+  transition: opacity 180ms;
 }
 .turn-thinking .dots { display: inline-flex; gap: 4px; }
 .turn-thinking .dots span {
@@ -616,7 +656,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--motion-fast);
+  transition: all var(--motion-fast), transform 120ms;
+  animation: chip-in 320ms cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+.chat-suggest-chip:nth-child(2) { animation-delay: 40ms; }
+.chat-suggest-chip:nth-child(3) { animation-delay: 80ms; }
+.chat-suggest-chip:nth-child(4) { animation-delay: 120ms; }
+.chat-suggest-chip:nth-child(5) { animation-delay: 160ms; }
+.chat-suggest-chip:nth-child(6) { animation-delay: 200ms; }
+.chat-suggest-chip:nth-child(7) { animation-delay: 240ms; }
+.chat-suggest-chip:nth-child(8) { animation-delay: 280ms; }
+.chat-suggest-chip:active { transform: scale(0.97); }
+@keyframes chip-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .chat-suggest-chip:hover {
   background: var(--ink); color: var(--paper);

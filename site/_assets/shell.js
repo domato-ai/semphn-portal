@@ -168,6 +168,35 @@
    * for this page, and render it as a tile on the canvas grid.
    * The JSON block is stripped from the visible chat reply.
    * ============================================================ */
+  /* Page-aware "thinking" stages · rotated through while the AI is
+   * generating a reply. Gives the impression of a smarter, multi-step
+   * pipeline (because honestly that's what the prompt + DB layer does). */
+  var THINKING_STAGES = {
+    dashboards: [
+      'Reading SEMPHN data',
+      'Considering 10 LGAs',
+      'Picking chart types',
+      'Building your tiles',
+    ],
+    maps: [
+      'Reading LGA boundaries',
+      'Joining the metric',
+      'Choosing the color ramp',
+      'Coloring the map',
+    ],
+    hna: [
+      'Reading Chapter 4',
+      'Citing real figures',
+      'Drafting the paragraph',
+      'Sharpening the voice',
+    ],
+    _default: [
+      'Reading SEMPHN data',
+      'Thinking through it',
+      'Drafting a reply',
+    ],
+  };
+
   var WIDGET_KEY = 'semphn.workbench.widgets.v1';
   // Match ANY fenced code block (```widget, ```json, ```js, or bare ```)
   // — global flag so we extract every block, not just the first.
@@ -192,6 +221,42 @@
       localStorage.setItem(WIDGET_KEY, JSON.stringify(s));
     } catch (_) {}
   }
+  /* Smart widget defaults · fill in fields the model often omits.
+   * Makes the system feel "smarter" without the model having to spell
+   * everything out. */
+  var UNIT_LABEL_MAP = {
+    pct:       '%',
+    per_1k:    'per 1,000 residents',
+    per_10k:   'per 10,000 residents',
+    per_100k:  'per 100,000 residents',
+    count:     '',
+    aud:       'AUD',
+    years:     'years',
+  };
+  function fillWidgetDefaults(w) {
+    if (!w || typeof w !== 'object') return w;
+    // unit_label inferred from unit
+    if (!w.unit_label && w.unit && UNIT_LABEL_MAP[w.unit] != null) {
+      w.unit_label = UNIT_LABEL_MAP[w.unit];
+    }
+    // subtitle inferred from source_id if missing
+    if (!w.subtitle && w.source_id) {
+      var s = String(w.source_id).replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      w.subtitle = 'Source · ' + s;
+    }
+    // For ranked bar/choropleth · auto-highlight the max value if not specified
+    if (!w.highlight && (w.type === 'bar' || w.type === 'choropleth' || w.type === 'map')
+        && Array.isArray(w.data) && w.data.length > 0) {
+      var maxItem = null, maxVal = -Infinity;
+      w.data.forEach(function (d) {
+        var v = Number(d.value);
+        if (!isNaN(v) && v > maxVal) { maxVal = v; maxItem = d.label; }
+      });
+      if (maxItem) w.highlight = maxItem;
+    }
+    return w;
+  }
+
   /* Extract ALL widget blocks from a chat reply.
    * Returns { widgets: [...], stripped: '<prose with widget blocks removed>' }.
    * Code blocks whose content doesn't JSON-parse to a recognised widget
@@ -216,7 +281,7 @@
         }
       } catch (_) { /* not JSON or not a widget — leave block in prose */ }
       if (widget) {
-        widgets.push(widget);
+        widgets.push(fillWidgetDefaults(widget));
         keptParts.push(text.slice(lastEnd, m.index));
         lastEnd = m.index + m[0].length;
       }
@@ -2104,12 +2169,27 @@
 
     if (turn.thinking) {
       var th = document.createElement('div'); th.className = 'turn-thinking';
-      th.appendChild(document.createTextNode('Thinking'));
+      var label = document.createElement('span'); label.className = 'turn-thinking-label';
+      label.textContent = 'Reading SEMPHN data';
+      th.appendChild(label);
       var dots = document.createElement('span'); dots.className = 'dots';
       dots.appendChild(document.createElement('span'));
       dots.appendChild(document.createElement('span'));
       dots.appendChild(document.createElement('span'));
       th.appendChild(dots);
+      // Rotate the label through page-aware stages every 1.4s while thinking
+      var stages = THINKING_STAGES[pageId()] || THINKING_STAGES._default;
+      var stageIdx = 0;
+      var timer = setInterval(function () {
+        if (!document.body.contains(th)) { clearInterval(timer); return; }
+        stageIdx = (stageIdx + 1) % stages.length;
+        label.style.opacity = '0';
+        setTimeout(function () {
+          label.textContent = stages[stageIdx];
+          label.style.opacity = '1';
+        }, 180);
+      }, 1400);
+      th.dataset.timer = String(timer);
       wrap.appendChild(th);
     }
 
