@@ -333,32 +333,57 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   overflow: hidden;
   position: relative;
 }
-/* Chat panel top toolbar · New chat + collapse */
+/* Chat panel top toolbar · clear + collapse + section label */
 .chat-toolbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0.55rem 0.7rem 0.45rem;
+  padding: 0.5rem 0.75rem 0.45rem;
   border-bottom: 1px solid var(--rule-soft);
   flex: none;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  min-height: 38px;
 }
+.chat-toolbar-left, .chat-toolbar-right {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+}
+.chat-toolbar-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--slate);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.chat-msgcount {
+  font-size: 0.7rem;
+  color: var(--slate-mute);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  padding: 0.15rem 0.45rem;
+  background: var(--rule-soft);
+  border-radius: 999px;
+  letter-spacing: 0;
+}
+.chat-msgcount:empty { display: none; }
 .chat-tool {
   display: inline-flex; align-items: center; gap: 0.35rem;
   background: none;
   border: 1px solid transparent;
-  color: var(--slate);
-  padding: 0.32rem 0.55rem;
+  color: var(--slate-mute);
+  padding: 0.3rem 0.55rem;
   border-radius: var(--r-sm);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   transition: all var(--motion-fast);
 }
 .chat-tool:hover { color: var(--ink); background: var(--rule-soft); border-color: var(--rule); }
+.chat-tool:disabled { opacity: 0.4; cursor: not-allowed; }
+.chat-tool:disabled:hover { background: none; border-color: transparent; color: var(--slate-mute); }
 .chat-tool svg { display: block; }
 .chat-tool.chat-collapse {
   width: 28px; padding: 0; justify-content: center;
-  font-size: 0.8rem; font-weight: 600;
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--slate);
 }
 .chat-feed {
   flex: 1; min-height: 0;
@@ -730,7 +755,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .chat-suggest {
   flex: none;
   display: flex; align-items: center; gap: 0.4rem;
-  padding: 0.6rem 0.9rem 0.55rem;
+  padding: 0.55rem 0.9rem 0.5rem;
   border-top: 1px solid var(--rule-soft);
   overflow-x: auto; overflow-y: hidden;
   scrollbar-width: none;
@@ -738,9 +763,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   /* Fade the right edge so users see there's more to scroll */
   mask-image: linear-gradient(to right, black 90%, transparent);
   -webkit-mask-image: linear-gradient(to right, black 90%, transparent);
+  /* Smooth fade-out when composing */
+  transition: opacity 160ms ease, max-height 200ms ease, padding 200ms ease;
+  opacity: 1; max-height: 60px;
 }
 .chat-suggest::-webkit-scrollbar { display: none; }
 .chat-suggest[hidden] { display: none; }
+/* Declutter: hide the persistent strip while the user is actively typing
+   (typeahead-menu takes over) AND fade the wrapper after the first turn so
+   the composer breathes. */
+.chat[data-composing="true"] .chat-suggest {
+  opacity: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-top-width: 0 !important;
+  pointer-events: none;
+  overflow: hidden;
+}
+.chat[data-composing="true"] .chat-suggest > * { display: none; }
 .chat-suggest-label {
   flex: none;
   font-size: 0.66rem;
@@ -842,15 +883,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   flex: none;
   border-top: 1px solid var(--rule);
   background: var(--paper);
-  padding: 0.85rem 0.9rem 0.95rem;
+  padding: 0.7rem 0.9rem 0.85rem;
 }
 .composer-wrap {
   display: flex; align-items: flex-end;
-  gap: 0.4rem;
+  gap: 0.35rem;
   border: 1px solid var(--rule);
   border-radius: var(--r);
   background: var(--paper);
-  padding: 0.35rem 0.4rem 0.35rem 0.2rem;
+  padding: 0.3rem 0.35rem 0.3rem 0.15rem;
   transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
 }
 .composer-wrap:focus-within {
@@ -861,28 +902,55 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   flex: 1;
   border: none; outline: none; background: transparent;
   resize: none;
-  padding: 0.55rem 0.65rem 0.55rem 0.75rem;
+  padding: 0.55rem 0.6rem 0.55rem 0.7rem;
   font-family: var(--sans);
-  font-size: 0.94rem; color: var(--ink);
+  font-size: 0.93rem; color: var(--ink);
   line-height: 1.5;
-  min-height: 2.4em; max-height: 10em;
+  min-height: 2.2em; max-height: 10em;
   overflow-y: auto;
 }
-.composer textarea::placeholder { color: var(--slate-mute); }
+.composer textarea::placeholder {
+  color: var(--slate-mute);
+  font-weight: 400;
+}
 .composer .send {
   flex: none;
   background: var(--ink); color: white;
   border: none;
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border-radius: var(--r-sm);
   cursor: pointer;
   display: grid; place-items: center;
   transition: background var(--motion-fast), opacity var(--motion-fast), transform 60ms;
 }
-.composer .send:hover { background: #1F1F1F; }
+.composer .send:hover:not(:disabled) { background: #1F1F1F; }
 .composer .send:active { transform: scale(0.96); }
-.composer .send:disabled { opacity: 0.35; cursor: not-allowed; }
+.composer .send:disabled { opacity: 0.3; cursor: not-allowed; }
 .composer .send svg { color: white; }
+/* A tiny hint line below the composer · only ever visible at 'idle' empty-state
+   so first-time users know the keyboard shortcuts. Hidden once they type. */
+.composer-hint {
+  padding: 0.4rem 0.25rem 0;
+  font-size: 0.68rem;
+  color: var(--slate-mute);
+  display: flex; align-items: center; gap: 0.45rem;
+  transition: opacity 160ms ease, max-height 200ms ease, padding 200ms ease;
+  max-height: 28px; opacity: 0.9;
+}
+.composer-hint kbd {
+  font-family: var(--mono); font-size: 0.62rem;
+  background: var(--rule-soft); border: 1px solid var(--rule);
+  padding: 0.04rem 0.3rem; border-radius: var(--r-xs);
+  color: var(--slate);
+}
+.chat[data-composing="true"] .composer-hint,
+.chat[data-has-turns="true"] .composer-hint {
+  opacity: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  pointer-events: none;
+  overflow: hidden;
+}
 /* Legacy hidden — old composer-foot is no longer rendered */
 .composer-foot, .composer-prompt {
   display: none !important;

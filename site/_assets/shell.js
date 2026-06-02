@@ -2922,10 +2922,12 @@
     var turns = getPageTurns(pageId());
     if (turns.length === 0) {
       feed.appendChild(buildEmptyState());
-      return;
+    } else {
+      turns.forEach(function (t) { feed.appendChild(buildTurnNode(t)); });
+      feed.scrollTop = feed.scrollHeight;
     }
-    turns.forEach(function (t) { feed.appendChild(buildTurnNode(t)); });
-    feed.scrollTop = feed.scrollHeight;
+    // Refresh declutter state + msg count + clear-btn enabled
+    if (typeof window.__syncChatState === 'function') window.__syncChatState();
   }
 
   /* ============================================================
@@ -3171,7 +3173,8 @@
     var meta = PAGE_META[pageId()] || PAGE_META.dashboards;
     var promptLabel = document.querySelector('.composer-prompt');
     if (promptLabel) promptLabel.textContent = meta.composerLabel;
-    input.placeholder = meta.placeholder + ' · type "/" for templates';
+    // Short, calm placeholder — keyboard hints live in the .composer-hint row below.
+    input.placeholder = 'Ask anything…';
 
     var busy = false;
     function setBusy(b) { busy = b; send.disabled = b || !input.value.trim(); updateStatus(b ? 'thinking' : 'idle'); }
@@ -3180,7 +3183,11 @@
       input.style.height = 'auto';
       input.style.height = Math.min(input.scrollHeight, 144) + 'px';
       send.disabled = busy || !input.value.trim();
+      // Toggle declutter state on the chat panel
+      if (typeof window.__syncChatState === 'function') window.__syncChatState();
     });
+    // Initial sync (in case there's persisted text or prior turns on load)
+    if (typeof window.__syncChatState === 'function') window.__syncChatState();
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey && document.querySelector('.slash-menu') == null) {
         e.preventDefault(); handleSend();
@@ -3481,11 +3488,20 @@
     setTimeout(function () { input.focus(); }, 0);
   }
 
-  /* Wire the "New chat" button in the chat-toolbar.
-   * Clears the per-page turn list and re-renders the empty state. */
+  /* Wire the "Clear" button in the chat-toolbar.
+   * Wipes the per-page turn list and re-renders the empty state.
+   * Also supports the legacy `chat-new` id for any cached HTML. */
   function wireNewChatButton() {
-    var btn = document.getElementById('chat-new');
+    var btn = document.getElementById('chat-clear') || document.getElementById('chat-new');
     if (!btn) return;
+    function syncDisabled() {
+      var has = getPageTurns(pageId()).length > 0;
+      btn.disabled = !has;
+      btn.title = has ? 'Clear this chat' : 'Nothing to clear';
+    }
+    syncDisabled();
+    // Re-run after every state change (feed re-render is a good proxy)
+    window.__syncClearBtn = syncDisabled;
     btn.addEventListener('click', function () {
       var page = pageId();
       var turns = getPageTurns(page);
@@ -3493,17 +3509,54 @@
         showToast('Chat is already empty', 'success');
         return;
       }
-      if (!confirm('Start a new chat? The conversation in this panel will be cleared.')) return;
+      if (!confirm('Clear this chat? The conversation in this panel will be deleted.')) return;
       var s = readState();
       s.byPage[page] = [];
       writeState(s);
       renderFeed();
       renderSuggestStrip();
+      syncChatState();
       var input = document.getElementById('chat-input');
       if (input) { input.value = ''; input.dispatchEvent(new Event('input')); input.focus(); }
       showToast('Chat cleared', 'success');
     });
   }
+
+  /* Sync the chat panel state for declutter:
+   *   • Hide suggest strip while user is actively typing (typeahead takes over)
+   *   • Hide composer hint after the first turn OR while typing
+   *   • Keep msg count + clear-btn enabled state fresh
+   * We toggle `hidden` directly instead of relying on attribute selectors
+   * (which we saw misbehave in some environments). */
+  function syncChatState() {
+    var chat = document.querySelector('.chat');
+    if (!chat) return;
+    var input = document.getElementById('chat-input');
+    var turns = getPageTurns(pageId());
+    var composing = !!(input && input.value && input.value.trim().length > 0);
+    chat.setAttribute('data-composing', composing ? 'true' : 'false');
+    chat.setAttribute('data-has-turns', turns.length > 0 ? 'true' : 'false');
+
+    // Suggest strip · only visible when feed is empty AND user isn't typing
+    var suggest = document.getElementById('chat-suggest');
+    if (suggest) {
+      if (composing || turns.length > 0) suggest.setAttribute('hidden', '');
+      else suggest.removeAttribute('hidden');
+    }
+
+    // Composer hint · only visible at the empty-state idle moment
+    var hint = document.querySelector('.composer-hint');
+    if (hint) {
+      if (composing || turns.length > 0) hint.setAttribute('hidden', '');
+      else hint.removeAttribute('hidden');
+    }
+
+    // Toolbar message count
+    var count = document.getElementById('chat-msgcount');
+    if (count) count.textContent = turns.length ? turns.length + (turns.length === 1 ? ' message' : ' messages') : '';
+    if (typeof window.__syncClearBtn === 'function') window.__syncClearBtn();
+  }
+  window.__syncChatState = syncChatState;
 
   /* ============================================================
    * Contextual suggestion strip · above the composer
