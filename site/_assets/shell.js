@@ -2240,22 +2240,45 @@
     if (ui.chatW)        split.style.setProperty('--chatw', ui.chatW + 'px');
     if (ui.chatCollapsed) split.setAttribute('data-chat-collapsed', 'true');
 
+    // Floating expand-button injected on the canvas side · only visible
+    // when chat is collapsed. Without this, a collapsed chat has no
+    // visible "re-expand" affordance from outside the panel.
+    var canvas = document.querySelector('.canvas');
+    var expandBtn = null;
+    if (canvas) {
+      expandBtn = document.createElement('button');
+      expandBtn.type = 'button';
+      expandBtn.className = 'chat-expand-floating';
+      expandBtn.title = 'Show chat panel (⌘\\)';
+      expandBtn.setAttribute('aria-label', 'Show chat panel');
+      expandBtn.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 4 10 8 6 12"/></svg><span>Chat</span>';
+      canvas.appendChild(expandBtn);
+    }
+
+    function setCollapsed(collapsed) {
+      if (collapsed) split.setAttribute('data-chat-collapsed', 'true');
+      else           split.removeAttribute('data-chat-collapsed');
+      var u = readUI(); u.chatCollapsed = collapsed; writeUI(u);
+      var inPanelBtn = document.querySelector('.chat-collapse');
+      if (inPanelBtn) {
+        inPanelBtn.textContent = collapsed ? '›' : '‹';
+        inPanelBtn.title = collapsed ? 'Expand chat panel' : 'Collapse chat panel';
+      }
+      showToast(collapsed ? 'Chat collapsed · click "Chat" on the left to re-open' : 'Chat panel expanded', 'success');
+    }
+
     var collapseBtn = document.querySelector('.chat-collapse');
     if (collapseBtn) {
-      var refresh = function () {
-        var collapsed = split.getAttribute('data-chat-collapsed') === 'true';
-        collapseBtn.textContent = collapsed ? '›' : '‹';
-        collapseBtn.title = collapsed ? 'Expand chat panel' : 'Collapse chat panel';
-      };
-      refresh();
+      // Reflect initial state
+      var initiallyCollapsed = split.getAttribute('data-chat-collapsed') === 'true';
+      collapseBtn.textContent = initiallyCollapsed ? '›' : '‹';
+      collapseBtn.title = initiallyCollapsed ? 'Expand chat panel' : 'Collapse chat panel';
       collapseBtn.addEventListener('click', function () {
-        var collapsed = split.getAttribute('data-chat-collapsed') === 'true';
-        if (collapsed) split.removeAttribute('data-chat-collapsed');
-        else           split.setAttribute('data-chat-collapsed', 'true');
-        var u = readUI(); u.chatCollapsed = !collapsed; writeUI(u);
-        refresh();
-        showToast(collapsed ? 'Chat panel expanded' : 'Chat panel collapsed', 'success');
+        setCollapsed(split.getAttribute('data-chat-collapsed') !== 'true');
       });
+    }
+    if (expandBtn) {
+      expandBtn.addEventListener('click', function () { setCollapsed(false); });
     }
 
     var dragging = false, startX = 0, startW = 0;
