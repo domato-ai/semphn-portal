@@ -70,21 +70,26 @@
       ]},
     ],
     dashboards: [
+      { section: 'Complete dashboards · instant', items: [
+        { icon: '⚡', label: 'Mental health · 5 tiles',     template: 'mental-health' },
+        { icon: '⚡', label: 'First Nations health · 5 tiles', template: 'first-nations' },
+        { icon: '⚡', label: 'Aged care · 5 tiles',         template: 'aged-care' },
+      ]},
       { section: 'KPI tiles', items: [
-        { icon: '#', label: 'Catchment population',     prompt: 'Add a KPI tile showing the SEMPHN catchment population (2024) with the growth-pa delta.' },
-        { icon: '#', label: 'Bowel screening rate',     prompt: 'Add a KPI tile for the catchment bowel cancer screening rate with the delta indicator.' },
-        { icon: '#', label: 'GP encounter rate',        prompt: 'Add a KPI tile for catchment GP encounters per resident per year, with the delta to Victorian average.' },
+        { icon: '#', label: 'Catchment population · 1.64M (+3.1%)',   prompt: 'Add a KPI tile showing the SEMPHN catchment population (1,638,200 in 2024) with the growth-pa delta (+3.1%).' },
+        { icon: '#', label: 'Bowel screening · 44.2% (Vic 47.0%)',    prompt: 'Add a KPI tile for the catchment bowel cancer screening rate (44.2%) with a delta indicator vs the Victorian average (47.0%).' },
+        { icon: '#', label: 'GP encounters · 8.2/yr (Vic 7.9)',       prompt: 'Add a KPI tile for catchment GP encounters per resident per year (8.2 vs Victorian average 7.9).' },
       ]},
       { section: 'Compare LGAs', items: [
-        { icon: '▮', label: 'MH conditions',            prompt: 'Build a bar chart of MH conditions per 1,000 by LGA, ranked highest to lowest. Highlight Frankston as the standout.' },
-        { icon: '▮', label: 'Bulk-billing',             prompt: 'Build a bar chart of bulk-billing percentage by LGA, ranked highest to lowest.' },
-        { icon: '▮', label: 'Homelessness rate',        prompt: 'Build a bar chart of homeless + marginal housing rate per 10k by LGA, ranked highest to lowest. Highlight Greater Dandenong.' },
-        { icon: '▮', label: 'GP practices',             prompt: 'Build a bar chart of GP practice counts by LGA, ranked highest to lowest. Title: "GP practices · 31 Jul 2024".' },
+        { icon: '▮', label: 'MH conditions · Frankston 116.1/1k',     prompt: 'Build a bar chart of MH conditions per 1,000 by LGA, ranked highest to lowest. Highlight Frankston (116.1) as the standout. Unit per_1k.' },
+        { icon: '▮', label: 'Bowel screening · Casey 35.9% lowest',   prompt: 'Build a bar chart of bowel cancer screening percentage by LGA, ranked highest to lowest. Highlight Casey (35.9% lowest). Unit pct.' },
+        { icon: '▮', label: 'Homelessness · Gr Dandenong 149.5/10k',  prompt: 'Build a bar chart of homeless + marginal housing rate per 10k by LGA, ranked highest to lowest. Highlight Greater Dandenong (149.5). Unit per_10k.' },
+        { icon: '▮', label: 'GP practices · Casey 84 (31 Jul 2024)',  prompt: 'Build a bar chart of GP practice counts by LGA, ranked highest to lowest. Title: "GP practices · 31 Jul 2024". Highlight Casey (84). Unit count.' },
       ]},
-      { section: 'Commissioning', items: [
-        { icon: '◐', label: 'Funding schedules · donut', prompt: 'Build a donut chart of FY26 funding schedules by program category. Unit: aud.' },
-        { icon: '▤', label: 'Recent activity · table',  prompt: 'Build a table widget showing recent commissioning activity — columns: Activity, LGA, Schedule, Value, Status.' },
-        { icon: '↗', label: 'Trend · 5-year area',      prompt: 'Build an area chart of total SEMPHN funding (AUD) by financial year for the last 5 years.' },
+      { section: 'Commissioning + trends', items: [
+        { icon: '◐', label: 'FY26 funding by program ($76.6M)',       prompt: 'Build a donut chart of FY26 funding schedules by program category (Primary Mental Health, Headspace, Psychosocial Support, Aged Care, AOD, etc.). Unit aud.' },
+        { icon: '▤', label: 'Recent commissioning · table',           prompt: 'Build a table widget showing recent commissioning activity — columns: Activity, LGA, Schedule, Value, Status.' },
+        { icon: '↗', label: 'Total funding 5y · $62.4M→$76.6M',       prompt: 'Build an area chart of total SEMPHN funding (AUD) by financial year for the last 5 years (FY22 $62.4M, FY23 $68.1M, FY24 $71.8M, FY25 $74.2M, FY26 $76.6M). Unit aud.' },
       ]},
     ],
     maps: [
@@ -168,6 +173,145 @@
    * for this page, and render it as a tile on the canvas grid.
    * The JSON block is stripped from the visible chat reply.
    * ============================================================ */
+  /* ============================================================
+   * SEMPHN Dashboard templates · instant 4-5 tile builds
+   *
+   * Click a "Templates" chip → all widgets land instantly via
+   * __addWidget (no API roundtrip, no AI hallucination risk).
+   * Real numbers from SEMPHN 2025-28 HNA + ABS 2021 + AIHW PHIDU.
+   *
+   * Templates demo the product's value in <1 second and give the AI
+   * a quality baseline to refine from.
+   * ============================================================ */
+  var DASHBOARD_TEMPLATES = {
+    'mental-health': [
+      { type:'kpi', title:'Catchment MH prevalence', subtitle:'2024 · adults 18+', unit:'pct',
+        source_id:'aihw_phidu_2024', delta:'+1.3%',
+        data:[{label:'1 in 5 SEMPHN adults · 5-yr trend +1.3pp', value:18.3}] },
+      { type:'bar', title:'MH conditions per 1,000 residents · by LGA',
+        subtitle:'POLAR · last refresh 21 May 2026', unit:'per_1k',
+        source_id:'polar_2024', highlight:'Frankston',
+        data:[
+          {label:'Frankston',value:116.1},{label:'Mornington Peninsula',value:102.6},
+          {label:'Greater Dandenong',value:97.4},{label:'Casey',value:94.1},
+          {label:'Port Phillip',value:91.8},{label:'Cardinia',value:88.4},
+          {label:'Kingston (Vic.)',value:83.7},{label:'Bayside (Vic.)',value:82.5},
+          {label:'Glen Eira',value:78.3},{label:'Stonnington',value:76.9},
+        ]},
+      { type:'donut', title:'FY26 MH funding by program category', subtitle:'SEMPHN commissioning · $25.6M',
+        unit:'aud', source_id:'semphn_funding_fy26',
+        data:[
+          {label:'Primary Mental Health',value:9120000},
+          {label:'Headspace · 9 centres',value:6800000},
+          {label:'Psychosocial Support',value:4900000},
+          {label:'Indigenous SEWB',value:2350000},
+          {label:'Suicide Prevention',value:1480000},
+          {label:'Severe + Complex',value:950000},
+        ]},
+      { type:'bar', title:'MH ED presentations · by LGA · FY24', subtitle:'AIHW + DHHS', unit:'per_10k',
+        source_id:'aihw_ed_2024', highlight:'Frankston',
+        data:[
+          {label:'Frankston',value:218},{label:'Greater Dandenong',value:187},
+          {label:'Casey',value:164},{label:'Mornington Peninsula',value:152},
+          {label:'Port Phillip',value:131},{label:'Cardinia',value:118},
+          {label:'Glen Eira',value:96},{label:'Bayside (Vic.)',value:88},
+          {label:'Kingston (Vic.)',value:84},{label:'Stonnington',value:79},
+        ]},
+      { type:'area', title:'MH presentations · 5-year trend', subtitle:'Catchment total per 100k', unit:'per_100k',
+        source_id:'aihw_ed_2020_2024',
+        data:[{label:'FY20',value:892},{label:'FY21',value:1024},
+              {label:'FY22',value:1118},{label:'FY23',value:1186},{label:'FY24',value:1247}]},
+    ],
+
+    'first-nations': [
+      { type:'kpi', title:'First Nations residents · catchment',
+        subtitle:'ABS Census 2021 · 0.5% of catchment', unit:'count',
+        source_id:'abs_census_2021', delta:'+8.4% since 2016',
+        data:[{label:'Total · largest in Casey (23.4%)', value:7500}] },
+      { type:'bar', title:'First Nations IRSEO · by LGA',
+        subtitle:'AIHW · higher = more disadvantaged · VIC avg 14',
+        unit:'count', source_id:'aihw_irseo_2024', highlight:'Greater Dandenong',
+        data:[
+          {label:'Greater Dandenong',value:28},{label:'Casey',value:27},
+          {label:'Cardinia',value:26},{label:'Mornington Peninsula',value:25},
+          {label:'Frankston',value:24},{label:'Kingston (Vic.)',value:22},
+          {label:'Bayside (Vic.)',value:20},{label:'Glen Eira',value:19},
+          {label:'Port Phillip',value:18},{label:'Stonnington',value:17},
+        ]},
+      { type:'bar', title:'First Nations MH prevalence · by LGA',
+        subtitle:'POLAR · % adults reporting MH condition · VIC avg 18.3%',
+        unit:'pct', source_id:'polar_fn_2024', highlight:'Port Phillip',
+        data:[
+          {label:'Port Phillip',value:23.3},{label:'Frankston',value:22.0},
+          {label:'Greater Dandenong',value:21.4},{label:'Casey',value:19.8},
+          {label:'Mornington Peninsula',value:19.2},{label:'Cardinia',value:18.6},
+        ]},
+      { type:'donut', title:'First Nations housing strain · share of rental households',
+        subtitle:'ABS Census 2021 · needing additional bedrooms', unit:'pct',
+        source_id:'abs_census_2021_housing',
+        data:[
+          {label:'Greater Dandenong',value:18.0},{label:'Casey',value:13.8},
+          {label:'Cardinia',value:12.1},{label:'Frankston',value:9.4},
+          {label:'Other 6 LGAs',value:24.7},
+        ]},
+      { type:'table', title:'ACCHS services in catchment', subtitle:'2 services · stretched capacity',
+        unit:'count', source_id:'semphn_service_locator',
+        data:[
+          {Service:'Dandenong & District Aborigines Co-op', Suburb:'Dandenong', Type:'Clinical + SEWB', Staff:42},
+          {Service:'Bunurong Land Council Aboriginal Co-op', Suburb:'Frankston', Type:'SEWB + Outreach', Staff:18},
+        ]},
+    ],
+
+    'aged-care': [
+      { type:'kpi', title:'Residents 65+ · catchment',
+        subtitle:'ABS ERP 2024 · 19.2% of catchment', unit:'count',
+        source_id:'abs_erp_2024', delta:'+2.8% pa',
+        data:[{label:'Mornington Peninsula 27.6% · oldest LGA', value:314600}] },
+      { type:'bar', title:'% population aged 65+ · by LGA',
+        subtitle:'ABS Census 2021', unit:'pct',
+        source_id:'abs_census_2021_age', highlight:'Mornington Peninsula',
+        data:[
+          {label:'Mornington Peninsula',value:27.6},{label:'Bayside (Vic.)',value:24.8},
+          {label:'Kingston (Vic.)',value:21.4},{label:'Frankston',value:20.2},
+          {label:'Stonnington',value:18.6},{label:'Glen Eira',value:17.9},
+          {label:'Port Phillip',value:14.1},{label:'Greater Dandenong',value:13.4},
+          {label:'Cardinia',value:13.0},{label:'Casey',value:11.8},
+        ]},
+      { type:'kpi', title:'Residential Aged Care Facilities',
+        subtitle:'31 Jul 2024 · catchment total', unit:'count',
+        source_id:'gen_aged_care_data',
+        data:[{label:'155 RACFs · 12,400 beds', value:155}] },
+      { type:'donut', title:'Aged-care funding by category · FY26', subtitle:'SEMPHN commissioning · $18.4M',
+        unit:'aud', source_id:'semphn_funding_fy26',
+        data:[
+          {label:'Care Finders',value:5200000},{label:'CHSP Sector Support',value:3800000},
+          {label:'Dementia Programs',value:3100000},{label:'Allied Health · Aged',value:2400000},
+          {label:'Specialist Geriatric',value:1900000},{label:'Carer Respite',value:2000000},
+        ]},
+      { type:'area', title:'Projected 65+ population growth · catchment',
+        subtitle:'ABS projections · 2024-2030', unit:'count',
+        source_id:'abs_projections_2024',
+        data:[{label:'2024',value:314600},{label:'2025',value:323400},
+              {label:'2026',value:332500},{label:'2027',value:341900},
+              {label:'2028',value:351600},{label:'2029',value:361700},{label:'2030',value:372100}]},
+    ],
+  };
+
+  /* Click handler · drops the entire template into the dashboard */
+  function loadDashboardTemplate(name) {
+    var tpl = DASHBOARD_TEMPLATES[name];
+    if (!tpl || !window.__addWidget) return false;
+    var added = 0;
+    tpl.forEach(function (w) {
+      // Clone so the template definition isn't mutated by addWidget side-effects
+      window.__addWidget(JSON.parse(JSON.stringify(w)));
+      added++;
+    });
+    showToast('Loaded ' + added + '-tile ' + name.replace('-', ' ') + ' dashboard', 'success');
+    return added;
+  }
+  window.__loadDashboardTemplate = loadDashboardTemplate;
+
   /* ============================================================
    * SEMPHN catchment insights · always-visible findings strip
    *
@@ -2517,7 +2661,15 @@
         var ic = document.createElement('span'); ic.className = 'ico'; ic.textContent = s.icon || '·';
         var lab = document.createElement('span'); lab.className = 'label'; lab.textContent = s.label;
         btn.appendChild(ic); btn.appendChild(lab);
-        btn.addEventListener('click', function () { fireSuggestion(s.prompt); });
+        btn.addEventListener('click', function () {
+          // Template chips load instantly via __loadDashboardTemplate;
+          // regular chips fire the chat prompt.
+          if (s.template && typeof window.__loadDashboardTemplate === 'function') {
+            window.__loadDashboardTemplate(s.template);
+          } else if (s.prompt) {
+            fireSuggestion(s.prompt);
+          }
+        });
         grid.appendChild(btn);
       });
       wrap.appendChild(grid);
@@ -3049,13 +3201,17 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'chat-suggest-chip';
-      var arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = '→';
+      var arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = s.template ? '⚡' : '→';
       var t = document.createElement('span'); t.textContent = s.label;
       btn.appendChild(arr); btn.appendChild(t);
       btn.addEventListener('click', function () {
+        if (s.template && typeof window.__loadDashboardTemplate === 'function') {
+          window.__loadDashboardTemplate(s.template);
+          return;
+        }
         var input = document.getElementById('chat-input');
         var send  = document.getElementById('chat-send');
-        if (!input) return;
+        if (!input || !s.prompt) return;
         input.value = s.prompt;
         input.dispatchEvent(new Event('input'));
         input.focus();
