@@ -2709,6 +2709,14 @@
             // Extract EVERY widget block in the reply (model may emit
             // multiple in one turn when user asks for a full dashboard).
             var parsed = window.__extractWidgets(reply);
+            /* AI-claims-without-evidence detection · if the model wrote
+             * "Added a chart" / "Built a tile" etc. but its reply has
+             * ZERO widget blocks, that's a hallucination. Substitute a
+             * clear warning so users don't think the AI worked when it
+             * didn't. */
+            if (parsed.widgets.length === 0 && /\b(added|built|created|drafted|mapped|generated|inserted)\b/i.test(reply)) {
+              reply = '⚠ I claimed an action but didn\'t produce a widget. Try again or rephrase — e.g. include the widget type explicitly ("add a TABLE of …", "build a BAR CHART of …").';
+            }
             if (parsed.widgets.length) {
               var page = pageId();
               var addedToMap = 0, addedAsTiles = 0, addedToDoc = 0;
