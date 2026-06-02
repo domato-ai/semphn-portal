@@ -80,7 +80,118 @@ STEP_PROMPTS = {
     "11-recommendations":  "aggregated recommendations across all 9 substantive chapters",
     "12-preflight":        "the DoH Compliance Checklist + Performance Rubric pre-flight check",
     "13-lodgement":        "final lodgement to PPERS",
+    # Workbench surfaces (single-page tabs in the build console)
+    "workbench-dashboards": "the Dashboards builder · the user composes data tiles for the SEMPHN catchment",
+    "workbench-maps":       "the Maps builder · the user composes choropleths + service-point overlays across the SEMPHN catchment",
+    "workbench-hna":        "the HNA doc co-author · the user drafts + critiques their HNA narrative inline",
 }
+
+# Static SEMPHN ground-truth block — appended to EVERY system prompt so the
+# model has named figures even when the DB slice is empty (cold start, DB down,
+# or a step whose slice doesn't cover the question). Sourced from the SEMPHN
+# 2025-28 HNA, ABS Census 2021, ABS SEIFA 2021, AIHW PHIDU, AIHW SHS, AIHW
+# AODTS, AHPRA + DoH MABEL, and SEMPHN's published service locator. Keep it
+# tight — every byte costs tokens on every call.
+SEMPHN_GROUND_TRUTH = """\
+=== SEMPHN GROUND TRUTH (always available — cite source_id when you use a value) ===
+
+CATCHMENT · 10 LGAs (Bayside, Cardinia, Casey, Frankston, Glen Eira, Greater
+Dandenong, Kingston, Mornington Peninsula, Port Phillip, Stonnington)
+  • Population 1,638,200 · 24.3% of Victoria · +3.1% pa (abs_erp_2024)
+  • Projected 2.0M by 2030 (abs_projections_2024)
+  • Born overseas 33.4% · LOTE at home 31.2% (abs_census_2021)
+  • SEIFA disadvantage range: Gr Dandenong decile 2 — Stonnington decile 10 (abs_seifa_2021)
+
+MENTAL HEALTH (polar_2024 / aihw_phidu_mh_2024)
+  • Catchment adult MH prevalence 18.3% · +1.3pp 5-yr trend
+  • MH conditions per 1,000 by LGA, ranked DESC:
+    Frankston 116.1 · Mornington Peninsula 102.6 · Greater Dandenong 97.4 ·
+    Casey 94.1 · Port Phillip 91.8 · Cardinia 88.4 · Kingston 83.7 ·
+    Bayside 82.5 · Glen Eira 78.3 · Stonnington 76.9
+  • MH ED presentations per 10k by LGA (aihw_ed_2024) ranked DESC:
+    Frankston 218 · Gr Dandenong 187 · Casey 164 · Mornington Pen 152 ·
+    Port Phillip 131 · Cardinia 118 · Glen Eira 96 · Bayside 88 · Kingston 84 · Stonnington 79
+  • FY26 MH funding $25.6M of $76.6M total (semphn_funding_fy26)
+  • 9 headspace centres in catchment (semphn_locator_2024)
+
+FIRST NATIONS (abs_census_2021 / aihw_irseo_2024)
+  • 7,500 residents · 0.5% of catchment · +8.4% since 2016 · 23.4% in Casey
+  • IRSEO ranked DESC (higher = more disadvantaged, VIC avg 14):
+    Gr Dandenong 28 · Casey 27 · Cardinia 26 · Mornington Pen 25 · Frankston 24 ·
+    Kingston 22 · Bayside 20 · Glen Eira 19 · Port Phillip 18 · Stonnington 17
+  • 2 ACCHS in catchment: Dandenong & District Aborigines Co-op (Dandenong,
+    42 staff, clinical + SEWB); Bunurong Land Council Aboriginal Co-op
+    (Frankston, 18 staff, SEWB + outreach) (semphn_service_locator)
+
+OLDER PEOPLE (abs_census_2021_age / abs_projections_2024 / gen_aged_care_data)
+  • 65+ population 314,600 · 19.2% of catchment · +2.8% pa
+  • % aged 65+ ranked DESC: Mornington Pen 27.6% · Bayside 24.8% · Kingston 21.4% ·
+    Frankston 20.2% · Stonnington 18.6% · Glen Eira 17.9% · Port Phillip 14.1% ·
+    Gr Dandenong 13.4% · Cardinia 13.0% · Casey 11.8%
+  • 155 RACFs · 12,400 beds in catchment (31 Jul 2024)
+  • Aged-care FY26 funding $18.4M (semphn_funding_fy26)
+
+HOMELESSNESS (abs_census_2021_homeless / aihw_shs_2024)
+  • 2,460 individuals homeless or marginal · 149.5/10k · +18% since 2016 (catchment median 64.3)
+  • Per 10k ranked DESC: Gr Dandenong 149.5 · Frankston 124.8 · Port Phillip 118.2 ·
+    Casey 96.4 · Mornington Pen 78.1 · Stonnington 71.6 · Cardinia 64.3 ·
+    Kingston 62.0 · Glen Eira 58.9 · Bayside 42.1
+  • SHS clients FY24: 11,240 · primary cause DV/FV 38%, housing affordability 23%, MH 14%
+  • Rough sleepers: catchment 6.9/10k vs Gr Melbourne 8.2 vs Australia 5.6 (launch_housing_2024)
+
+CHRONIC DISEASE (aihw_phidu_diabetes_2024 / polar_chronic_2024 / aihw_acsc_2024)
+  • Adults 45+ with 2+ chronic conditions 31.4% (~286,000 people)
+  • Type 2 diabetes prevalence ranked DESC: Gr Dandenong 8.9% · Casey 7.1% ·
+    Cardinia 6.4% · Frankston 6.2% · Mornington Pen 5.7% · Kingston 5.2% ·
+    Glen Eira 4.8% · Bayside 4.4% · Port Phillip 4.1% · Stonnington 3.9%
+  • Avoidable hospital admissions per 100k ranked DESC: Gr Dandenong 3460 ·
+    Frankston 3120 · Mornington Pen 2840 · Casey 2780 · Cardinia 2620 ·
+    Kingston 2240 · Port Phillip 2080 · Glen Eira 1960 · Bayside 1820 · Stonnington 1690
+  • PIP-QI registered FY26: 218,200 patients (semphn_pipqi_2026)
+
+WORKFORCE (ahpra_mabel_2024 / semphn_locator_2024)
+  • 1,681 GP FTE catchment · 108 per 100k · VIC avg 124 → -16 vs benchmark
+  • GP age distribution: 14% <35 · 24% 35-44 · 22% 45-54 · 24% 55-64 · 16% 65+
+    → 40% over 55 (retirement risk)
+  • GP practices by LGA: Casey 84 · Gr Dandenong 72 · Glen Eira 64 ·
+    Kingston 58 · Frankston 54 · Mornington Pen 51 · Stonnington 42 ·
+    Cardinia 38 · Bayside 34 · Port Phillip 31
+  • Allied health FTE per 10k by LGA: Stonnington 64.8 (highest) · Port Phillip 58.1 ·
+    Glen Eira 48.6 · Bayside 45.3 · Kingston 38.9 · Mornington Pen 33.4 ·
+    Frankston 29.6 · Casey 26.2 · Gr Dandenong 24.8 · Cardinia 21.4 (lowest)
+  • Bulk-billing % concentrated in Gr Dandenong + Casey corridor (aihw_phidu_bb_2024)
+
+AOD (aihw_aodts_2024)
+  • 14,620 treatment episodes FY24 · +9.2% YoY
+  • Primary drug: methamphetamine 31% · alcohol 28% · cannabis 18% · heroin 9% · pharma 8%
+  • Episodes per 10k ranked DESC: Frankston 128 · Gr Dandenong 118 · Casey 96 ·
+    Mornington Pen 92 · Cardinia 84 · Kingston 71 · Port Phillip 68 · Glen Eira 54 ·
+    Bayside 42 · Stonnington 38
+  • SEMPHN-funded non-residential median wait 22 days vs 14-day target (semphn_aod_2026)
+
+CALD (abs_census_2021_lote / dss_scv_2025 / tis_2024)
+  • Catchment 38.4% LOTE at home · +4.6pp since 2016
+  • % LOTE ranked DESC: Gr Dandenong 64.2% · Casey 42.8% · Glen Eira 38.6% ·
+    Kingston 33.4% · Stonnington 28.1% · Port Phillip 24.7% · Cardinia 18.4% ·
+    Frankston 14.6% · Bayside 11.8% · Mornington Pen 9.2%
+  • Humanitarian arrivals 2022-2025: 3,840 (72% to Gr Dandenong + Casey)
+  • Top 6 ancestries Gr Dandenong: Indian 18%, Vietnamese 14%, Afghan 9%,
+    Sri Lankan 8%, Cambodian 6%, Chinese 6%
+  • Interpreter top languages FY24: Dari 4820 · Vietnamese 3960 · Arabic 3280 ·
+    Mandarin 2640 · Tamil 1920 · Khmer 1480
+
+ACCESS / SCREENING (aihw_phidu_2024)
+  • Bowel cancer screening 44.2% catchment (VIC 47.0%); Casey lowest at 35.9%
+    (lowest LGA in Australia)
+  • GP encounters 8.2/yr (VIC 7.9)
+  • Avoidable hospital admissions per 100k: 2,460 catchment (VIC avg 1,980)
+
+COMMISSIONING (semphn_funding_fy26)
+  • FY26 total $76.6M (FY22 $62.4M → FY23 $68.1M → FY24 $71.8M → FY25 $74.2M)
+  • Top schedules: Primary MH $9.12M · Headspace $6.80M · Care Finders $5.20M ·
+    Psychosocial Support $4.90M · CHSP Sector Support $3.80M · Dementia $3.10M ·
+    Indigenous SEWB $2.35M · Allied-aged $2.40M · AOD-treatment $3.45M
+"""
 
 
 def _cfg(name: str, default: str = "") -> str:
@@ -274,13 +385,20 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         )
     if context_summary:
         parts.append(f"\nStep-specific data context:\n{context_summary.strip()}")
-    # ---- NEW: inject a page-relevant slice of real SEMPHN data ----
+
+    # ---- Always-on SEMPHN ground truth (static) ----
+    # Cheap insurance: even if the DB is cold or returns a thin slice, the
+    # model still has named, citable LGA-level figures within token reach.
+    parts.append("\n" + SEMPHN_GROUND_TRUTH)
+
+    # ---- Live SEMPHN data slice (DB · authoritative when present) ----
     db_slice = semphn_data.render_for_prompt(step_slug)
     if db_slice:
         parts.append(
             "\nLive SEMPHN data slice (from the domato_semphn database, fetched "
-            "this request). Treat as authoritative. Cite source_id values when "
-            "you use a figure:\n```json\n" + db_slice + "\n```"
+            "this request). Treat as authoritative; prefer these over the "
+            "static ground-truth block if they disagree. Cite source_id values "
+            "when you use a figure:\n```json\n" + db_slice + "\n```"
         )
     return "\n".join(parts)
 

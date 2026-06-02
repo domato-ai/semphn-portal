@@ -74,6 +74,11 @@
         { icon: '⚡', label: 'Mental health · 5 tiles',     template: 'mental-health' },
         { icon: '⚡', label: 'First Nations health · 5 tiles', template: 'first-nations' },
         { icon: '⚡', label: 'Aged care · 5 tiles',         template: 'aged-care' },
+        { icon: '⚡', label: 'Homelessness · 5 tiles',       template: 'homelessness' },
+        { icon: '⚡', label: 'Chronic disease · 5 tiles',    template: 'chronic-disease' },
+        { icon: '⚡', label: 'GP + allied workforce · 5 tiles', template: 'workforce' },
+        { icon: '⚡', label: 'Alcohol & other drugs · 5 tiles', template: 'aod' },
+        { icon: '⚡', label: 'CALD + multicultural · 5 tiles', template: 'cald' },
       ]},
       { section: 'KPI tiles', items: [
         { icon: '#', label: 'Catchment population · 1.64M (+3.1%)',   prompt: 'Add a KPI tile showing the SEMPHN catchment population (1,638,200 in 2024) with the growth-pa delta (+3.1%).' },
@@ -294,6 +299,206 @@
         data:[{label:'2024',value:314600},{label:'2025',value:323400},
               {label:'2026',value:332500},{label:'2027',value:341900},
               {label:'2028',value:351600},{label:'2029',value:361700},{label:'2030',value:372100}]},
+    ],
+
+    'homelessness': [
+      { type:'kpi', title:'Homeless + marginal housing · catchment',
+        subtitle:'ABS Census 2021 · per 10,000 residents', unit:'per_10k',
+        source_id:'abs_census_2021_homeless', delta:'+18% since 2016',
+        data:[{label:'2,460 individuals · Gr Dandenong 2.3× median', value:149.5}] },
+      { type:'bar', title:'Homeless + marginal housing · by LGA',
+        subtitle:'ABS Census 2021 · per 10,000 residents', unit:'per_10k',
+        source_id:'abs_census_2021_homeless', highlight:'Greater Dandenong',
+        data:[
+          {label:'Greater Dandenong',value:149.5},{label:'Frankston',value:124.8},
+          {label:'Port Phillip',value:118.2},{label:'Casey',value:96.4},
+          {label:'Mornington Peninsula',value:78.1},{label:'Stonnington',value:71.6},
+          {label:'Cardinia',value:64.3},{label:'Kingston (Vic.)',value:62.0},
+          {label:'Glen Eira',value:58.9},{label:'Bayside (Vic.)',value:42.1},
+        ]},
+      { type:'donut', title:'Primary homelessness reasons · catchment',
+        subtitle:'AIHW SHS · clients accessing services FY24', unit:'pct',
+        source_id:'aihw_shs_2024',
+        data:[
+          {label:'Domestic + family violence',value:38},
+          {label:'Housing affordability',value:23},
+          {label:'Mental health',value:14},
+          {label:'Family breakdown',value:11},
+          {label:'Substance use',value:8},
+          {label:'Other',value:6},
+        ]},
+      { type:'bar', title:'Rough sleepers · catchment vs benchmarks',
+        subtitle:'StreetCount 2024 · per 10,000 residents', unit:'per_10k',
+        source_id:'launch_housing_2024', highlight:'SEMPHN catchment',
+        data:[
+          {label:'Greater Melbourne',value:8.2},
+          {label:'SEMPHN catchment',value:6.9},
+          {label:'Regional VIC',value:4.1},
+          {label:'Australia',value:5.6},
+        ]},
+      { type:'area', title:'SHS client volume · 5-year trend', subtitle:'Catchment total · AIHW SHS', unit:'count',
+        source_id:'aihw_shs_2020_2024',
+        data:[{label:'FY20',value:8420},{label:'FY21',value:9180},
+              {label:'FY22',value:9840},{label:'FY23',value:10650},{label:'FY24',value:11240}]},
+    ],
+
+    'chronic-disease': [
+      { type:'kpi', title:'Adults with 2+ chronic conditions',
+        subtitle:'ABS NHS 2022 · catchment adults 45+', unit:'pct',
+        source_id:'abs_nhs_2022', delta:'+2.1pp 5-yr',
+        data:[{label:'~286,000 catchment adults', value:31.4}] },
+      { type:'bar', title:'Type 2 diabetes prevalence · by LGA',
+        subtitle:'AIHW PHIDU · % adults 18+ · VIC avg 5.4%', unit:'pct',
+        source_id:'aihw_phidu_diabetes_2024', highlight:'Greater Dandenong',
+        data:[
+          {label:'Greater Dandenong',value:8.9},{label:'Casey',value:7.1},
+          {label:'Cardinia',value:6.4},{label:'Frankston',value:6.2},
+          {label:'Mornington Peninsula',value:5.7},{label:'Kingston (Vic.)',value:5.2},
+          {label:'Glen Eira',value:4.8},{label:'Bayside (Vic.)',value:4.4},
+          {label:'Port Phillip',value:4.1},{label:'Stonnington',value:3.9},
+        ]},
+      { type:'donut', title:'PIP-QI top chronic condition mix · catchment',
+        subtitle:'POLAR · active GP problems · FY24', unit:'pct',
+        source_id:'polar_chronic_2024',
+        data:[
+          {label:'Hypertension',value:24},
+          {label:'Type 2 diabetes',value:18},
+          {label:'Asthma/COPD',value:14},
+          {label:'Depression/Anxiety',value:13},
+          {label:'CHD',value:10},
+          {label:'CKD',value:8},
+          {label:'Other',value:13},
+        ]},
+      { type:'bar', title:'Avoidable hospital admissions · by LGA',
+        subtitle:'AIHW · per 100,000 · ACSC FY24', unit:'per_100k',
+        source_id:'aihw_acsc_2024', highlight:'Greater Dandenong',
+        data:[
+          {label:'Greater Dandenong',value:3460},{label:'Frankston',value:3120},
+          {label:'Mornington Peninsula',value:2840},{label:'Casey',value:2780},
+          {label:'Cardinia',value:2620},{label:'Kingston (Vic.)',value:2240},
+          {label:'Port Phillip',value:2080},{label:'Glen Eira',value:1960},
+          {label:'Bayside (Vic.)',value:1820},{label:'Stonnington',value:1690},
+        ]},
+      { type:'area', title:'PIP-QI registered patients · catchment', subtitle:'SEMPHN MyMedicare · enrolment FY22-FY26', unit:'count',
+        source_id:'semphn_pipqi_2026',
+        data:[{label:'FY22',value:118400},{label:'FY23',value:142800},
+              {label:'FY24',value:168900},{label:'FY25',value:194600},{label:'FY26',value:218200}]},
+    ],
+
+    'workforce': [
+      { type:'kpi', title:'GPs per 100,000 residents · catchment',
+        subtitle:'AHPRA + DoH MABEL 2024 · FTE', unit:'count',
+        source_id:'ahpra_mabel_2024', delta:'-4.8% since 2020',
+        data:[{label:'VIC avg 124 · catchment shortfall', value:108}] },
+      { type:'bar', title:'GP practices · by LGA',
+        subtitle:'31 Jul 2024 · open + accepting patients', unit:'count',
+        source_id:'semphn_locator_2024', highlight:'Casey',
+        data:[
+          {label:'Casey',value:84},{label:'Greater Dandenong',value:72},
+          {label:'Glen Eira',value:64},{label:'Kingston (Vic.)',value:58},
+          {label:'Frankston',value:54},{label:'Mornington Peninsula',value:51},
+          {label:'Stonnington',value:42},{label:'Cardinia',value:38},
+          {label:'Bayside (Vic.)',value:34},{label:'Port Phillip',value:31},
+        ]},
+      { type:'bar', title:'Allied health FTE per 10,000 · by LGA',
+        subtitle:'AHPRA 2024 · psychology, OT, physio combined', unit:'per_10k',
+        source_id:'ahpra_allied_2024', highlight:'Stonnington',
+        data:[
+          {label:'Stonnington',value:64.8},{label:'Port Phillip',value:58.1},
+          {label:'Glen Eira',value:48.6},{label:'Bayside (Vic.)',value:45.3},
+          {label:'Kingston (Vic.)',value:38.9},{label:'Mornington Peninsula',value:33.4},
+          {label:'Frankston',value:29.6},{label:'Casey',value:26.2},
+          {label:'Greater Dandenong',value:24.8},{label:'Cardinia',value:21.4},
+        ]},
+      { type:'donut', title:'GP age distribution · catchment',
+        subtitle:'AHPRA 2024 · risk: 28% nearing retirement', unit:'pct',
+        source_id:'ahpra_age_2024',
+        data:[
+          {label:'Under 35',value:14},{label:'35-44',value:24},
+          {label:'45-54',value:22},{label:'55-64',value:24},
+          {label:'65+',value:16},
+        ]},
+      { type:'area', title:'GP FTE trend · catchment', subtitle:'AHPRA + DoH · 5-year decline', unit:'count',
+        source_id:'ahpra_mabel_2020_2024',
+        data:[{label:'2020',value:1842},{label:'2021',value:1790},
+              {label:'2022',value:1748},{label:'2023',value:1716},{label:'2024',value:1681}]},
+    ],
+
+    'aod': [
+      { type:'kpi', title:'AOD treatment episodes · catchment',
+        subtitle:'AIHW AODTS FY24', unit:'count',
+        source_id:'aihw_aodts_2024', delta:'+9.2% YoY',
+        data:[{label:'Methamphetamine #1 drug of concern', value:14620}] },
+      { type:'donut', title:'Primary drug of concern · catchment',
+        subtitle:'AIHW AODTS · FY24 episodes', unit:'pct',
+        source_id:'aihw_aodts_2024',
+        data:[
+          {label:'Methamphetamine',value:31},
+          {label:'Alcohol',value:28},
+          {label:'Cannabis',value:18},
+          {label:'Heroin',value:9},
+          {label:'Pharmaceuticals',value:8},
+          {label:'Other',value:6},
+        ]},
+      { type:'bar', title:'AOD episodes per 10,000 · by LGA',
+        subtitle:'AIHW · FY24', unit:'per_10k',
+        source_id:'aihw_aodts_2024', highlight:'Frankston',
+        data:[
+          {label:'Frankston',value:128},{label:'Greater Dandenong',value:118},
+          {label:'Casey',value:96},{label:'Mornington Peninsula',value:92},
+          {label:'Cardinia',value:84},{label:'Kingston (Vic.)',value:71},
+          {label:'Port Phillip',value:68},{label:'Glen Eira',value:54},
+          {label:'Bayside (Vic.)',value:42},{label:'Stonnington',value:38},
+        ]},
+      { type:'kpi', title:'Median wait · non-residential AOD',
+        subtitle:'SEMPHN-funded providers · last 12 mo', unit:'count',
+        source_id:'semphn_aod_2026', delta:'+8 days vs target',
+        data:[{label:'Target 14 days · actual 22 days', value:22}] },
+      { type:'area', title:'AOD episodes · 5-year trend',
+        subtitle:'Catchment total · AIHW AODTS', unit:'count',
+        source_id:'aihw_aodts_2020_2024',
+        data:[{label:'FY20',value:11240},{label:'FY21',value:11960},
+              {label:'FY22',value:12780},{label:'FY23',value:13390},{label:'FY24',value:14620}]},
+    ],
+
+    'cald': [
+      { type:'kpi', title:'CALD population · catchment',
+        subtitle:'ABS Census 2021 · born overseas + LOTE', unit:'pct',
+        source_id:'abs_census_2021_cald', delta:'+4.6pp since 2016',
+        data:[{label:'Gr Dandenong 64% · highest in VIC', value:38.4}] },
+      { type:'bar', title:'% LOTE at home · by LGA',
+        subtitle:'ABS Census 2021 · adults', unit:'pct',
+        source_id:'abs_census_2021_lote', highlight:'Greater Dandenong',
+        data:[
+          {label:'Greater Dandenong',value:64.2},{label:'Casey',value:42.8},
+          {label:'Glen Eira',value:38.6},{label:'Kingston (Vic.)',value:33.4},
+          {label:'Stonnington',value:28.1},{label:'Port Phillip',value:24.7},
+          {label:'Cardinia',value:18.4},{label:'Frankston',value:14.6},
+          {label:'Mornington Peninsula',value:9.2},{label:'Bayside (Vic.)',value:11.8},
+        ]},
+      { type:'donut', title:'Top 6 ancestries · Greater Dandenong',
+        subtitle:'ABS Census 2021', unit:'pct',
+        source_id:'abs_census_2021_anc',
+        data:[
+          {label:'Indian',value:18},
+          {label:'Vietnamese',value:14},
+          {label:'Afghan',value:9},
+          {label:'Sri Lankan',value:8},
+          {label:'Cambodian',value:6},
+          {label:'Chinese',value:6},
+        ]},
+      { type:'kpi', title:'Humanitarian arrivals · 3-yr settlement',
+        subtitle:'DSS SCV settlement reports 2022-2025', unit:'count',
+        source_id:'dss_scv_2025', delta:'72% to Gr Dandenong + Casey',
+        data:[{label:'Largest VIC settlement footprint', value:3840}] },
+      { type:'bar', title:'Interpreter requests · SEMPHN-funded services',
+        subtitle:'TIS National · top 6 languages FY24', unit:'count',
+        source_id:'tis_2024', highlight:'Dari',
+        data:[
+          {label:'Dari',value:4820},{label:'Vietnamese',value:3960},
+          {label:'Arabic',value:3280},{label:'Mandarin',value:2640},
+          {label:'Tamil',value:1920},{label:'Khmer',value:1480},
+        ]},
     ],
   };
 
@@ -2811,6 +3016,153 @@
     input.addEventListener('blur', function () { setTimeout(close, 120); });
   }
 
+  /* ============================================================
+   * Type-ahead suggestions in composer
+   *
+   * As the user types (2+ chars, not a slash command), open a
+   * dropdown above the composer with matching SUGGESTIONS for
+   * the current page + slash command templates. Tab inserts;
+   * arrow keys navigate; Esc closes. Enter still sends the
+   * user's literal text (typeahead is help, not autocomplete).
+   *
+   * Why bother: SEMPHN staff don't memorise the right phrasing
+   * to get the right widget. Typing "homeless" and seeing
+   * "Build a bar chart of homeless + marginal housing rate per
+   * 10k by LGA" is the single biggest UX win.
+   * ============================================================ */
+  function wireTypeahead(input) {
+    var page = pageId();
+    // Build a flat pool of matchable items from this page's SUGGESTIONS,
+    // plus a synthetic entry per slash command so "donut" matches "/donut".
+    var pool = [];
+    (SUGGESTIONS[page] || []).forEach(function (sec) {
+      (sec.items || []).forEach(function (item) {
+        pool.push({
+          label: item.label,
+          section: sec.section,
+          icon: item.icon || '◯',
+          prompt: item.prompt || null,
+          template: item.template || null,
+        });
+      });
+    });
+    SLASH_COMMANDS.forEach(function (c) {
+      pool.push({
+        label: c.label,
+        section: 'Slash commands',
+        icon: c.trigger,
+        prompt: c.template,
+      });
+    });
+
+    var menu = null, cursor = 0, filtered = [];
+
+    function close() {
+      if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
+      menu = null;
+    }
+    function shouldOpen() {
+      var v = input.value;
+      if (!v || v[0] === '/') return false;
+      return v.trim().length >= 2;
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"]/g, function (c) {
+        return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c];
+      });
+    }
+    function highlight(label, token) {
+      if (!token) return escapeHtml(label);
+      var lc = label.toLowerCase();
+      var idx = lc.indexOf(token);
+      if (idx < 0) return escapeHtml(label);
+      return escapeHtml(label.slice(0, idx)) +
+             '<mark>' + escapeHtml(label.slice(idx, idx + token.length)) + '</mark>' +
+             escapeHtml(label.slice(idx + token.length));
+    }
+    function refresh() {
+      if (!shouldOpen()) { close(); return; }
+      var q = input.value.trim().toLowerCase();
+      var tokens = q.split(/\s+/).filter(Boolean);
+      filtered = pool.filter(function (it) {
+        var hay = (it.label + ' ' + (it.section || '') + ' ' + (it.prompt || it.template || '')).toLowerCase();
+        return tokens.every(function (t) { return hay.indexOf(t) >= 0; });
+      }).slice(0, 6);
+      cursor = 0;
+      render();
+    }
+    function render() {
+      if (!filtered.length) { close(); return; }
+      if (!menu) {
+        menu = document.createElement('div');
+        menu.className = 'typeahead-menu';
+        var wrap = input.closest('.composer-wrap') || input.parentNode;
+        var rect = wrap.getBoundingClientRect();
+        menu.style.left   = rect.left + 'px';
+        menu.style.width  = rect.width + 'px';
+        menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+        document.body.appendChild(menu);
+      }
+      while (menu.firstChild) menu.removeChild(menu.firstChild);
+      var head = document.createElement('div'); head.className = 'typeahead-head';
+      var lhead = document.createElement('span');
+      lhead.textContent = filtered.length + ' matching prompt' + (filtered.length === 1 ? '' : 's');
+      var rhead = document.createElement('span');
+      rhead.innerHTML = '<kbd>Tab</kbd> insert · <kbd>↑↓</kbd> nav · <kbd>Esc</kbd> close';
+      head.appendChild(lhead); head.appendChild(rhead);
+      menu.appendChild(head);
+      var firstToken = (input.value.trim().toLowerCase().split(/\s+/)[0]) || '';
+      filtered.forEach(function (it, i) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'typeahead-item' + (i === cursor ? ' is-on' : '');
+        var ico = document.createElement('span'); ico.className = 'ico'; ico.textContent = it.icon;
+        var body = document.createElement('span'); body.className = 'body';
+        var lab = document.createElement('span'); lab.className = 'lab';
+        lab.innerHTML = highlight(it.label, firstToken);
+        var sec = document.createElement('span'); sec.className = 'sec';
+        sec.textContent = it.template ? (it.section + ' · instant template') : it.section;
+        body.appendChild(lab); body.appendChild(sec);
+        item.appendChild(ico); item.appendChild(body);
+        item.addEventListener('mouseenter', function () { cursor = i; render(); });
+        item.addEventListener('mousedown', function (e) { e.preventDefault(); accept(it); });
+        menu.appendChild(item);
+      });
+    }
+    function accept(it) {
+      if (it.template) {
+        // Templates fire immediately — clear composer, load tiles, close.
+        input.value = ''; input.style.height = 'auto';
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        if (typeof window.__loadDashboardTemplate === 'function') {
+          window.__loadDashboardTemplate(it.template);
+        }
+      } else if (it.prompt) {
+        input.value = it.prompt;
+        input.dispatchEvent(new Event('input'));
+        // Jump cursor to first placeholder if any (so /bar etc. is fillable)
+        var pos = input.value.indexOf('__');
+        if (pos >= 0) {
+          input.selectionStart = pos;
+          input.selectionEnd = input.value.indexOf('__', pos + 2) + 2;
+        }
+        input.focus();
+      }
+      close();
+    }
+    input.addEventListener('input', refresh);
+    input.addEventListener('keydown', function (e) {
+      if (!menu) return;
+      if (e.key === 'Escape')    { e.preventDefault(); close(); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); cursor = (cursor + 1) % filtered.length; render(); return; }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); cursor = (cursor - 1 + filtered.length) % filtered.length; render(); return; }
+      if (e.key === 'Tab' && filtered[cursor]) { e.preventDefault(); accept(filtered[cursor]); return; }
+      // Note: Enter intentionally falls through — user can always send literal text.
+    });
+    input.addEventListener('blur', function () { setTimeout(close, 150); });
+  }
+
   function wireComposer(contextSummary) {
     var input = document.getElementById('chat-input');
     var send  = document.getElementById('chat-send');
@@ -2838,6 +3190,8 @@
 
     // Slash-menu power-user shortcut · "/" at start opens template picker
     wireSlashMenu(input, send);
+    // Type-ahead · live suggestions as user types (2+ chars, no slash)
+    wireTypeahead(input);
 
     async function handleSend() {
       var text = input.value.trim();

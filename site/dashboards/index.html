@@ -1,21 +1,21 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en-AU">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Dashboards · SEMPHN Workbench</title>
+<title>Dashboards Â· SEMPHN Workbench</title>
 <meta name="description" content="Chat-build catchment dashboards for South Eastern Melbourne PHN." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1782900000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1782950000" />
 
-<!-- Apache ECharts · widget rendering for the dashboard builder.
+<!-- Apache ECharts Â· widget rendering for the dashboard builder.
      Why ECharts: enterprise-grade defaults, single CDN, themeable. -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
 
-<!-- Leaflet + markercluster · map widgets work on Dashboards too -->
+<!-- Leaflet + markercluster Â· map widgets work on Dashboards too -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin="" />
@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
 
 <style>
-  /* Dashboards builder · full-bleed canvas (matches Maps page).
+  /* Dashboards builder Â· full-bleed canvas (matches Maps page).
      Chrome lives in the global toolbar; tiles fill the page. */
 
   .canvas-body-flush {
@@ -41,7 +41,7 @@
       var(--rule-bg);
   }
 
-  /* Empty state · centered card overlay */
+  /* Empty state Â· centered card overlay */
   .dashboards-default {
     position: absolute; inset: 0;
     display: grid; place-items: center;
@@ -99,12 +99,12 @@
   }
 
   /* Make the canvas-body itself the vertical scroller so it grows naturally
-     with content — rows are content-sized, cards don't get compressed. */
+     with content â€” rows are content-sized, cards don't get compressed. */
   .canvas-body-flush {
     overflow-y: auto !important;
   }
 
-  /* The widget grid · 12-col responsive grid with size-aware tiles.
+  /* The widget grid Â· 12-col responsive grid with size-aware tiles.
      KPIs compact (4 cols), charts default (6 cols), choropleth/table full row. */
   .widget-grid-padded {
     display: none;
@@ -112,21 +112,21 @@
   .widget-grid-padded:not(:empty) {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-auto-rows: min-content;   /* rows hug content — never stretch */
+    grid-auto-rows: min-content;   /* rows hug content â€” never stretch */
     align-items: start;             /* tiles take natural height, no stretching */
     gap: 1.25rem;
     padding: clamp(1.5rem, 2.5vw, 2.25rem);
-    /* No absolute positioning — grid grows naturally and canvas-body scrolls */
+    /* No absolute positioning â€” grid grows naturally and canvas-body scrolls */
   }
   .widget-grid-padded .wgt-card[data-size="sm"] { grid-column: span 4; }
   .widget-grid-padded .wgt-card[data-size="md"] { grid-column: span 6; }
   .widget-grid-padded .wgt-card[data-size="lg"] { grid-column: span 12; }
 
-  /* Narrow viewports — collapse to single column */
+  /* Narrow viewports â€” collapse to single column */
   @media (max-width: 920px) {
     .widget-grid-padded .wgt-card[data-size] { grid-column: 1 / -1; }
   }
-  /* Mid viewports — KPIs side-by-side, charts full-row */
+  /* Mid viewports â€” KPIs side-by-side, charts full-row */
   @media (max-width: 1280px) and (min-width: 921px) {
     .widget-grid-padded .wgt-card[data-size="sm"] { grid-column: span 6; }
     .widget-grid-padded .wgt-card[data-size="md"] { grid-column: span 12; }
@@ -150,13 +150,13 @@
       <a href="/maps/"       class="nav-link" data-page="maps"><span class="dot"></span>Maps</a>
     </nav>
     <button type="button" class="nav-cmdk" aria-label="Open command palette" title="Open command palette">
-      <span>Search</span> <kbd>⌘K</kbd>
+      <span>Search</span> <kbd>âŒ˜K</kbd>
     </button>
     <div class="nav-user" aria-label="Signed-in tenant">
       <span class="av">D</span>
       <span class="meta">
         <span class="who">demo@semphn.org.au</span>
-        <span class="sub">SEMPHN · PHN108</span>
+        <span class="sub">SEMPHN Â· PHN108</span>
       </span>
       <button type="button">Sign out</button>
     </div>
@@ -172,7 +172,7 @@
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12V4a1 1 0 0 1 1-1h6"/><path d="m10 9 3-3"/><path d="m11 8 3 3-7 7H4v-3l7-7z"/></svg>
         <span>New</span>
       </button>
-      <button type="button" class="chat-tool chat-collapse" aria-label="Collapse chat panel" title="Collapse chat panel">‹</button>
+      <button type="button" class="chat-tool chat-collapse" aria-label="Collapse chat panel" title="Collapse chat panel">â€¹</button>
     </div>
     <div class="chat-feed" id="chat-feed"></div>
     <div class="chat-suggest" id="chat-suggest" aria-label="Suggested prompts"></div>
@@ -188,12 +188,12 @@
 
   <div class="split-handle" role="separator" aria-orientation="vertical" aria-label="Resize chat panel"></div>
 
-  <!-- CANVAS (RIGHT) — DASHBOARD BUILDER -->
+  <!-- CANVAS (RIGHT) â€” DASHBOARD BUILDER -->
   <section class="canvas" aria-label="Dashboards canvas">
     <header class="canvas-head">
       <span class="page-label">
         <span class="dot"></span>Dashboards
-        <small>· chat-built tiles</small>
+        <small>Â· chat-built tiles</small>
       </span>
       <div class="canvas-actions">
         <span class="canvas-pill" id="widget-count">0 widgets</span>
@@ -204,13 +204,13 @@
       </div>
     </header>
 
-    <!-- AI-surfaced catchment insights · always visible above the canvas.
+    <!-- AI-surfaced catchment insights Â· always visible above the canvas.
          SEMPHN-specific equity findings as click-to-explore chips. -->
     <div class="catchment-insights" id="catchment-insights" aria-label="SEMPHN catchment insights"></div>
 
-    <!-- Full-bleed canvas body — the widget grid fills edge-to-edge. -->
+    <!-- Full-bleed canvas body â€” the widget grid fills edge-to-edge. -->
     <div class="canvas-body canvas-body-flush">
-      <!-- DEFAULT STATE · refined empty card, centered. Hidden when any
+      <!-- DEFAULT STATE Â· refined empty card, centered. Hidden when any
            widget lands. -->
       <div id="widget-empty" class="dashboards-default">
         <div class="dashboards-default-inner">
@@ -218,7 +218,7 @@
           <h3>Empty dashboard.</h3>
           <p>
             Pick a suggestion in the chat on the left, or ask for a
-            <strong>complete SEMPHN dashboard</strong> to land 4–6 tiles at once.
+            <strong>complete SEMPHN dashboard</strong> to land 4â€“6 tiles at once.
           </p>
           <div class="dashboards-default-tips">
             <span class="tip"><span class="kbd">/</span><span>chart templates</span></span>
@@ -227,7 +227,7 @@
         </div>
       </div>
 
-      <!-- Widget grid · only shown when widgets exist -->
+      <!-- Widget grid Â· only shown when widgets exist -->
       <div id="widget-grid" class="widget-grid-padded"></div>
     </div>
   </section>
@@ -236,13 +236,13 @@
 
 <footer class="statusbar" role="status">
   <div class="statusbar-left">
-    <span class="statusbar-item live" data-status="ai"> AI · ready</span>
+    <span class="statusbar-item live" data-status="ai"> AI Â· ready</span>
     <span class="statusbar-item hide-mobile" data-status="saved">All changes synced</span>
   </div>
   <div class="statusbar-right">
-    <span class="statusbar-item hide-mobile">SEMPHN · PHN108</span>
-    <span class="statusbar-item"><kbd>⌘K</kbd> commands</span>
-    <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
+    <span class="statusbar-item hide-mobile">SEMPHN Â· PHN108</span>
+    <span class="statusbar-item"><kbd>âŒ˜K</kbd> commands</span>
+    <span class="statusbar-item hide-mobile"><kbd>âŒ˜\</kbd> toggle chat</span>
   </div>
 </footer>
 
@@ -261,8 +261,8 @@
   if (test) test.addEventListener('click', function () {
     var w = {
       type: 'bar',
-      title: 'Test widget · MH conditions per 1k (hardcoded)',
-      subtitle: 'Bypasses chat — proves render path works',
+      title: 'Test widget Â· MH conditions per 1k (hardcoded)',
+      subtitle: 'Bypasses chat â€” proves render path works',
       unit: 'per_1k',
       source_id: 'TEST',
       highlight: 'Frankston',
@@ -278,7 +278,7 @@
       console.log('[test] adding hardcoded test widget');
       window.__addWidget(w);
     } else {
-      alert('window.__addWidget is not a function — shell.js failed to expose it');
+      alert('window.__addWidget is not a function â€” shell.js failed to expose it');
       console.error('[test] window.__addWidget missing. Type:', typeof window.__addWidget);
     }
   });
@@ -299,7 +299,7 @@
   setInterval(refresh, 800);
   refresh();
 
-  // Export → opens browser print preview. The @media print styles in
+  // Export â†’ opens browser print preview. The @media print styles in
   // shell.css hide chat/nav/toolbar and show widget-grid full-width.
   var exportBtn = document.getElementById('dash-export');
   if (exportBtn) exportBtn.addEventListener('click', function () {
@@ -307,22 +307,22 @@
     var s = raw ? JSON.parse(raw) : {};
     var arr = Array.isArray(s.dashboards) ? s.dashboards : [];
     if (!arr.length) {
-      if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Add a widget first — nothing to export', 'warn');
+      if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Add a widget first â€” nothing to export', 'warn');
       return;
     }
-    if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Opening print preview — Save as PDF', 'success');
+    if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Opening print preview â€” Save as PDF', 'success');
     setTimeout(function () { window.print(); }, 400);
   });
 
-  // Publish → toast (real PPERS lodgement endpoint comes in Phase 1.5)
+  // Publish â†’ toast (real PPERS lodgement endpoint comes in Phase 1.5)
   var publishBtn = document.getElementById('dash-publish');
   if (publishBtn) publishBtn.addEventListener('click', function () {
     if (window.SEMPHN && window.SEMPHN.toast) {
-      window.SEMPHN.toast('Publish to SEMPHN tenant · coming in Phase 1.5', 'warn');
+      window.SEMPHN.toast('Publish to SEMPHN tenant Â· coming in Phase 1.5', 'warn');
     }
   });
 })();
 </script>
-<script src="/_assets/shell.js?v=1782900000"></script>
+<script src="/_assets/shell.js?v=1782950000"></script>
 </body>
 </html>
