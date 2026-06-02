@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1782500000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1782600000" />
 
 <!-- Apache ECharts · widget rendering for the dashboard builder.
      Why ECharts: enterprise-grade defaults, single CDN, themeable. -->
@@ -98,6 +98,12 @@
     background: var(--positive, #10B981);
   }
 
+  /* Make the canvas-body itself the vertical scroller so it grows naturally
+     with content — rows are content-sized, cards don't get compressed. */
+  .canvas-body-flush {
+    overflow-y: auto !important;
+  }
+
   /* The widget grid · 12-col responsive grid with size-aware tiles.
      KPIs compact (4 cols), charts default (6 cols), choropleth/table full row. */
   .widget-grid-padded {
@@ -106,11 +112,11 @@
   .widget-grid-padded:not(:empty) {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: min-content;   /* rows hug content — never stretch */
+    align-items: start;             /* tiles take natural height, no stretching */
     gap: 1.25rem;
     padding: clamp(1.5rem, 2.5vw, 2.25rem);
-    overflow-y: auto;
-    position: absolute; inset: 0;
-    align-content: start;
+    /* No absolute positioning — grid grows naturally and canvas-body scrolls */
   }
   .widget-grid-padded .wgt-card[data-size="sm"] { grid-column: span 4; }
   .widget-grid-padded .wgt-card[data-size="md"] { grid-column: span 6; }
@@ -317,6 +323,6 @@
   });
 })();
 </script>
-<script src="/_assets/shell.js?v=1782500000"></script>
+<script src="/_assets/shell.js?v=1782600000"></script>
 </body>
 </html>
