@@ -205,6 +205,48 @@ COMMISSIONING (semphn_funding_fy26)
   • Top schedules: Primary MH $9.12M · Headspace $6.80M · Care Finders $5.20M ·
     Psychosocial Support $4.90M · CHSP Sector Support $3.80M · Dementia $3.10M ·
     Indigenous SEWB $2.35M · Allied-aged $2.40M · AOD-treatment $3.45M
+
+SAMPLE RECOMMENDATIONS (semphn_hna_2025_28 · use as templates when drafting)
+Each follows: FINDING → ACTION → COMMISSIONING LEVER → MEASURABLE INDICATOR
+  1. Finding: Frankston MH 116.1/1k (48% above VIC). Action: Expand headspace
+     Frankston capacity + add Stride satellite. Lever: redirect $1.2M of
+     Primary MH FY27. Indicator: MH ED presentations at Frankston Hospital
+     reduced 10% by FY28 baseline 218/10k.
+  2. Finding: Casey bowel screening 35.9% (lowest in AU). Action: Casey
+     primary-care screening blitz · co-design with NWMPHN. Lever:
+     Cancer screening innovation grant $480K. Indicator: Casey participation
+     up to 42% by FY27.
+  3. Finding: Greater Dandenong homelessness 149.5/10k + DV/FV 38% of SHS
+     presentations. Action: Co-locate HeadtoHelp with Wayss housing intake.
+     Lever: extend Psychosocial Support FY26 contract scope. Indicator:
+     warm-handover rate to MH care 60% by FY27.
+  4. Finding: 2 ACCHS stretched across 7,500 First Nations residents in
+     catchment. Action: Cultural-safety KPI in 100% of mainstream GP
+     service contracts + RACGP RACGP-AHGPRA pathway. Lever: SEMPHN
+     commissioning standard FY26. Indicator: AOD-718s reporting cultural-
+     safety attestation by FY27 ≥ 80%.
+  5. Finding: GP workforce 108/100k (-16 vs VIC) · 40% over 55. Action:
+     SEMPHN-funded GP registrar incentive for growth-corridor LGAs.
+     Lever: workforce stream FY27. Indicator: net GP FTE gain in
+     Cardinia + Casey ≥ +24 by FY28.
+
+MEASURABLE INDICATORS the PHN already tracks (PIP-QI + SEMPHN KPIs)
+  • MH: ED presentations per 10k, MBS MH-item utilisation, headspace wait days
+  • First Nations: 715 health-assessment rate, cultural-safety attestation %
+  • Older: 75+ care-plan rate, residential post-discharge GP visit within 7 days
+  • Homelessness: SHS warm-handover-to-MH %, rough-sleeper outreach contacts
+  • Chronic disease: PIP-QI 10 measures, diabetes HbA1c-checked %, BP-checked %
+  • AOD: median wait days to non-residential treatment (target ≤14)
+  • Workforce: GP FTE per 100k, allied health FTE per 10k, GP retention 5-yr
+  • Screening: bowel NBCSP %, breast BreastScreen %, cervical CCST %
+
+PRIORITY-AREA → COMMISSIONING-STREAM mapping
+  • Mental health         → Primary MH ($9.12M) + Headspace ($6.80M)
+  • First Nations         → Indigenous SEWB ($2.35M)
+  • Older people          → Care Finders ($5.20M) + CHSP Sector Support ($3.80M)
+  • Chronic disease       → PIP-QI uplift + Allied-aged
+  • AOD                   → AOD-treatment ($3.45M)
+  • Homelessness          → Psychosocial Support ($4.90M)
 """
 
 
@@ -259,6 +301,34 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "for sub-LGA stats). Format: '[Brief acknowledgement]. The closest "
         "proxy I can map/build right now is **[metric]** — want me to? For "
         "authoritative [topic] data, see [source].'",
+        # NEVER-ASK-PERMISSION rule · the second most common failure is the AI
+        # saying "Would you like me to draft that?" — by asking, the user has
+        # ALREADY given permission. Just draft. Never punt back to the user.
+        "NEVER ask permission to do what was just requested. Phrases like "
+        "'Would you like me to draft that?', 'Shall I proceed?', 'Let me "
+        "know if you'd like…', 'Would you like to proceed with that?' are "
+        "FORBIDDEN. By asking, the user already gave permission — just do "
+        "the work in the same reply.",
+        # NEVER-HEDGE rule · stop saying 'the data slice does not provide X'
+        # as a reason not to act. The SEMPHN ground-truth above ALWAYS has
+        # enough to draft a paragraph or recommendation. If a specific figure
+        # is missing, use the closest one and name it. NEVER abandon the task.
+        "NEVER say 'the data slice does not provide X' or 'I don't have "
+        "specific X' as a reason to NOT produce the requested output. The "
+        "SEMPHN ground-truth block above ALWAYS contains enough real figures "
+        "to draft any HNA paragraph, recommendation, or chart. If the user "
+        "asks for a recommendation, USE the SAMPLE RECOMMENDATIONS pattern "
+        "(Finding → Action → Lever → Indicator). If the user asks for "
+        "'measurable indicators', USE the MEASURABLE INDICATORS list above. "
+        "Always produce the output. Never punt.",
+        # For HNA: when user asks for a paragraph, ALWAYS emit a paragraph
+        # widget — even if the data is thin. Use whatever's closest in scope.
+        "On the HNA page: if the user asks for ANY paragraph, recommendation, "
+        "section, footnote, or rewrite, you MUST emit a `paragraph` widget. "
+        "There is no scenario where a paragraph-drafting request results in "
+        "no widget. If you genuinely can't draft (which should be vanishingly "
+        "rare), say WHY in one short sentence and emit a paragraph widget "
+        "with a 'methodology limitation' placeholder using available figures.",
         # Common topic → proxy table the AI should know
         "Topic-to-proxy guide (use these when the user asks for X and we lack X):",
         "  • schools / education     → % aged 5-17 by LGA + youth_pop_pct; closest map: \"Youth services\" template; ext: DET Find My School, ACARA MySchool",

@@ -4583,6 +4583,16 @@
     var t = text.toLowerCase();
     return /(\bi['’]?m unable\b|\bisn['’]?t available\b|\bnot in the (current )?dataset\b|\bdon['’]?t have (data|that|access)\b|\bno data\b|\bunable to provide\b|\bcannot provide\b|\bsorry[,.]?\s+i\b)/i.test(t);
   }
+  /* Punt detector · catches "Would you like me to draft that?" style replies
+   * where the AI asks permission instead of just doing the work. Surfaces
+   * a 'Yes, do it now' chip that re-fires the SAME prompt with explicit
+   * permission framing so the AI can't dodge a second time. */
+  function isPuntReply(text) {
+    if (!text) return false;
+    var t = text.toLowerCase();
+    return /(would you like (me )?to|shall i (proceed|draft|continue)|let me know if you('|')?d like|would you like to proceed|do you want me to|should i (draft|proceed|continue))/i.test(t);
+  }
+  window.__isPuntReply = isPuntReply;
   function topicChipsFor(promptText) {
     if (!promptText) return null;
     var lc = promptText.toLowerCase();
@@ -4600,6 +4610,18 @@
 
   function pickFollowups(turn, widget) {
     var page = pageId();
+    // Universal · punt detection: if the AI asked permission instead of just
+    // doing the work, surface a single "Yes, do it now" chip that re-fires
+    // the SAME prompt with explicit permission framing so the model can't
+    // dodge a second time.
+    if (turn && isPuntReply(turn.summary)) {
+      return [
+        { label: '✓ Yes, do it now — don\'t ask permission',
+          prompt: (turn.prompt || '') + '\n\nDo it now — don\'t ask permission, don\'t hedge, don\'t say the data is insufficient. Use the SEMPHN ground truth + sample patterns to produce the output directly.' },
+        { label: '↺ Try a tighter version',
+          prompt: 'Rewrite that as a 60-word paragraph using actual SEMPHN figures from the ground truth block. Heading: pick the most useful one. New paragraph.' },
+      ];
+    }
     // Universal: if the AI's reply admits no data, surface topic-relevant
     // proxies based on what the user actually asked. This rescues every
     // out-of-scope ask with concrete, clickable next steps.
