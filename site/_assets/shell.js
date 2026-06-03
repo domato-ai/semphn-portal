@@ -98,7 +98,23 @@
       ]},
     ],
     maps: [
-      { section: 'Health & wellbeing', items: [
+      { section: 'Complete map views · instant', items: [
+        { icon: '⚡', label: 'Mental health hotspots',  mapTemplate: 'mh-hotspots' },
+        { icon: '⚡', label: 'Service network',         mapTemplate: 'service-network' },
+        { icon: '⚡', label: 'Aged care',               mapTemplate: 'aged-care' },
+        { icon: '⚡', label: 'Equity overlay',          mapTemplate: 'equity' },
+        { icon: '⚡', label: 'First Nations services',  mapTemplate: 'first-nations' },
+        { icon: '⚡', label: 'Homelessness',            mapTemplate: 'homelessness' },
+      ]},
+      { section: 'Service points · drop a layer', items: [
+        { icon: '⊙', label: '9 headspace centres',      mapPoints: ['headspace'] },
+        { icon: '⊙', label: '2 ACCHS clinics',          mapPoints: ['acchs'] },
+        { icon: '⊙', label: 'Hospitals (public + private)', mapPoints: ['hospital'] },
+        { icon: '⊙', label: 'Aged-care facilities · sample', mapPoints: ['racf'] },
+        { icon: '⊙', label: 'PHN-funded MH services',   mapPoints: ['mh'] },
+        { icon: '⊙', label: 'AOD services',             mapPoints: ['aod'] },
+      ]},
+      { section: 'Health & wellbeing · choropleth', items: [
         { icon: '◐', label: 'MH prevalence',            prompt: 'Map MH conditions per 1,000 residents by LGA. Highlight Frankston (highest at 116.1).' },
         { icon: '◌', label: 'Bowel screening rate',     prompt: 'Map bowel cancer screening participation by LGA. Highlight lowest LGAs.' },
         { icon: '+',  label: 'GP encounters per resident', prompt: 'Map GP encounters per resident per year by LGA.' },
@@ -516,6 +532,135 @@
     return added;
   }
   window.__loadDashboardTemplate = loadDashboardTemplate;
+
+  /* ============================================================
+   * SEMPHN Map templates · instant-load map views
+   *
+   * Each template is a recipe of (a) optional choropleth widget
+   * and (b) point-overlay layers — applied directly to the live
+   * default Leaflet map via window.__defaultMapApi. The map fits
+   * to the new bounds and shows a legend chip. No chat round-trip.
+   * ============================================================ */
+  var MAP_TEMPLATES = {
+    'mh-hotspots': {
+      title: 'Mental health hotspots',
+      description: 'MH prevalence choropleth + headspace + ACCHS · where MH need meets MH supply',
+      choropleth: {
+        type: 'choropleth',
+        title: 'MH conditions · per 1,000 residents',
+        unit: 'per_1k', unit_label: 'per 1,000 residents',
+        source_id: 'polar_2024', highlight: 'Frankston',
+        data: [
+          { label: 'Frankston', value: 116.1 }, { label: 'Mornington Peninsula', value: 102.6 },
+          { label: 'Greater Dandenong', value: 97.4 }, { label: 'Casey', value: 94.1 },
+          { label: 'Port Phillip', value: 91.8 }, { label: 'Cardinia', value: 88.4 },
+          { label: 'Kingston (Vic.)', value: 83.7 }, { label: 'Bayside (Vic.)', value: 82.5 },
+          { label: 'Glen Eira', value: 78.3 }, { label: 'Stonnington', value: 76.9 },
+        ],
+      },
+      layers: ['headspace', 'acchs', 'mh'],
+    },
+    'service-network': {
+      title: 'Service network',
+      description: 'ACCHS + headspace + hospitals + key GP + MH + AOD services across the catchment',
+      choropleth: null,
+      layers: ['acchs', 'headspace', 'hospital', 'gp', 'mh', 'aod', 'semphn'],
+    },
+    'aged-care': {
+      title: 'Aged care',
+      description: '% 65+ choropleth + RACFs (sample) + hospitals — where the ageing curve hits care supply',
+      choropleth: {
+        type: 'choropleth',
+        title: '% population aged 65+',
+        unit: 'pct', unit_label: '% of residents aged 65+',
+        source_id: 'abs_census_2021_age', highlight: 'Mornington Peninsula',
+        data: [
+          { label: 'Mornington Peninsula', value: 27.6 }, { label: 'Bayside (Vic.)', value: 24.8 },
+          { label: 'Kingston (Vic.)', value: 21.4 }, { label: 'Frankston', value: 20.2 },
+          { label: 'Stonnington', value: 18.6 }, { label: 'Glen Eira', value: 17.9 },
+          { label: 'Port Phillip', value: 14.1 }, { label: 'Greater Dandenong', value: 13.4 },
+          { label: 'Cardinia', value: 13.0 }, { label: 'Casey', value: 11.8 },
+        ],
+      },
+      layers: ['racf', 'hospital'],
+    },
+    'equity': {
+      title: 'Equity overlay',
+      description: 'SEIFA disadvantage decile + headspace + ACCHS — where disadvantage meets MH access',
+      choropleth: {
+        type: 'choropleth',
+        title: 'SEIFA disadvantage decile',
+        unit: 'count', unit_label: 'SEIFA decile · 1 = most disadvantaged',
+        source_id: 'abs_seifa_2021', highlight: 'Greater Dandenong',
+        data: [
+          { label: 'Greater Dandenong', value: 2 }, { label: 'Frankston', value: 4 },
+          { label: 'Cardinia', value: 5 }, { label: 'Casey', value: 5 },
+          { label: 'Mornington Peninsula', value: 7 }, { label: 'Kingston (Vic.)', value: 8 },
+          { label: 'Glen Eira', value: 9 }, { label: 'Bayside (Vic.)', value: 10 },
+          { label: 'Port Phillip', value: 9 }, { label: 'Stonnington', value: 10 },
+        ],
+      },
+      layers: ['headspace', 'acchs', 'mh'],
+    },
+    'first-nations': {
+      title: 'First Nations services',
+      description: 'IRSEO disadvantage by LGA + the 2 ACCHS — the only First Nations-specific clinical services in catchment',
+      choropleth: {
+        type: 'choropleth',
+        title: 'First Nations IRSEO',
+        unit: 'count', unit_label: 'IRSEO · higher = more disadvantaged · VIC avg 14',
+        source_id: 'aihw_irseo_2024', highlight: 'Greater Dandenong',
+        data: [
+          { label: 'Greater Dandenong', value: 28 }, { label: 'Casey', value: 27 },
+          { label: 'Cardinia', value: 26 }, { label: 'Mornington Peninsula', value: 25 },
+          { label: 'Frankston', value: 24 }, { label: 'Kingston (Vic.)', value: 22 },
+          { label: 'Bayside (Vic.)', value: 20 }, { label: 'Glen Eira', value: 19 },
+          { label: 'Port Phillip', value: 18 }, { label: 'Stonnington', value: 17 },
+        ],
+      },
+      layers: ['acchs'],
+    },
+    'homelessness': {
+      title: 'Homelessness',
+      description: 'Homelessness rate choropleth + AOD + MH services — where housing + addiction risk concentrates',
+      choropleth: {
+        type: 'choropleth',
+        title: 'Homeless + marginal housing · per 10,000',
+        unit: 'per_10k', unit_label: 'per 10,000 residents',
+        source_id: 'abs_census_2021_homeless', highlight: 'Greater Dandenong',
+        data: [
+          { label: 'Greater Dandenong', value: 149.5 }, { label: 'Frankston', value: 124.8 },
+          { label: 'Port Phillip', value: 118.2 }, { label: 'Casey', value: 96.4 },
+          { label: 'Mornington Peninsula', value: 78.1 }, { label: 'Stonnington', value: 71.6 },
+          { label: 'Cardinia', value: 64.3 }, { label: 'Kingston (Vic.)', value: 62.0 },
+          { label: 'Glen Eira', value: 58.9 }, { label: 'Bayside (Vic.)', value: 42.1 },
+        ],
+      },
+      layers: ['mh', 'aod'],
+    },
+  };
+
+  /* Click handler · applies the template to the live default map.
+   * Doesn't touch the widget grid — the map IS the surface. */
+  function loadMapTemplate(name) {
+    var tpl = MAP_TEMPLATES[name];
+    if (!tpl) return false;
+    var api = window.__defaultMapApi;
+    if (!api) { showToast('Map still loading — try again', 'warn'); return false; }
+    // Clean slate, then apply
+    api.reset();
+    if (tpl.choropleth) api.applyData(JSON.parse(JSON.stringify(tpl.choropleth)));
+    if (tpl.layers && tpl.layers.length) {
+      // Defer slightly so choropleth legend settles first
+      setTimeout(function () {
+        api.applyPoints(tpl.layers, { fit: true });
+      }, 60);
+    }
+    showToast('Loaded · ' + tpl.title, 'success');
+    return true;
+  }
+  window.__loadMapTemplate = loadMapTemplate;
+  window.__MAP_TEMPLATES = MAP_TEMPLATES;
 
   /* ============================================================
    * SEMPHN catchment insights · always-visible findings strip
@@ -1140,13 +1285,17 @@
     return SEMPHN_SERVICES_PROMISE;
   }
 
-  /* Service-type → marker color + glyph */
+  /* Service-type → marker color + glyph + plural label.
+   * Colors chosen to read distinctly when several layers overlap on the map. */
   var SERVICE_STYLE = {
-    acchs:     { color: '#0A0A0A', glyph: 'A', label: 'ACCHS' },
-    headspace: { color: '#55BFAF', glyph: 'h', label: 'headspace' },
-    hospital:  { color: '#04264E', glyph: '+', label: 'Hospital' },
-    gp:        { color: '#82D9C4', glyph: 'G', label: 'GP practice' },
-    racf:      { color: '#6B7280', glyph: 'R', label: 'RACF' },
+    acchs:     { color: '#0A0A0A', glyph: 'A', label: 'ACCHS',          plural: 'ACCHS clinics' },
+    headspace: { color: '#55BFAF', glyph: 'h', label: 'headspace',      plural: 'headspace centres' },
+    hospital:  { color: '#E13D6F', glyph: '+', label: 'Hospital',       plural: 'Hospitals' },
+    gp:        { color: '#4C86FF', glyph: 'G', label: 'GP practice',    plural: 'GP practices · sample' },
+    racf:      { color: '#F5B100', glyph: 'R', label: 'RACF',           plural: 'Aged-care facilities · sample' },
+    mh:        { color: '#7C5BD9', glyph: 'M', label: 'MH service',     plural: 'PHN-funded MH services' },
+    aod:       { color: '#FF8A3D', glyph: 'D', label: 'AOD service',    plural: 'AOD services' },
+    semphn:    { color: '#04264E', glyph: 'S', label: 'SEMPHN HQ',      plural: 'SEMPHN HQ' },
   };
   function semphnMarkerIcon(type) {
     var s = SERVICE_STYLE[type] || { color: '#6B7280', glyph: '.', label: type };
@@ -1488,15 +1637,144 @@
           });
           removeLegend();
           removeIndicator();
-          // Remove any additive point overlays too
-          mapApi.extraLayers.forEach(function (l) { try { map.removeLayer(l); } catch (_) {} });
-          mapApi.extraLayers = [];
+          clearAllPoints();
+        }
+
+        /* ── Point overlays · cluster groups keyed by 'layerKey' so callers
+         *    can add / remove independently (e.g. headspace layer vs hospitals
+         *    layer). Multiple groups stack on the same map. ── */
+        function makeServicePopup(s) {
+          var typeLabel = (SERVICE_STYLE[s.type] || {}).label || s.type;
+          return (
+            '<div style="font-family:Geist,system-ui,sans-serif;min-width:200px;">' +
+              '<div style="font-size:0.68rem;font-weight:500;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.15rem;">' + escHtml(typeLabel) + '</div>' +
+              '<div style="font-weight:600;font-size:0.96rem;color:#0A0A0A;margin-bottom:0.25rem;">' + escHtml(s.name) + '</div>' +
+              '<div style="font-size:0.82rem;color:#4B5563;">' + escHtml(s.suburb || '') + '</div>' +
+              (s.beds ? '<div style="font-size:0.74rem;color:#6B7280;margin-top:0.25rem;">' + escHtml(s.beds + ' beds · ' + (s.tier || '')) + '</div>' : '') +
+              (s.tier && !s.beds ? '<div style="font-size:0.74rem;color:#6B7280;margin-top:0.25rem;">' + escHtml(s.tier) + '</div>' : '') +
+              (s.phone ? '<div style="font-family:Geist Mono,ui-monospace,monospace;font-size:0.78rem;color:#0A0A0A;margin-top:0.4rem;">' + escHtml(s.phone) + '</div>' : '') +
+            '</div>'
+          );
+        }
+        function clusterFor(layerKey) {
+          var color = layerKey === 'headspace' ? '#55BFAF'
+                    : layerKey === 'hospital'  ? '#E13D6F'
+                    : layerKey === 'acchs'     ? '#0A0A0A'
+                    : layerKey === 'gp'        ? '#4C86FF'
+                    : layerKey === 'racf'      ? '#F5B100'
+                    : layerKey === 'mh'        ? '#7C5BD9'
+                    : layerKey === 'aod'       ? '#FF8A3D'
+                    : '#04264E';
+          return L.markerClusterGroup({
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true,
+            maxClusterRadius: 36,
+            iconCreateFunction: function (c) {
+              var n = c.getChildCount();
+              return L.divIcon({
+                className: 'semphn-cluster',
+                html: '<div class="semphn-cluster-pin" style="background:' + color + ';">' + n + '</div>',
+                iconSize: [32, 32],
+              });
+            },
+          });
+        }
+        mapApi.pointLayers = {};   // { 'headspace': cluster, ... }
+        mapApi.applyPoints = function (types, opts) {
+          opts = opts || {};
+          if (typeof L.markerClusterGroup !== 'function') return Promise.resolve();
+          var fit = opts.fit !== false;
+          return loadSemphnServices().then(function (data) {
+            (Array.isArray(types) ? types : [types]).forEach(function (t) {
+              // Remove existing for this type so re-apply replaces cleanly
+              if (mapApi.pointLayers[t]) {
+                try { map.removeLayer(mapApi.pointLayers[t]); } catch (_) {}
+              }
+              var pts = (data.services || []).filter(function (s) { return s.type === t; });
+              if (!pts.length) return;
+              var cluster = clusterFor(t);
+              pts.forEach(function (s) {
+                var m = L.marker([s.lat, s.lng], { icon: semphnMarkerIcon(s.type) });
+                m.bindPopup(makeServicePopup(s));
+                cluster.addLayer(m);
+              });
+              cluster.addTo(map);
+              mapApi.pointLayers[t] = cluster;
+            });
+            // Fit bounds to combined layers (LGAs + point overlays) so users
+            // see the whole catchment with the new points in view
+            if (fit) {
+              try {
+                var b = lgaLayer.getBounds();
+                Object.values(mapApi.pointLayers).forEach(function (c) { try { b.extend(c.getBounds()); } catch (_) {} });
+                map.fitBounds(b, { padding: [24, 24] });
+              } catch (_) {}
+            }
+            updateLayerLegend();
+          });
+        };
+        mapApi.clearPoints = function (types) {
+          (Array.isArray(types) ? types : [types]).forEach(function (t) {
+            if (mapApi.pointLayers[t]) {
+              try { map.removeLayer(mapApi.pointLayers[t]); } catch (_) {}
+              delete mapApi.pointLayers[t];
+            }
+          });
+          updateLayerLegend();
+        };
+        function clearAllPoints() {
+          Object.keys(mapApi.pointLayers).forEach(function (t) {
+            try { map.removeLayer(mapApi.pointLayers[t]); } catch (_) {}
+          });
+          mapApi.pointLayers = {};
+          updateLayerLegend();
+        }
+        mapApi.clearAllPoints = clearAllPoints;
+        // Full reset · empty map state (used by the "Reset map" affordance)
+        mapApi.reset = function () {
+          clearData();
+          clearAllPoints();
+        };
+
+        /* Layer legend · top-left chip showing which point types are on */
+        var layerLegendCtl = null;
+        function updateLayerLegend() {
+          if (layerLegendCtl) { try { map.removeControl(layerLegendCtl); } catch (_) {} layerLegendCtl = null; }
+          var keys = Object.keys(mapApi.pointLayers);
+          if (!keys.length) return;
+          layerLegendCtl = L.control({ position: 'topright' });
+          layerLegendCtl.onAdd = function () {
+            var d = L.DomUtil.create('div', 'semphn-leaflet-layerlegend');
+            var parts = ['<div class="hdr">On the map</div>'];
+            keys.forEach(function (k) {
+              var s = SERVICE_STYLE[k] || { color: '#666', label: k };
+              var count = mapApi.pointLayers[k].getLayers().length;
+              parts.push(
+                '<div class="row" data-type="' + escHtml(k) + '">' +
+                  '<span class="dot" style="background:' + s.color + ';"></span>' +
+                  '<span class="lab">' + escHtml(s.plural || s.label) + '</span>' +
+                  '<span class="ct">' + count + '</span>' +
+                  '<button type="button" class="x" title="Remove layer" aria-label="Remove ' + escHtml(s.label) + ' layer">×</button>' +
+                '</div>'
+              );
+            });
+            d.innerHTML = parts.join('');
+            L.DomEvent.disableClickPropagation(d);
+            Array.prototype.forEach.call(d.querySelectorAll('.x'), function (btn) {
+              var t = btn.parentElement.getAttribute('data-type');
+              L.DomEvent.on(btn, 'click', function () { mapApi.clearPoints(t); });
+            });
+            return d;
+          };
+          layerLegendCtl.addTo(map);
         }
 
         mapApi.applyData = function (w) {
           if (!w) return;
           if (w.type === 'choropleth' || w.type === 'map') applyChoropleth(w);
-          // (Future: handle 'points' type for additive marker layers)
+          if (w.type === 'points' && Array.isArray(w.layers)) {
+            mapApi.applyPoints(w.layers, { fit: w.fit !== false });
+          }
         };
         mapApi.clearData = clearData;
 
@@ -2890,10 +3168,19 @@
         var lab = document.createElement('span'); lab.className = 'label'; lab.textContent = s.label;
         btn.appendChild(ic); btn.appendChild(lab);
         btn.addEventListener('click', function () {
-          // Template chips load instantly via __loadDashboardTemplate;
-          // regular chips fire the chat prompt.
+          // Three flavours of chips:
+          //   template       → dashboard preset (loadDashboardTemplate)
+          //   mapTemplate    → map preset (loadMapTemplate)
+          //   mapPoints      → drop a point layer onto the map
+          //   prompt         → fire as a chat prompt
           if (s.template && typeof window.__loadDashboardTemplate === 'function') {
             window.__loadDashboardTemplate(s.template);
+          } else if (s.mapTemplate && typeof window.__loadMapTemplate === 'function') {
+            window.__loadMapTemplate(s.mapTemplate);
+          } else if (s.mapPoints && window.__defaultMapApi) {
+            window.__defaultMapApi.applyPoints(s.mapPoints, { fit: true });
+            var first = (s.mapPoints[0] || '').toString();
+            showToast('Added ' + (SERVICE_STYLE[first] && SERVICE_STYLE[first].plural || first) + ' to the map', 'success');
           } else if (s.prompt) {
             fireSuggestion(s.prompt);
           }
@@ -3045,6 +3332,8 @@
           icon: item.icon || '◯',
           prompt: item.prompt || null,
           template: item.template || null,
+          mapTemplate: item.mapTemplate || null,
+          mapPoints: item.mapPoints || null,
         });
       });
     });
@@ -3123,7 +3412,8 @@
         var lab = document.createElement('span'); lab.className = 'lab';
         lab.innerHTML = highlight(it.label, firstToken);
         var sec = document.createElement('span'); sec.className = 'sec';
-        sec.textContent = it.template ? (it.section + ' · instant template') : it.section;
+        var instant = it.template || it.mapTemplate || it.mapPoints;
+        sec.textContent = instant ? (it.section + ' · instant') : it.section;
         body.appendChild(lab); body.appendChild(sec);
         item.appendChild(ico); item.appendChild(body);
         item.addEventListener('mouseenter', function () { cursor = i; render(); });
@@ -3133,12 +3423,27 @@
     }
     function accept(it) {
       if (it.template) {
-        // Templates fire immediately — clear composer, load tiles, close.
         input.value = ''; input.style.height = 'auto';
         input.dispatchEvent(new Event('input'));
         input.focus();
         if (typeof window.__loadDashboardTemplate === 'function') {
           window.__loadDashboardTemplate(it.template);
+        }
+      } else if (it.mapTemplate) {
+        input.value = ''; input.style.height = 'auto';
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        if (typeof window.__loadMapTemplate === 'function') {
+          window.__loadMapTemplate(it.mapTemplate);
+        }
+      } else if (it.mapPoints) {
+        input.value = ''; input.style.height = 'auto';
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        if (window.__defaultMapApi) {
+          window.__defaultMapApi.applyPoints(it.mapPoints, { fit: true });
+          var first = (it.mapPoints[0] || '').toString();
+          showToast('Added ' + (SERVICE_STYLE[first] && SERVICE_STYLE[first].plural || first) + ' to the map', 'success');
         }
       } else if (it.prompt) {
         input.value = it.prompt;
@@ -3631,12 +3936,25 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'chat-suggest-chip';
-      var arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = s.template ? '⚡' : '→';
+      var arrChar = s.template || s.mapTemplate ? '⚡'
+                  : s.mapPoints ? '⊙'
+                  : '→';
+      var arr = document.createElement('span'); arr.className = 'arr'; arr.textContent = arrChar;
       var t = document.createElement('span'); t.textContent = s.label;
       btn.appendChild(arr); btn.appendChild(t);
       btn.addEventListener('click', function () {
         if (s.template && typeof window.__loadDashboardTemplate === 'function') {
           window.__loadDashboardTemplate(s.template);
+          return;
+        }
+        if (s.mapTemplate && typeof window.__loadMapTemplate === 'function') {
+          window.__loadMapTemplate(s.mapTemplate);
+          return;
+        }
+        if (s.mapPoints && window.__defaultMapApi) {
+          window.__defaultMapApi.applyPoints(s.mapPoints, { fit: true });
+          var first = (s.mapPoints[0] || '').toString();
+          showToast('Added ' + (SERVICE_STYLE[first] && SERVICE_STYLE[first].plural || first) + ' to the map', 'success');
           return;
         }
         var input = document.getElementById('chat-input');

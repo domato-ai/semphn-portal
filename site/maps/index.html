@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1783100000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1783200000" />
 
 <!-- Leaflet Â· real interactive map for choropleths, points and overlays.
      Real OSM tiles + actual SEMPHN LGA polygons from ABS LGA 2016 boundaries
@@ -155,8 +155,8 @@
         <small>Â· catchment choropleth &amp; overlays</small>
       </span>
       <div class="canvas-actions">
-        <span class="canvas-pill" id="widget-count">0 widgets</span>
-        <button type="button" id="widget-clear" title="Clear all widgets">Clear</button>
+        <button type="button" id="map-reset" title="Reset map to clean state">Reset map</button>
+        <button type="button" id="widget-clear" title="Clear all widgets" hidden>Clear</button>
         <button type="button">Export PNG</button>
         <button type="button" class="primary">Embed in HNA</button>
       </div>
@@ -192,17 +192,22 @@
 </footer>
 <script>
 (function () {
-  /* Clear-all button */
-  var btn = document.getElementById('widget-clear');
-  if (btn) btn.addEventListener('click', function () {
-    if (!confirm('Remove all widgets from this map canvas?')) return;
+  /* Reset map · returns to the clean default state (no choropleth, no points) */
+  var resetBtn = document.getElementById('map-reset');
+  if (resetBtn) resetBtn.addEventListener('click', function () {
+    if (window.__defaultMapApi && typeof window.__defaultMapApi.reset === 'function') {
+      window.__defaultMapApi.reset();
+      if (typeof window.showToast === 'function') window.showToast('Map reset', 'success');
+    }
+    // Also clear any widget tiles that may have been added
     try {
       var raw = localStorage.getItem('semphn.workbench.widgets.v1');
       var s = raw ? JSON.parse(raw) : {};
-      s.maps = [];
-      localStorage.setItem('semphn.workbench.widgets.v1', JSON.stringify(s));
-      if (typeof window.__renderWidgets === 'function') window.__renderWidgets();
-      initDefaultMap();
+      if (s.maps && s.maps.length) {
+        s.maps = [];
+        localStorage.setItem('semphn.workbench.widgets.v1', JSON.stringify(s));
+        if (typeof window.__renderWidgets === 'function') window.__renderWidgets();
+      }
     } catch (_) {}
   });
 
@@ -221,16 +226,18 @@
     if (typeof window.__mountSemphnLeaflet !== 'function') {
       return setTimeout(initDefaultMap, 120);
     }
+    // CLEAN default state · just OSM tiles + LGA polygons.
+    // Users add data via Map Templates, Service Points chips, or chat.
     window.__mountSemphnLeaflet(div, {
       mode: 'default',
       showSearch: true,
       showLocate: true,
       showLayerToggle: true,
-      showServicePoints: true,
+      showServicePoints: false,
     }).then(function (mapApi) {
       defaultMap = mapApi.map;
-      // Expose the mapApi globally so the chat handler can overlay data
-      // layers onto this map when the user types something.
+      // Expose the mapApi globally so chat templates + chip clicks can
+      // overlay data onto this map.
       window.__defaultMapApi = mapApi;
     }).catch(function (e) { console.error('[default-map] mount failed', e); });
   }
@@ -242,6 +249,6 @@
   window.__initMapsDefault = initDefaultMap;
 })();
 </script>
-<script src="/_assets/shell.js?v=1783100000"></script>
+<script src="/_assets/shell.js?v=1783200000"></script>
 </body>
 </html>
