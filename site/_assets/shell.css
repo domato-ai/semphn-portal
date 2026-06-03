@@ -1076,6 +1076,160 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .chapter-chip.is-stub .n { background: var(--rule); color: var(--slate); }
 .chapter-chip.is-stub:hover .n { background: var(--teal); color: var(--navy); }
 
+/* ───────── HNA · Next steps guide panel (always-on per chapter) ───────── */
+.hna-next {
+  max-width: 820px;
+  margin: 0 auto 1.4rem;
+  padding: 0.95rem 1.1rem 1rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(85,191,175,0.08), transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(76,134,255,0.06), transparent 60%),
+    var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  position: relative;
+}
+.hna-next-head {
+  display: flex; align-items: baseline; gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+.hna-next-stage {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex: none;
+}
+.hna-next-title {
+  font-size: 0.78rem; letter-spacing: 0.04em;
+  color: var(--slate); font-weight: 500;
+}
+.hna-next-chips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.45rem;
+}
+.hna-next-chip {
+  display: grid;
+  grid-template-columns: 28px 1fr 14px;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--motion-fast);
+}
+.hna-next-chip:hover {
+  background: var(--rule-soft);
+  border-color: var(--slate-mute);
+  transform: translateY(-1px);
+}
+.hna-next-chip.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  grid-column: 1 / -1;  /* primary action spans full width */
+}
+.hna-next-chip.primary:hover { background: #1F1F1F; }
+.hna-next-chip .ico {
+  width: 28px; height: 28px;
+  border-radius: var(--r-xs);
+  background: linear-gradient(135deg, var(--teal, #55BFAF), #4C86FF);
+  color: white;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 600;
+  flex: none;
+}
+.hna-next-chip.primary .ico {
+  background: var(--paper); color: var(--ink);
+}
+.hna-next-chip .body { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.hna-next-chip .lab {
+  font-size: 0.86rem; font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hna-next-chip .sub {
+  font-size: 0.72rem; color: var(--slate-soft); font-weight: 400;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hna-next-chip.primary .sub { color: rgba(255,255,255,0.7); }
+.hna-next-chip .arr {
+  font-size: 0.9rem; color: var(--slate-mute);
+  transition: transform var(--motion-fast);
+}
+.hna-next-chip:hover .arr { transform: translateX(2px); color: var(--ink); }
+.hna-next-chip.primary .arr { color: rgba(255,255,255,0.8); }
+
+@media (max-width: 720px) {
+  .hna-next-chips { grid-template-columns: 1fr; }
+  .hna-next-chip.primary { grid-column: 1; }
+}
+
+/* ───────── HNA · inline edit + chart figures ───────── */
+.hna-edit-textarea {
+  width: 100%;
+  min-height: 120px;
+  font-family: var(--sans);
+  font-size: 0.95rem; line-height: 1.65;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-sm);
+  padding: 0.7rem 0.85rem;
+  resize: vertical;
+  box-shadow: 0 0 0 3px var(--rule-soft);
+  outline: none;
+}
+.hna-ai-edit-actions button.primary {
+  background: var(--ink); color: var(--paper); border-color: var(--ink);
+}
+.hna-ai-edit-actions button.primary:hover { background: #1F1F1F; color: white; }
+.hna-ai-edit-actions button.subtle { color: var(--slate-soft); }
+
+.hna-figure {
+  margin: 1.4rem 0 1.6rem;
+  padding: 1rem 1rem 0.85rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  position: relative;
+}
+.hna-figure::before {
+  content: "Figure";
+  position: absolute;
+  top: -8px; left: 14px;
+  background: var(--paper);
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--slate-mute); font-weight: 600;
+  padding: 0 0.4rem;
+}
+.hna-figure .hna-figure-body {
+  margin: 0.4rem 0 0.6rem;
+}
+.hna-figure .hna-figure-body .wgt-card {
+  border: none;
+  box-shadow: none;
+  padding: 0.5rem 0.25rem;
+}
+.hna-figure figcaption {
+  font-size: 0.82rem;
+  color: var(--slate);
+  font-style: italic;
+  line-height: 1.55;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--rule-soft);
+}
+
 /* ─────────────────── COMPOSER (minimal · textarea + send) ─────────────────── */
 .composer {
   flex: none;

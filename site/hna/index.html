@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1783600000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1783700000" />
 
 <style>
   /* HNA-specific artifact styles */
@@ -211,6 +211,15 @@
         <!-- Chapter switcher · hash-routed, click to switch chapter -->
         <div class="chapter-rail" id="hna-chapter-rail" aria-label="Chapter switcher"></div>
 
+        <!-- Always-on "Next steps" guide · per-chapter, state-aware -->
+        <div class="hna-next" id="hna-next" aria-label="Next steps for this chapter" hidden>
+          <div class="hna-next-head">
+            <div class="hna-next-stage" id="hna-next-stage">Drafting</div>
+            <div class="hna-next-title" id="hna-next-title">Next steps for this chapter</div>
+          </div>
+          <div class="hna-next-chips" id="hna-next-chips"></div>
+        </div>
+
         <article class="hna-doc" id="hna-doc">
           <div class="doc-meta" id="hna-doc-meta">
             <span>â€”</span>
@@ -240,6 +249,6 @@
     <span class="statusbar-item hide-mobile"><kbd>âŒ˜\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1783600000"></script>
+<script src="/_assets/shell.js?v=1783700000"></script>
 </body>
 </html>

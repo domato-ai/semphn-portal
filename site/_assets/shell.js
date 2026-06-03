@@ -2962,6 +2962,10 @@
   window.__renderWidgets = renderWidgets;
   window.__extractWidget  = extractWidget;
   window.__extractWidgets = extractWidgets;
+  // For HNA to render in-doc charts using the dashboard renderer
+  window.__buildWidgetNode = function (widget) {
+    return buildWidgetCard(widget, {});
+  };
 
   /* ============================================================
    * HNA · chat-edits-the-doc
@@ -3002,15 +3006,50 @@
     var wrap = document.createElement('div');
     wrap.className = 'hna-ai-edit-wrap';
     wrap.setAttribute('data-edit-index', String(index));
-    if (edit.heading) {
-      var h = document.createElement('h2');
-      h.textContent = edit.heading;
-      wrap.appendChild(h);
+
+    // Chart/figure widget · render the same way Dashboards renders widgets
+    // but framed as a chapter-figure with a caption.
+    if (edit.widget) {
+      var fig = document.createElement('figure');
+      fig.className = 'hna-figure';
+      if (edit.heading) {
+        var fcap = document.createElement('h2');
+        fcap.textContent = edit.heading;
+        wrap.appendChild(fcap);
+      }
+      var holder = document.createElement('div');
+      holder.className = 'hna-figure-body';
+      // Re-use the dashboard widget builder if available
+      if (typeof window.__buildWidgetNode === 'function') {
+        try {
+          var node = window.__buildWidgetNode(edit.widget);
+          if (node) holder.appendChild(node);
+        } catch (e) {
+          holder.textContent = '(chart render failed)';
+        }
+      } else {
+        holder.textContent = '(chart support loading…)';
+      }
+      fig.appendChild(holder);
+      if (edit.text) {
+        var caption = document.createElement('figcaption');
+        caption.innerHTML = sanitiseParagraphHtml(edit.text);
+        fig.appendChild(caption);
+      }
+      wrap.appendChild(fig);
+    } else {
+      // Standard paragraph widget
+      if (edit.heading) {
+        var h = document.createElement('h2');
+        h.textContent = edit.heading;
+        wrap.appendChild(h);
+      }
+      var p = document.createElement('p');
+      p.className = 'hna-ai-edit';
+      p.innerHTML = sanitiseParagraphHtml(edit.text || '');
+      wrap.appendChild(p);
     }
-    var p = document.createElement('p');
-    p.className = 'hna-ai-edit';
-    p.innerHTML = sanitiseParagraphHtml(edit.text || '');
-    wrap.appendChild(p);
+
     // Actions bar
     var bar = document.createElement('div');
     bar.className = 'hna-ai-edit-actions';
@@ -3019,24 +3058,70 @@
       b.type = 'button';
       b.textContent = label;
       if (opts && opts.danger) b.className = 'danger';
+      if (opts && opts.subtle) b.className = (b.className || '') + ' subtle';
       b.addEventListener('click', handler);
       bar.appendChild(b);
     }
     btn('Keep', {}, function () {
-      // Remove the AI badge styling — promote to "seed" content
-      p.classList.remove('hna-ai-edit');
+      var p = wrap.querySelector('.hna-ai-edit');
+      if (p) p.classList.remove('hna-ai-edit');
       bar.remove();
-      // Mark as accepted in storage (still persisted)
       var arr = readHnaEdits();
       if (arr[index]) { arr[index].accepted = true; writeHnaEdits(arr); }
-      showToast('Paragraph kept', 'success');
+      showToast('Kept · added to chapter', 'success');
+      // Re-render so the chapter guide recomputes its state
+      renderChapterGuide();
     });
+    // Inline edit · only for paragraph widgets, not charts
+    if (!edit.widget) {
+      btn('Edit', { subtle: true }, function () {
+        var p = wrap.querySelector('.hna-ai-edit') || wrap.querySelector('p');
+        if (!p) return;
+        var original = p.innerHTML;
+        // Replace the paragraph with a textarea + Save/Cancel
+        var ta = document.createElement('textarea');
+        ta.className = 'hna-edit-textarea';
+        ta.value = p.textContent || '';
+        ta.rows = Math.min(8, Math.max(3, (ta.value.match(/\n/g) || []).length + 3));
+        p.replaceWith(ta);
+        bar.innerHTML = '';
+        var saveBtn = document.createElement('button');
+        saveBtn.type = 'button'; saveBtn.textContent = 'Save';
+        saveBtn.className = 'primary';
+        saveBtn.addEventListener('click', function () {
+          var arr = readHnaEdits();
+          if (arr[index]) {
+            arr[index].text = ta.value.trim();
+            writeHnaEdits(arr);
+          }
+          renderHnaEdits();
+          showToast('Paragraph updated', 'success');
+        });
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button'; cancelBtn.textContent = 'Cancel';
+        cancelBtn.className = 'subtle';
+        cancelBtn.addEventListener('click', function () { renderHnaEdits(); });
+        bar.appendChild(saveBtn); bar.appendChild(cancelBtn);
+        ta.focus();
+        ta.selectionStart = 0;
+        ta.selectionEnd = ta.value.length;
+      });
+      btn('Rewrite', { subtle: true }, function () {
+        var input = document.getElementById('chat-input');
+        var send  = document.getElementById('chat-send');
+        if (!input) return;
+        input.value = 'Rewrite this paragraph in a tighter, more agency-centred voice — same figures, same length: "' +
+          (edit.text || '').replace(/"/g, '\\"') + '". New paragraph, replace.';
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+      });
+    }
     btn('Discard', { danger: true }, function () {
       var arr = readHnaEdits();
       arr.splice(index, 1);
       writeHnaEdits(arr);
       renderHnaEdits();
-      showToast('Paragraph removed', 'success');
+      showToast('Removed from chapter', 'success');
     });
     wrap.appendChild(bar);
     return wrap;
@@ -3362,7 +3447,204 @@
     }
     renderChapterRail();
     renderHnaEdits();
+    renderChapterGuide();
   }
+
+  /* ============================================================
+   * Chapter guide · always-on "Next steps" panel
+   *
+   * State-aware: reads the current chapter body + the chapter's
+   * rubric / sections / sources and computes the 3-4 next-best
+   * actions the user should take. Each chip auto-fires a chat
+   * prompt OR triggers a local action (auto-draft, add chart).
+   * ============================================================ */
+  function chapterState(slug) {
+    var ch = HNA_CHAPTERS[slug];
+    var body = document.getElementById('hna-doc-body');
+    if (!ch || !body) return null;
+    var textLc = (body.textContent || '').toLowerCase();
+    var rubricMissing = (ch.rubric || []).filter(function (k) { return textLc.indexOf(k.toLowerCase()) < 0; });
+    var rubricDone = (ch.rubric || []).length - rubricMissing.length;
+    var sectionsCount = body.querySelectorAll('h2').length;
+    var paragraphsCount = body.querySelectorAll('p').length;
+    var aiEditsCount = body.querySelectorAll('.hna-ai-edit-wrap').length;
+    var chartsCount = body.querySelectorAll('.hna-figure').length;
+    var hasDeck = !!body.querySelector('p.deck');
+    var hasRecommendations = textLc.indexOf('recommend') >= 0;
+    var words = body.textContent ? body.textContent.trim().split(/\s+/).length : 0;
+    var target = ch.target_words || 1000;
+    var pctOfTarget = Math.round((words / target) * 100);
+    // Stage of the build
+    var stage;
+    if (ch.stub && aiEditsCount === 0) stage = 'Outline';
+    else if (!hasDeck) stage = 'Outline';
+    else if (sectionsCount === 0) stage = 'Drafting deck';
+    else if (rubricMissing.length > 0) stage = 'Drafting sections';
+    else if (chartsCount === 0) stage = 'Add data';
+    else if (!hasRecommendations) stage = 'Recommendations';
+    else if (pctOfTarget < 80) stage = 'Polishing';
+    else stage = 'Ready for pre-flight';
+    return {
+      slug: slug, ch: ch,
+      rubricMissing: rubricMissing, rubricDone: rubricDone,
+      sectionsCount: sectionsCount,
+      paragraphsCount: paragraphsCount,
+      aiEditsCount: aiEditsCount,
+      chartsCount: chartsCount,
+      hasDeck: hasDeck,
+      hasRecommendations: hasRecommendations,
+      words: words, target: target, pctOfTarget: pctOfTarget,
+      stage: stage,
+    };
+  }
+
+  /* Pick 3-4 most-useful next actions given the chapter's current state. */
+  function pickChapterActions(state) {
+    if (!state) return [];
+    var ch = state.ch;
+    var chapterName = ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '').trim();
+    var actions = [];
+
+    // Stub chapter → top action is auto-draft everything
+    if (ch.stub && state.aiEditsCount === 0) {
+      actions.push({
+        icon: '⚡', primary: true,
+        label: 'Auto-draft this chapter',
+        sub: 'Run all ' + (ch.starter_prompts || []).length + ' starter prompts in sequence',
+        action: 'auto-draft',
+      });
+    }
+
+    // Add missing rubric sections (top 2)
+    state.rubricMissing.slice(0, 2).forEach(function (topic) {
+      actions.push({
+        icon: '+',
+        label: 'Add a section on ' + topic,
+        sub: 'Required by DoH Performance Rubric',
+        prompt: 'Draft a paragraph for the ' + chapterName + ' chapter focused on **' + topic + '**. Use real SEMPHN figures, heading reflects the focus.',
+      });
+    });
+
+    // Add a chart if there are sections but no chart yet
+    if (state.sectionsCount > 0 && state.chartsCount === 0) {
+      actions.push({
+        icon: '◐',
+        label: 'Add a data chart',
+        sub: 'Visualises a key figure from this chapter',
+        prompt: 'Add a chart widget to the ' + chapterName + ' chapter — pick the most important comparison or trend that backs up the deck. Type bar/donut/area as appropriate.',
+      });
+    }
+
+    // Recommendations / pre-flight
+    if (state.sectionsCount > 0 && !state.hasRecommendations) {
+      actions.push({
+        icon: '✓',
+        label: 'Draft recommendations',
+        sub: '3-5 actionable items tied to commissioning',
+        prompt: 'Draft a recommendations paragraph for the ' + chapterName + ' chapter — 3-5 actionable items each tied to a commissioning lever. Heading: "Recommendations".',
+      });
+    }
+    if (state.pctOfTarget >= 70 && state.rubricMissing.length === 0) {
+      actions.push({
+        icon: '◉',
+        label: 'Run DoH pre-flight',
+        sub: 'Check this chapter against the rubric',
+        prompt: 'Run the DoH Performance Rubric pre-flight check on the current ' + chapterName + ' chapter. List any gaps as bullets. Reply in prose, no widget.',
+      });
+    }
+
+    // Polish suggestions when we're well into the chapter
+    if (state.pctOfTarget > 40 && actions.length < 4) {
+      actions.push({
+        icon: '↺',
+        label: 'Tighten the deck',
+        sub: 'Sharpen the opening paragraph',
+        prompt: 'Rewrite the deck paragraph of the ' + chapterName + ' chapter — 25% shorter, sharper opening, same figures. New paragraph, replace.',
+      });
+    }
+    if (state.sectionsCount === 0 && !ch.stub) {
+      // Fleshed chapter with seed only — encourage adding a strengthening section
+      actions.push({
+        icon: '+',
+        label: 'Add a SDOH section',
+        sub: 'Layer social determinants onto the data',
+        prompt: 'Draft a section that layers Dahlgren-Whitehead social determinants onto the ' + chapterName + ' chapter findings. Heading: "Social determinants".',
+      });
+    }
+
+    return actions.slice(0, 4);
+  }
+
+  function renderChapterGuide() {
+    var panel = document.getElementById('hna-next');
+    var chipsEl = document.getElementById('hna-next-chips');
+    var stageEl = document.getElementById('hna-next-stage');
+    var titleEl = document.getElementById('hna-next-title');
+    if (!panel || !chipsEl) return;
+    var state = chapterState(currentChapterSlug());
+    if (!state) { panel.setAttribute('hidden', ''); return; }
+    var actions = pickChapterActions(state);
+    if (!actions.length) { panel.setAttribute('hidden', ''); return; }
+    panel.removeAttribute('hidden');
+    if (stageEl) stageEl.textContent = state.stage;
+    if (titleEl) {
+      var chapterName = state.ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '').trim();
+      titleEl.textContent = 'Next steps · ' + chapterName;
+    }
+    chipsEl.innerHTML = '';
+    actions.forEach(function (a) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hna-next-chip' + (a.primary ? ' primary' : '');
+      btn.innerHTML =
+        '<span class="ico">' + escHtml(a.icon) + '</span>' +
+        '<span class="body">' +
+          '<span class="lab">' + escHtml(a.label) + '</span>' +
+          (a.sub ? '<span class="sub">' + escHtml(a.sub) + '</span>' : '') +
+        '</span>' +
+        '<span class="arr">→</span>';
+      btn.addEventListener('click', function () {
+        if (a.action === 'auto-draft') {
+          autoDraftChapter(currentChapterSlug());
+          return;
+        }
+        if (!a.prompt) return;
+        var input = document.getElementById('chat-input');
+        var send  = document.getElementById('chat-send');
+        if (!input) return;
+        input.value = a.prompt;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        if (send && !send.disabled) send.click();
+      });
+      chipsEl.appendChild(btn);
+    });
+  }
+  window.__renderChapterGuide = renderChapterGuide;
+
+  /* Auto-draft · run a chapter's starter prompts in sequence. Spaced 2.5s
+   * apart so the AI's reply for each lands before the next prompt fires.
+   * Used by the "Auto-draft this chapter" primary CTA on stubs. */
+  function autoDraftChapter(slug) {
+    var ch = HNA_CHAPTERS[slug];
+    if (!ch || !ch.starter_prompts || !ch.starter_prompts.length) {
+      showToast('No starter prompts for this chapter', 'warn');
+      return;
+    }
+    var prompts = ch.starter_prompts;
+    showToast('Auto-drafting · ' + prompts.length + ' prompts queued', 'success');
+    prompts.forEach(function (p, i) {
+      setTimeout(function () {
+        var input = document.getElementById('chat-input');
+        var send  = document.getElementById('chat-send');
+        if (!input) return;
+        input.value = p;
+        input.dispatchEvent(new Event('input'));
+        if (send && !send.disabled) send.click();
+      }, i * 2500);
+    });
+  }
+  window.__autoDraftChapter = autoDraftChapter;
 
   function renderChapterRail() {
     var rail = document.getElementById('hna-chapter-rail');
@@ -3463,6 +3745,33 @@
   window.__applyHnaParagraph = applyHnaParagraph;
   window.__renderHnaEdits    = renderHnaEdits;
   window.__renderHnaChapter  = renderHnaChapter;
+
+  /* Apply a chart/data widget into the current HNA chapter as an inline
+   * figure (rendered by the same code as dashboard tiles). Allows the AI
+   * to back up a paragraph with a visual without leaving the doc. */
+  function applyHnaWidget(widget) {
+    if (!widget) return false;
+    var edit = {
+      heading: widget.title || '',
+      text:    widget.subtitle || '',
+      widget:  widget,     // full widget spec for the renderer
+      chapter: currentChapterSlug(),
+      ts:      Date.now(),
+      accepted: false,
+    };
+    var arr = readHnaEdits();
+    arr.push(edit);
+    writeHnaEdits(arr);
+    renderHnaEdits();
+    setTimeout(function () {
+      var body = document.getElementById('hna-doc-body');
+      if (!body) return;
+      var last = body.querySelector('.hna-ai-edit-wrap:last-child');
+      if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+    return true;
+  }
+  window.__applyHnaWidget = applyHnaWidget;
 
   /* Export current chapter as Markdown */
   function exportHnaChapterMd() {
@@ -4110,8 +4419,24 @@
       return getFollowups(widget);
     }
     if (page === 'hna') {
-      // If we just produced a paragraph widget, suggest follow-ups that
-      // build on it. Otherwise (critique replies), suggest drafting next.
+      // Chapter-aware: re-use the same state-derived actions the always-on
+      // guide panel uses, so what the user sees after a reply mirrors what
+      // they'd see if they looked up. Filter out the auto-draft chip (it
+      // belongs to the stub empty state, not in-conversation flow).
+      if (typeof chapterState === 'function') {
+        try {
+          var state = chapterState(currentChapterSlug());
+          var actions = state ? pickChapterActions(state).filter(function (a) {
+            return a.action !== 'auto-draft' && a.prompt;
+          }) : [];
+          if (actions.length) {
+            return actions.slice(0, 4).map(function (a) {
+              return { label: a.label, prompt: a.prompt };
+            });
+          }
+        } catch (_) {}
+      }
+      // Fallback when the chapter helpers aren't loaded yet
       if (widget && widget.type === 'paragraph') {
         return [
           { label: 'Tighten by 25%',        prompt: 'Draft a tightened version of the paragraph you just wrote — 25% shorter without losing any figure. New paragraph, append to doc.' },
@@ -4120,8 +4445,8 @@
         ];
       }
       return [
-        { label: 'Draft next section',   prompt: 'Draft the next section of Chapter 4 — pick the area that is weakest in the current draft.' },
-        { label: 'Executive summary',    prompt: 'Draft a 3-sentence executive summary of Chapter 4 — paragraph, heading: "Executive summary".' },
+        { label: 'Draft next section',   prompt: 'Draft the next section of this chapter — pick the area that is weakest in the current draft.' },
+        { label: 'Executive summary',    prompt: 'Draft a 3-sentence executive summary of this chapter — paragraph, heading: "Executive summary".' },
         { label: 'DoH critique',         prompt: 'Critique the current draft against the DoH Performance Rubric. Reply in prose, no widget.' },
       ];
     }
@@ -4635,6 +4960,11 @@
                 } else if (page === 'hna' && t === 'paragraph' && window.__applyHnaParagraph) {
                   // On /hna/, paragraph widgets are inserted into the doc
                   if (window.__applyHnaParagraph(w)) addedToDoc++;
+                } else if (page === 'hna' && window.__applyHnaWidget &&
+                           (t === 'bar' || t === 'line' || t === 'area' || t === 'donut' ||
+                            t === 'kpi' || t === 'table')) {
+                  // On /hna/, data widgets become inline figures in the chapter
+                  if (window.__applyHnaWidget(w)) addedToDoc++;
                 } else if (t === 'paragraph') {
                   // paragraph widget on a non-HNA page → no-op (skip silently)
                 } else {
