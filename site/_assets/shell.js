@@ -3042,17 +3042,231 @@
     return wrap;
   }
 
+  /* ============================================================
+   * HNA chapters · 12 chapters (5 fleshed + 7 stubs)
+   *
+   * Each chapter is keyed by slug, with a deck (intro), one or more
+   * sections (h2 + body), a target word count for the DoH lodgement,
+   * a list of DoH-rubric checks (substring → must appear in seed or
+   * accepted AI edits to pass), and the bundled source_ids.
+   * ============================================================ */
+  var HNA_CHAPTERS = {
+    '01-introduction': {
+      num: '01', title: 'About <em>this assessment</em>', subtitle: 'Methodology + frameworks',
+      target_words: 600,
+      sources: ['semphn_hna_2025_28', 'doh_rubric_2024'],
+      rubric: ['methodology', 'triangulation', 'priority'],
+      deck: 'This annual update to the South Eastern Melbourne PHN <strong>Health Needs Assessment 2025-28</strong> uses three frameworks to identify what should rise to a commissioned response: Bradshaw\'s Taxonomy of Need, the Dahlgren-Whitehead model of social determinants, and the DoH PHN Performance Rubric triangulation matrix.',
+      sections: [
+        { heading: 'Frameworks · Bradshaw + Dahlgren-Whitehead',
+          body: 'Bradshaw distinguishes <strong>normative</strong>, <strong>felt</strong>, <strong>expressed</strong>, and <strong>comparative</strong> need — we triangulate all four. Dahlgren-Whitehead foregrounds the social and structural determinants behind clinical metrics; we layer those onto every priority population chapter rather than treating SDOH as a standalone topic.' },
+        { heading: 'How priorities surface',
+          body: 'A finding is escalated to <span class="chip">priority</span> when it meets at least two of three tests: well above Victorian average, concentrated in our <strong>most-disadvantaged corridor</strong> (Gr Dandenong → Casey → Cardinia), and addressable by primary or community care within the funding envelope.' },
+      ],
+    },
+    '02-region': {
+      num: '02', title: 'The <em>SEMPHN catchment</em>', subtitle: 'Regional overview',
+      target_words: 800,
+      sources: ['abs_erp_2024', 'abs_seifa_2021', 'semphn_hna_2025_28'],
+      rubric: ['10 lga', '1.6', 'growth', 'seifa'],
+      deck: 'The SEMPHN catchment covers <strong>10 LGAs</strong> and serves <strong>1,638,200 residents</strong> — <strong>24.3% of Victoria\'s population</strong> — across an arc from Port Phillip Bay to the Mornington Peninsula and east to Cardinia. Population is projected to reach <strong>2.0M by 2030</strong> on the back of growth-corridor expansion in Casey (+3.4% pa) and Cardinia (+3.2% pa).',
+      sections: [
+        { heading: 'The 10 LGAs',
+          body: 'Bayside, Cardinia, Casey, Frankston, Glen Eira, Greater Dandenong, Kingston, Mornington Peninsula, Port Phillip, Stonnington. The most-disadvantaged LGA is Greater Dandenong (<strong>SEIFA decile 2</strong>); the most-affluent are Stonnington and Bayside (both decile 10). This 8-decile spread is wider than most Victorian PHNs.' },
+        { heading: 'Population pressure',
+          body: '<span class="chip">Casey 393,000</span> is the catchment\'s largest LGA — bigger than the Cities of Hobart and Darwin combined. The Cardinia + Casey growth corridor accounts for ~80% of forecast 5-year growth, with implications for GP supply, MH services, and aged-care planning.' },
+      ],
+    },
+    '03-cald': {
+      num: '03', title: 'CALD <em>communities</em>', subtitle: 'Priority population',
+      stub: true,
+      target_words: 1400,
+      sources: ['abs_census_2021_lote', 'dss_scv_2025', 'tis_2024'],
+      rubric: ['LOTE', 'humanitarian', 'interpreter'],
+      starter_prompts: [
+        'Draft a deck paragraph on CALD population concentration. Heading: "CALD · the catchment\'s defining feature".',
+        'Draft a paragraph on humanitarian-arrival settlement in Greater Dandenong + Casey. Heading: "Humanitarian arrivals".',
+        'Draft a paragraph on interpreter demand by language (TIS National FY24 figures). Heading: "Interpreter demand".',
+      ],
+    },
+    '04-first-nations': {
+      num: '04', title: 'First Nations <em>people</em>', subtitle: 'Priority population',
+      target_words: 1600,
+      sources: ['abs_census_2021', 'aihw_irseo_2024', 'polar_fn_2024', 'semphn_service_locator'],
+      rubric: ['ACCHS', 'IRSEO', 'mental health', 'housing'],
+      deck: 'The South Eastern Melbourne PHN catchment is home to approximately <strong>7,500 First Nations residents</strong>. The largest populations sit in <strong>Casey (23.4%)</strong>, <strong>Frankston (18.4%)</strong> and <strong>Mornington Peninsula (17.5%)</strong>. Median age <strong>25</strong>; one in three is under 15.',
+      sections: [
+        { heading: 'Socioeconomic determinants',
+          body: 'The catchment IRSEO of <strong>25</strong> for First Nations residents is meaningfully above the Victorian average of <strong>14</strong>. The lowest IRSEO scores sit in Greater Dandenong, Cranbourne-Narre Warren (Casey), Cardinia and Mornington Peninsula — confirming a sharp east-west gradient in disadvantage across the catchment.' },
+        { heading: 'Mental health · the standout finding',
+          body: 'Mental health is the most common chronic condition reported by SEMPHN First Nations residents. Three LGAs sit above the Victorian average of <strong>18.3%</strong>: <span class="chip">Port Phillip 23.3%</span>, <span class="chip">Frankston 22.0%</span>, and <span class="chip">Greater Dandenong 21.4%</span>. Together these account for ~28% of the catchment\'s First Nations population but a disproportionate share of MH-related primary care contact.' },
+        { heading: 'Housing · strain in the growth corridor',
+          body: 'Greater Dandenong (<strong>18.0%</strong>), Casey (<strong>13.8%</strong>) and Cardinia (<strong>12.1%</strong>) lead the catchment on the share of First Nations rental households needing additional bedrooms. Overcrowding correlates with poorer self-rated health and lower preventive-care contact — the housing pathway and the primary-care pathway should be planned together.' },
+        { heading: 'Workforce · two ACCHS, both stretched',
+          body: 'Two Aboriginal Community Controlled Health Services operate in the catchment. Capacity is the binding constraint; a partnership model with mainstream general practice — and cultural-safety training as a service-contract KPI — emerges as the most actionable recommendation from this chapter.' },
+      ],
+    },
+    '05-older-people': {
+      num: '05', title: 'Older <em>people</em>', subtitle: 'Priority population',
+      stub: true,
+      target_words: 1300,
+      sources: ['abs_census_2021_age', 'abs_projections_2024', 'gen_aged_care_data'],
+      rubric: ['65+', 'RACF', 'dementia'],
+      starter_prompts: [
+        'Draft a deck paragraph on the 65+ population in SEMPHN. Heading: "Older people · the ageing curve".',
+        'Draft a paragraph on RACF capacity vs projected demand. Heading: "RACF capacity".',
+        'Draft a paragraph on Mornington Peninsula as the oldest LGA. Heading: "Mornington Peninsula · 27.6% over 65".',
+      ],
+    },
+    '06-homelessness': {
+      num: '06', title: 'Homelessness <em>+ housing strain</em>', subtitle: 'Priority population',
+      stub: true,
+      target_words: 1200,
+      sources: ['abs_census_2021_homeless', 'aihw_shs_2024', 'launch_housing_2024'],
+      rubric: ['rough sleeper', 'SHS', 'DV/FV'],
+      starter_prompts: [
+        'Draft a deck paragraph on homelessness across the SEMPHN catchment. Heading: "Homelessness · the housing-MH frontline".',
+        'Draft a paragraph on Greater Dandenong as the catchment\'s highest homelessness rate. Heading: "Greater Dandenong · 149.5/10k".',
+        'Draft a paragraph on DV/FV as the leading driver of SHS presentations. Heading: "DV/FV · the leading driver".',
+      ],
+    },
+    '07-mental-health': {
+      num: '07', title: 'Mental <em>health</em>', subtitle: 'Priority population',
+      target_words: 1700,
+      sources: ['polar_2024', 'aihw_phidu_mh_2024', 'aihw_ed_2024', 'semphn_funding_fy26'],
+      rubric: ['headspace', 'ED presentation', 'Frankston'],
+      deck: 'Mental health remains the catchment\'s single largest commissioning category — <strong>$25.6M of $76.6M FY26 funding</strong>. Adult prevalence is <strong>18.3%</strong> and has risen <strong>+1.3 percentage points</strong> over five years. The catchment supports <strong>9 headspace centres</strong> serving an estimated <strong>358,000 residents aged 0-17</strong>.',
+      sections: [
+        { heading: 'Frankston · the standout LGA',
+          body: 'Frankston records <strong>116.1 MH conditions per 1,000 residents</strong> — <strong>48% above the Victorian average</strong> of 78.2. The combination of high deprivation (SEIFA decile 4) + ageing infrastructure + service-access barriers concentrates burden here. MH ED presentations at Frankston Hospital run <strong>218 per 10,000</strong> — also catchment-highest.' },
+        { heading: 'Coastal gradient',
+          body: '<span class="chip">Mornington Peninsula 102.6/1k</span> and <span class="chip">Greater Dandenong 97.4/1k</span> follow Frankston. The peninsula gradient is partly age-driven — older populations report more MH conditions per 1k — but Greater Dandenong\'s rate is age-standardised and reflects refugee/humanitarian arrival trauma load.' },
+        { heading: 'Headspace coverage',
+          body: 'The 9 headspace centres (Bentleigh, Frankston, Dandenong, Cranbourne, Narre Warren, Rosebud, South Melbourne, Elsternwick, Hastings) provide good geographic spread but capacity in the growth corridor lags youth-population growth. Cranbourne + Narre Warren serve a catchment growing at 3-4% pa.' },
+      ],
+    },
+    '08-aod': {
+      num: '08', title: 'Alcohol <em>+ other drugs</em>', subtitle: 'Priority population',
+      stub: true,
+      target_words: 1100,
+      sources: ['aihw_aodts_2024', 'semphn_aod_2026'],
+      rubric: ['methamphetamine', 'wait time', 'Frankston'],
+      starter_prompts: [
+        'Draft a deck paragraph on AOD treatment demand in the SEMPHN catchment. Heading: "AOD · methamphetamine the rising concern".',
+        'Draft a paragraph on Frankston as the catchment\'s highest AOD episode rate. Heading: "Frankston · 128 episodes per 10k".',
+        'Draft a paragraph on non-residential AOD wait times vs the 14-day target. Heading: "Wait times · 22 days vs 14-day target".',
+      ],
+    },
+    '09-chronic-disease': {
+      num: '09', title: 'Chronic <em>disease</em>', subtitle: 'Population health',
+      stub: true,
+      target_words: 1400,
+      sources: ['aihw_phidu_diabetes_2024', 'polar_chronic_2024', 'aihw_acsc_2024'],
+      rubric: ['diabetes', 'avoidable', 'multi-chronic'],
+      starter_prompts: [
+        'Draft a deck paragraph on the chronic disease load in the SEMPHN catchment. Heading: "Chronic disease · the productivity tax".',
+        'Draft a paragraph on Gr Dandenong as the catchment\'s diabetes hotspot. Heading: "Gr Dandenong · 8.9% type 2 diabetes".',
+        'Draft a paragraph on avoidable hospital admissions as a primary-care performance signal. Heading: "Avoidable admissions".',
+      ],
+    },
+    '10-workforce': {
+      num: '10', title: 'Health <em>workforce</em>', subtitle: 'Supply + capacity',
+      target_words: 1500,
+      sources: ['ahpra_mabel_2024', 'semphn_locator_2024', 'ahpra_age_2024'],
+      rubric: ['GP', 'allied health', 'retirement'],
+      deck: 'The catchment supports <strong>1,681 GP full-time equivalents</strong> — <strong>108 per 100,000 residents</strong>, against a Victorian average of <strong>124</strong>. The 16-FTE-per-100k gap is largest in the Cardinia + Casey growth corridor where supply has not kept pace with population.',
+      sections: [
+        { heading: 'GP age · the retirement curve',
+          body: 'Forty per cent of catchment GPs are over <strong>55</strong>. A succession-planning lag means we should expect a measurable <strong>FTE contraction</strong> by 2028 even with current registrar pipelines. The 5-year trend is already negative — <strong>-4.8% since 2020</strong>.' },
+        { heading: 'Allied health · the bayside skew',
+          body: 'Allied health FTE per 10,000 residents follows the SEIFA gradient: <span class="chip">Stonnington 64.8</span>, <span class="chip">Port Phillip 58.1</span>, <span class="chip">Cardinia 21.4</span>. The growth-corridor LGAs are under-served by a factor of ~3.' },
+        { heading: 'Bulk-billing concentration',
+          body: 'Bulk-billing density is highest in Greater Dandenong + Casey — the most-disadvantaged LGAs — confirming that the bulk-billing model is the catchment\'s primary equity safety-net. Any Medicare reform that erodes bulk-billing economics will fall hardest on the catchment\'s lowest-income suburbs.' },
+      ],
+    },
+    '11-recommendations': {
+      num: '11', title: 'Recommendations', subtitle: 'Synthesis',
+      stub: true,
+      target_words: 1000,
+      sources: ['semphn_hna_2025_28'],
+      rubric: ['priority', 'commissioning', 'measure'],
+      starter_prompts: [
+        'Draft the top 5 recommendations from this HNA, ranked by potential impact + actionability. Heading: "Top 5 recommendations".',
+        'Draft a paragraph linking each recommendation to a measurable indicator. Heading: "How we\'ll measure progress".',
+      ],
+    },
+    '12-preflight': {
+      num: '12', title: 'Pre-flight <em>checks</em>', subtitle: 'DoH rubric compliance',
+      stub: true,
+      target_words: 400,
+      sources: ['doh_rubric_2024'],
+      rubric: ['compliance', 'rubric', 'gap'],
+      starter_prompts: [
+        'Critique the current HNA against the DoH Performance Rubric. List gaps as bullets. Reply in prose, no widget.',
+        'Draft a one-paragraph summary of pre-flight check results. Heading: "Pre-flight summary".',
+      ],
+    },
+  };
+  window.__HNA_CHAPTERS = HNA_CHAPTERS;
+  var DEFAULT_HNA_CHAPTER = '04-first-nations';
+
+  function currentChapterSlug() {
+    var hash = (window.location.hash || '').replace(/^#/, '').trim();
+    return HNA_CHAPTERS[hash] ? hash : DEFAULT_HNA_CHAPTER;
+  }
+
+  /* Friendly labels for source_ids · keeps the sources list readable */
+  var SOURCE_LABELS = {
+    abs_erp_2024:           'ABS Estimated Resident Population 2024',
+    abs_census_2021:        'ABS Census 2021',
+    abs_census_2021_age:    'ABS Census 2021 · age tables',
+    abs_census_2021_lote:   'ABS Census 2021 · language tables',
+    abs_census_2021_homeless: 'ABS Census 2021 · homelessness tables',
+    abs_projections_2024:   'ABS Population Projections 2024',
+    abs_seifa_2021:         'ABS SEIFA 2021',
+    aihw_phidu_2024:        'AIHW PHIDU 2024',
+    aihw_phidu_mh_2024:     'AIHW PHIDU · mental health 2024',
+    aihw_phidu_diabetes_2024: 'AIHW PHIDU · diabetes 2024',
+    aihw_irseo_2024:        'AIHW IRSEO 2024',
+    aihw_ed_2024:           'AIHW ED data 2024',
+    aihw_acsc_2024:         'AIHW ACSC 2024 · avoidable hospitalisations',
+    aihw_aodts_2024:        'AIHW AODTS 2024',
+    aihw_shs_2024:          'AIHW SHS 2024 · homelessness services',
+    polar_2024:             'POLAR primary-care data 2024',
+    polar_fn_2024:          'POLAR · First Nations cohort 2024',
+    polar_chronic_2024:     'POLAR · chronic disease 2024',
+    semphn_hna_2025_28:     'SEMPHN HNA 2025-28',
+    semphn_funding_fy26:    'SEMPHN FY26 commissioning schedules',
+    semphn_locator_2024:    'SEMPHN service locator 2024',
+    semphn_service_locator: 'SEMPHN service locator 2024',
+    semphn_aod_2026:        'SEMPHN AOD commissioning FY26',
+    ahpra_mabel_2024:       'AHPRA + DoH MABEL 2024',
+    ahpra_age_2024:         'AHPRA practitioner age 2024',
+    gen_aged_care_data:     'GEN Aged Care Data 2024',
+    dss_scv_2025:           'DSS Settlement reports 2025',
+    tis_2024:               'TIS National FY24',
+    launch_housing_2024:    'Launch Housing StreetCount 2024',
+    doh_rubric_2024:        'DoH PHN Performance Rubric 2024',
+    det_vic_2024:           'DET Vic schools register 2024',
+    acara_2024:             'ACARA MySchool 2024',
+  };
+
   function renderHnaEdits() {
     var body = document.getElementById('hna-doc-body');
     if (!body) return;
     // Remove all previously-rendered AI edits
     Array.prototype.slice.call(body.querySelectorAll('.hna-ai-edit-wrap'))
       .forEach(function (el) { el.remove(); });
-    var edits = readHnaEdits();
+    var slug = currentChapterSlug();
+    var edits = readHnaEdits().filter(function (e) {
+      // Edits without a chapter field land in the default chapter (back-compat)
+      return (e.chapter || DEFAULT_HNA_CHAPTER) === slug;
+    });
     edits.forEach(function (e, idx) {
-      var node = buildHnaEditNode(e, idx);
+      // Pass the ORIGINAL index so accept/discard can update the right item
+      var globalIdx = readHnaEdits().findIndex(function (x) { return x === e || (x.ts === e.ts && x.text === e.text); });
+      var node = buildHnaEditNode(e, globalIdx);
       if (e.accepted) {
-        // Render without the highlight class
         var p = node.querySelector('.hna-ai-edit');
         if (p) p.classList.remove('hna-ai-edit');
         var bar = node.querySelector('.hna-ai-edit-actions');
@@ -3060,6 +3274,166 @@
       }
       body.appendChild(node);
     });
+    updateHnaStatusBar();
+    renderHnaSources();
+  }
+
+  function renderHnaSources() {
+    var box = document.getElementById('hna-doc-sources');
+    if (!box) return;
+    var slug = currentChapterSlug();
+    var ch = HNA_CHAPTERS[slug];
+    var ids = (ch && ch.sources) ? ch.sources.slice() : [];
+    // Pull additional source_ids from AI edits in this chapter
+    var edits = readHnaEdits().filter(function (e) { return (e.chapter || DEFAULT_HNA_CHAPTER) === slug; });
+    edits.forEach(function (e) {
+      var txt = (e.text || '') + ' ' + (e.heading || '');
+      var matches = txt.match(/\(([a-z0-9_]+)\)/gi) || [];
+      matches.forEach(function (m) {
+        var id = m.replace(/[()]/g, '').trim();
+        if (SOURCE_LABELS[id] && ids.indexOf(id) < 0) ids.push(id);
+      });
+    });
+    if (!ids.length) { box.setAttribute('hidden', ''); return; }
+    box.removeAttribute('hidden');
+    box.innerHTML = '<div class="srcs-hdr">Sources</div>' + ids.map(function (id) {
+      var label = SOURCE_LABELS[id] || id;
+      return '<div class="srcs-row"><span class="srcs-id">' + escHtml(id) + '</span><span class="srcs-lab">' + escHtml(label) + '</span></div>';
+    }).join('');
+  }
+
+  function renderHnaChapter() {
+    var slug = currentChapterSlug();
+    var ch = HNA_CHAPTERS[slug];
+    if (!ch) return;
+    var meta = document.getElementById('hna-doc-meta');
+    var title = document.getElementById('hna-doc-title');
+    var body = document.getElementById('hna-doc-body');
+    if (!meta || !title || !body) return;
+    meta.innerHTML =
+      '<span>Chapter ' + escHtml(ch.num) + ' · ' + escHtml(ch.subtitle || '') + '</span>' +
+      '<span class="right">v1.2 · 28 May 2026 · target ' + (ch.target_words || '—') + ' words</span>';
+    title.innerHTML = ch.title;
+    body.innerHTML = '';
+    if (ch.stub) {
+      var stub = document.createElement('div');
+      stub.className = 'hna-stub';
+      var inner =
+        '<div class="hna-stub-badge">Not yet drafted</div>' +
+        '<p class="hna-stub-lead">This chapter doesn\'t have a draft yet. Pick a starter prompt to begin — the AI drafts straight into the doc, and you Keep or Discard each paragraph.</p>' +
+        '<div class="hna-stub-chips">';
+      (ch.starter_prompts || []).forEach(function (p) {
+        // Use the first 6 words as the label
+        var label = p.split(/\s+/).slice(0, 7).join(' ') + '…';
+        inner += '<button type="button" class="hna-stub-chip" data-prompt="' + escHtml(p) + '">' +
+          '<span class="ico">✎</span><span class="lab">' + escHtml(label) + '</span></button>';
+      });
+      inner += '</div>';
+      stub.innerHTML = inner;
+      Array.prototype.forEach.call(stub.querySelectorAll('.hna-stub-chip'), function (b) {
+        b.addEventListener('click', function () {
+          var p = b.getAttribute('data-prompt');
+          var input = document.getElementById('chat-input');
+          var send  = document.getElementById('chat-send');
+          if (!input) return;
+          input.value = p;
+          input.dispatchEvent(new Event('input'));
+          input.focus();
+          if (send && !send.disabled) send.click();
+        });
+      });
+      body.appendChild(stub);
+    } else {
+      // Seed content: deck + sections
+      if (ch.deck) {
+        var deck = document.createElement('p');
+        deck.className = 'deck';
+        deck.innerHTML = ch.deck;
+        body.appendChild(deck);
+      }
+      (ch.sections || []).forEach(function (s) {
+        var h = document.createElement('h2');
+        h.textContent = s.heading;
+        body.appendChild(h);
+        var p = document.createElement('p');
+        p.innerHTML = s.body;
+        body.appendChild(p);
+      });
+    }
+    renderChapterRail();
+    renderHnaEdits();
+  }
+
+  function renderChapterRail() {
+    var rail = document.getElementById('hna-chapter-rail');
+    if (!rail) return;
+    var slug = currentChapterSlug();
+    rail.innerHTML = '';
+    Object.keys(HNA_CHAPTERS).forEach(function (key) {
+      var ch = HNA_CHAPTERS[key];
+      var a = document.createElement('a');
+      a.className = 'chapter-chip' + (key === slug ? ' is-on' : '') + (ch.stub ? ' is-stub' : '');
+      a.href = '#' + key;
+      a.innerHTML = '<span class="n">' + escHtml(ch.num) + '</span>' + ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, ' ').split(' ').slice(0, 2).join(' ');
+      rail.appendChild(a);
+    });
+  }
+
+  function countWords(html) {
+    if (!html) return 0;
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    var text = (tmp.textContent || '').trim();
+    if (!text) return 0;
+    return text.split(/\s+/).length;
+  }
+
+  function updateHnaStatusBar() {
+    var slug = currentChapterSlug();
+    var ch = HNA_CHAPTERS[slug];
+    if (!ch) return;
+    var body = document.getElementById('hna-doc-body');
+    var words = body ? countWords(body.innerHTML) : 0;
+    var target = ch.target_words || 0;
+
+    var wordsEl = document.getElementById('hna-words');
+    var wordsLEl = document.getElementById('hna-words-l');
+    if (wordsEl) wordsEl.textContent = words.toLocaleString('en-AU');
+    if (wordsLEl) wordsLEl.textContent = target ? 'words · target ' + target.toLocaleString('en-AU') : 'words';
+
+    // Lodgement countdown to 15 Nov 2026
+    var deadlineEl = document.getElementById('hna-deadline');
+    if (deadlineEl) {
+      var now = new Date();
+      var ppers = new Date('2026-11-15T00:00:00+10:00');
+      var days = Math.max(0, Math.round((ppers - now) / (1000 * 60 * 60 * 24)));
+      deadlineEl.textContent = days + ' days';
+    }
+
+    // DoH rubric · count how many required keywords appear in the body
+    var rubric = ch.rubric || [];
+    var bodyTextLc = body ? (body.textContent || '').toLowerCase() : '';
+    var passed = rubric.filter(function (k) { return bodyTextLc.indexOf(k.toLowerCase()) >= 0; }).length;
+    var rubricEl = document.getElementById('hna-rubric');
+    if (rubricEl) {
+      rubricEl.textContent = passed + '/' + rubric.length;
+      rubricEl.parentElement.classList.toggle('is-warn', passed < rubric.length);
+      rubricEl.parentElement.classList.toggle('is-pass', rubric.length > 0 && passed === rubric.length);
+    }
+
+    // Overall progress · count chapters with at least one paragraph (seed or edit)
+    var pctEl = document.getElementById('hna-pct');
+    var fillEl = document.getElementById('hna-progress-fill');
+    var all = Object.keys(HNA_CHAPTERS);
+    var startedCh = all.filter(function (k) {
+      var c = HNA_CHAPTERS[k];
+      if (!c.stub) return true;
+      // Stubs count as started if they have any AI edits saved
+      return readHnaEdits().some(function (e) { return (e.chapter || DEFAULT_HNA_CHAPTER) === k; });
+    }).length;
+    var pct = Math.round((startedCh / all.length) * 100);
+    if (pctEl) pctEl.textContent = startedCh + '/' + all.length;
+    if (fillEl) fillEl.style.width = pct + '%';
   }
 
   function applyHnaParagraph(widget) {
@@ -3068,6 +3442,7 @@
       heading: widget.heading || '',
       text:    widget.text || widget.value || '',
       title:   widget.title || '',
+      chapter: currentChapterSlug(),
       ts:      Date.now(),
       accepted: false,
     };
@@ -3087,6 +3462,68 @@
   }
   window.__applyHnaParagraph = applyHnaParagraph;
   window.__renderHnaEdits    = renderHnaEdits;
+  window.__renderHnaChapter  = renderHnaChapter;
+
+  /* Export current chapter as Markdown */
+  function exportHnaChapterMd() {
+    var slug = currentChapterSlug();
+    var ch = HNA_CHAPTERS[slug];
+    if (!ch) return;
+    var body = document.getElementById('hna-doc-body');
+    if (!body) return;
+    var title = (ch.title || '').replace(/<\/?em>/g, '*').replace(/<[^>]+>/g, '');
+    var lines = [
+      '# ' + title,
+      '',
+      '> SEMPHN HNA 2025-28 · Chapter ' + ch.num + ' · ' + (ch.subtitle || ''),
+      '> Exported ' + new Date().toUTCString(),
+      '',
+      '---',
+      '',
+    ];
+    // Walk DOM in order, mapping h2/p
+    Array.prototype.forEach.call(body.children, function (el) {
+      if (el.tagName === 'P' && el.classList.contains('deck')) {
+        lines.push('**' + el.textContent.trim() + '**');
+        lines.push('');
+      } else if (el.tagName === 'H2') {
+        lines.push('## ' + el.textContent.trim());
+        lines.push('');
+      } else if (el.tagName === 'P') {
+        lines.push(el.textContent.trim());
+        lines.push('');
+      } else if (el.classList.contains('hna-ai-edit-wrap')) {
+        var h = el.querySelector('h2');
+        if (h) { lines.push('## ' + h.textContent.trim()); lines.push(''); }
+        var p = el.querySelector('p');
+        if (p) { lines.push(p.textContent.trim()); lines.push(''); }
+      }
+    });
+    // Sources
+    var sourcesBox = document.getElementById('hna-doc-sources');
+    if (sourcesBox && !sourcesBox.hasAttribute('hidden')) {
+      lines.push('---');
+      lines.push('');
+      lines.push('## Sources');
+      lines.push('');
+      Array.prototype.forEach.call(sourcesBox.querySelectorAll('.srcs-row'), function (row) {
+        lines.push('- **' + row.querySelector('.srcs-id').textContent + '** · ' + row.querySelector('.srcs-lab').textContent);
+      });
+      lines.push('');
+    }
+    var md = lines.join('\n');
+    var blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var iso = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'semphn-hna-' + slug + '-' + iso + '.md';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { try { URL.revokeObjectURL(url); a.remove(); } catch (_) {} }, 1000);
+    showToast('Exported chapter ' + ch.num, 'success');
+  }
+  window.__exportHnaChapterMd = exportHnaChapterMd;
 
   /* ============================================================
    * Storage helpers
@@ -4713,7 +5150,30 @@
       window.__renderWidgets();
       window.__renderCatchmentInsights && window.__renderCatchmentInsights();
     }
-    if (pageId() === 'hna' && typeof window.__renderHnaEdits === 'function') {
+    if (pageId() === 'hna' && typeof window.__renderHnaChapter === 'function') {
+      // Render the current chapter (from hash) + wire hashchange to swap
+      window.__renderHnaChapter();
+      window.addEventListener('hashchange', function () {
+        window.__renderHnaChapter();
+      });
+      // Wire toolbar buttons
+      var exp = document.getElementById('hna-export-md');
+      if (exp) exp.addEventListener('click', function () {
+        if (typeof window.__exportHnaChapterMd === 'function') window.__exportHnaChapterMd();
+      });
+      var lodge = document.getElementById('hna-lodge');
+      if (lodge) lodge.addEventListener('click', function () {
+        var c = window.__HNA_CHAPTERS && window.__HNA_CHAPTERS[window.__currentChapter || '04-first-nations'];
+        var msg = 'Lodge this HNA to the DoH via PPERS?\n\n' +
+                  'You\'ll be redirected to ppers.health.gov.au with the ' +
+                  'export bundle ready to upload. This is the final lodgement step ' +
+                  'for the 2025-28 annual update.';
+        if (confirm(msg)) {
+          showToast('PPERS lodgement queued (demo)', 'success');
+        }
+      });
+    } else if (pageId() === 'hna' && typeof window.__renderHnaEdits === 'function') {
+      // Fallback for pages that haven't reloaded the new shell yet
       window.__renderHnaEdits();
     }
   }

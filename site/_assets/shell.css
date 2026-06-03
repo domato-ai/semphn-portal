@@ -942,6 +942,140 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ───────── HNA · doc-status bar (above the article) ───────── */
+.doc-status {
+  max-width: 820px;
+  margin: 0 auto 1rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.7rem;
+}
+.doc-status-item {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  padding: 0.6rem 0.85rem 0.55rem;
+  display: flex; flex-direction: column;
+  gap: 0.1rem;
+  position: relative;
+  transition: border-color var(--motion-fast);
+}
+.doc-status-item .v {
+  font-family: var(--mono);
+  font-size: 1rem; font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+}
+.doc-status-item .l {
+  font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--slate-soft); font-weight: 500;
+}
+.doc-status-item.is-pass { border-color: var(--positive, #10B981); }
+.doc-status-item.is-pass .v { color: var(--positive, #10B981); }
+.doc-status-item.is-warn { border-color: var(--warn, #F5B100); }
+.doc-status-item.is-warn .v { color: var(--warn, #F5B100); }
+
+.doc-status-progress { grid-column: span 1; }
+.doc-status-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--rule-soft);
+  border-radius: 0 0 var(--r) var(--r);
+  overflow: hidden;
+}
+.doc-status-bar span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--teal, #55BFAF), #4C86FF);
+  transition: width 600ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+/* ───────── HNA · stub chapter empty state ───────── */
+.hna-stub {
+  padding: 1.4rem 1.5rem 1.8rem;
+  background: linear-gradient(180deg, rgba(85,191,175,0.05), transparent);
+  border: 1px dashed var(--rule);
+  border-radius: var(--r-lg);
+  margin: 0.6rem 0 0;
+}
+.hna-stub-badge {
+  display: inline-block;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.85rem;
+}
+.hna-stub-lead {
+  font-size: 0.96rem;
+  color: var(--slate);
+  line-height: 1.6;
+  margin-bottom: 1.2rem;
+}
+.hna-stub-chips { display: flex; flex-direction: column; gap: 0.4rem; }
+.hna-stub-chip {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--motion-fast);
+}
+.hna-stub-chip:hover { background: var(--rule-soft); border-color: var(--slate-mute); transform: translateX(2px); }
+.hna-stub-chip .ico {
+  width: 22px; height: 22px;
+  background: linear-gradient(135deg, var(--teal, #55BFAF), #4C86FF);
+  color: white;
+  border-radius: var(--r-xs);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.78rem;
+  flex: none;
+}
+
+/* ───────── HNA · auto-rendered sources list ───────── */
+.hna-doc-sources {
+  max-width: 820px;
+  margin: 2.2rem auto 0;
+  padding: 1.2rem 1.4rem 1.4rem;
+  background: var(--rule-soft);
+  border-radius: var(--r);
+}
+.hna-doc-sources .srcs-hdr {
+  font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--slate-mute); font-weight: 600;
+  margin-bottom: 0.55rem;
+}
+.hna-doc-sources .srcs-row {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 0.85rem;
+  padding: 0.35rem 0;
+  font-size: 0.82rem;
+  border-bottom: 1px dashed var(--rule);
+}
+.hna-doc-sources .srcs-row:last-child { border-bottom: none; }
+.hna-doc-sources .srcs-id {
+  font-family: var(--mono); font-size: 0.74rem;
+  color: var(--ink); font-weight: 500;
+  letter-spacing: 0;
+}
+.hna-doc-sources .srcs-lab { color: var(--slate); }
+
+/* Stub chip in the chapter rail · subtle dot to indicate not yet drafted */
+.chapter-chip.is-stub .n { background: var(--rule); color: var(--slate); }
+.chapter-chip.is-stub:hover .n { background: var(--teal); color: var(--navy); }
+
 /* ─────────────────── COMPOSER (minimal · textarea + send) ─────────────────── */
 .composer {
   flex: none;

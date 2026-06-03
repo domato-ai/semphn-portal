@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1783500000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1783600000" />
 
 <style>
   /* HNA-specific artifact styles */
@@ -179,75 +179,48 @@
         <small>Â· 2025â€“28 annual update Â· v1.2 draft</small>
       </span>
       <div class="canvas-actions">
-        <button type="button">Export PDF</button>
-        <button type="button" class="primary">Lodge to PPERS</button>
+        <button type="button" id="hna-export-md" title="Export current chapter as Markdown">Export chapter</button>
+        <button type="button" class="primary" id="hna-lodge" title="Lodge the HNA to the Department of Health via PPERS">Lodge to PPERS</button>
       </div>
     </header>
 
     <div class="canvas-body">
       <div class="canvas-pane">
 
-        <!-- Chapter switcher (visual only â€” clicking would scroll/load that chapter in v2) -->
-        <div class="chapter-rail" aria-label="Chapter switcher">
-          <a class="chapter-chip" href="#"><span class="n">01</span>About</a>
-          <a class="chapter-chip" href="#"><span class="n">02</span>Region</a>
-          <a class="chapter-chip" href="#"><span class="n">03</span>CALD</a>
-          <a class="chapter-chip is-on" href="#"><span class="n">04</span>First Nations</a>
-          <a class="chapter-chip" href="#"><span class="n">05</span>Older people</a>
-          <a class="chapter-chip" href="#"><span class="n">06</span>Homelessness</a>
-          <a class="chapter-chip" href="#"><span class="n">07</span>MH</a>
-          <a class="chapter-chip" href="#"><span class="n">08</span>AOD</a>
-          <a class="chapter-chip" href="#"><span class="n">09</span>Chronic</a>
-          <a class="chapter-chip" href="#"><span class="n">10</span>Workforce</a>
+        <!-- Doc status bar · word count vs target + lodgement countdown + DoH rubric -->
+        <div class="doc-status" id="hna-doc-status" aria-label="Document status">
+          <div class="doc-status-item">
+            <span class="v" id="hna-words">â€”</span>
+            <span class="l" id="hna-words-l">words</span>
+          </div>
+          <div class="doc-status-item">
+            <span class="v" id="hna-deadline">â€”</span>
+            <span class="l">to PPERS Â· 15 Nov 2026</span>
+          </div>
+          <div class="doc-status-item">
+            <span class="v" id="hna-rubric">â€”</span>
+            <span class="l">DoH rubric checks</span>
+          </div>
+          <div class="doc-status-item doc-status-progress">
+            <span class="v" id="hna-pct">â€”</span>
+            <span class="l">10-chapter progress</span>
+            <div class="doc-status-bar"><span id="hna-progress-fill"></span></div>
+          </div>
         </div>
 
-        <article class="hna-doc">
-          <div class="doc-meta">
-            <span>Chapter 4 Â· Priority population</span>
-            <span class="right">v1.2 Â· 28 May 2026 Â· last edit 06:14 AEST</span>
+        <!-- Chapter switcher · hash-routed, click to switch chapter -->
+        <div class="chapter-rail" id="hna-chapter-rail" aria-label="Chapter switcher"></div>
+
+        <article class="hna-doc" id="hna-doc">
+          <div class="doc-meta" id="hna-doc-meta">
+            <span>â€”</span>
+            <span class="right">â€”</span>
           </div>
-          <h1>First Nations <em>people</em></h1>
-          <div id="hna-doc-body" class="hna-doc-body" data-seed="true">
-          <p class="deck">
-            The South Eastern Melbourne PHN catchment is home to approximately
-            <strong>7,500 First Nations residents</strong>. The largest populations sit in
-            <strong>Casey (23.4%)</strong>, <strong>Frankston (18.4%)</strong> and
-            <strong>Mornington Peninsula (17.5%)</strong>. Median age <strong>25</strong>; one in three is under 15.
-          </p>
-          <h2>Socioeconomic determinants</h2>
-          <p>
-            The catchment IRSEO of <strong>25</strong> for First Nations residents is meaningfully
-            above the Victorian average of <strong>14</strong>. The lowest IRSEO scores sit in
-            Greater Dandenong, Cranbourne-Narre Warren (Casey), Cardinia and Mornington Peninsula â€”
-            confirming a sharp east-west gradient in disadvantage across the catchment.
-          </p>
-          <h2>Mental health Â· the standout finding</h2>
-          <p>
-            Mental health is the most common chronic condition reported by SEMPHN First Nations
-            residents. Three LGAs sit above the Victorian average of <strong>18.3%</strong>:
-            <span class="chip">Port Phillip 23.3%</span>,
-            <span class="chip">Frankston 22.0%</span>, and
-            <span class="chip">Greater Dandenong 21.4%</span>.
-            Together these account for ~28% of the catchment's First Nations population but a
-            disproportionate share of MH-related primary care contact.
-          </p>
-          <h2>Housing Â· strain in the growth corridor</h2>
-          <p>
-            Greater Dandenong (<strong>18.0%</strong>), Casey (<strong>13.8%</strong>) and Cardinia (<strong>12.1%</strong>)
-            lead the catchment on the share of First Nations rental households needing additional bedrooms.
-            Overcrowding correlates with poorer self-rated health and lower preventive-care contact â€”
-            the housing pathway and the primary-care pathway should be planned together.
-          </p>
-          <h2>Workforce Â· two ACCHS, both stretched</h2>
-          <p>
-            Two Aboriginal Community Controlled Health Services operate in the catchment. Capacity
-            is the binding constraint; a partnership model with mainstream general practice â€” and
-            cultural-safety training as a service-contract KPI â€” emerges as the most actionable
-            recommendation from this chapter.
-          </p>
-          </div><!-- /hna-doc-body â€” AI-appended paragraphs land here -->
-          <div class="footnote">
-            Source Â· ABS Census 2021 + AIHW IRSEO by IARE + POLAR + SEMPHN CRM Â· last ingest 21 May 2026 Â· figures dated to source
+          <h1 id="hna-doc-title">â€”</h1>
+          <div id="hna-doc-body" class="hna-doc-body"></div>
+          <div id="hna-doc-sources" class="hna-doc-sources" hidden></div>
+          <div class="footnote" id="hna-doc-footnote">
+            Sources Â· last ingest 21 May 2026 Â· figures dated to source
           </div>
         </article>
       </div>
@@ -267,6 +240,6 @@
     <span class="statusbar-item hide-mobile"><kbd>âŒ˜\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1783500000"></script>
+<script src="/_assets/shell.js?v=1783600000"></script>
 </body>
 </html>
