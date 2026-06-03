@@ -123,6 +123,20 @@ FIRST NATIONS (abs_census_2021 / aihw_irseo_2024)
     42 staff, clinical + SEWB); Bunurong Land Council Aboriginal Co-op
     (Frankston, 18 staff, SEWB + outreach) (semphn_service_locator)
 
+YOUTH / SCHOOL-AGE (abs_census_2021_age / det_vic_2024 / acara_2024)
+  • Catchment 0-17 population 358,300 · 21.9% of catchment · +1.9% pa
+  • % aged 5-17 ranked DESC: Casey 18.1% · Cardinia 17.4% · Gr Dandenong 14.2% ·
+    Frankston 12.4% · Mornington Pen 11.2% · Kingston 11.6% · Glen Eira 11.8% ·
+    Bayside 12.0% · Port Phillip 8.4% · Stonnington 8.9%
+  • Government schools by LGA (DET 2024, ranked DESC): Casey 84 · Greater Dandenong 62 ·
+    Cardinia 38 · Mornington Pen 36 · Glen Eira 34 · Frankston 32 · Kingston 31 ·
+    Bayside 24 · Port Phillip 18 · Stonnington 14
+  • Independent + Catholic schools (ACARA, ranked DESC): Casey 24 · Glen Eira 19 ·
+    Stonnington 16 · Mornington Pen 14 · Bayside 13 · Greater Dandenong 12 ·
+    Frankston 11 · Kingston 11 · Cardinia 9 · Port Phillip 7
+  • 9 headspace centres serve school-age youth — 1 per ~40,000 young people in catchment
+  • Authoritative ext: DET 'Find My School' (https://www.findmyschool.vic.gov.au) · ACARA MySchool
+
 OLDER PEOPLE (abs_census_2021_age / abs_projections_2024 / gen_aged_care_data)
   • 65+ population 314,600 · 19.2% of catchment · +2.8% pa
   • % aged 65+ ranked DESC: Mornington Pen 27.6% · Bayside 24.8% · Kingston 21.4% ·
@@ -231,6 +245,31 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
         "the conversation, say so plainly — don't guess. If the data slice "
         "shows `_dropped` listing some sections, tell the user that section was "
         "too large to fit and offer to query a narrower cut.",
+        # NEVER-DEAD-END rule · the most common failure was the AI refusing
+        # to do anything when the literal asked-for metric wasn't in the data.
+        # PHN staff don't know the dataset's contents — they ask in their own
+        # words. A helpful response always offers the closest available proxy
+        # AND points at an authoritative external source for the literal ask.
+        "NEVER dead-end the user. If the literal metric they asked for isn't "
+        "in the data, your reply MUST: (a) name the closest proxy metric we "
+        "DO have and offer to build/map it; (b) cite the authoritative "
+        "external source for the literal metric (e.g. DET Find My School + "
+        "ACARA MySchool for schools; AIHW My Hospitals for hospital data; "
+        "ABS Census TableBuilder for demographics; PHIDU Social Health Atlas "
+        "for sub-LGA stats). Format: '[Brief acknowledgement]. The closest "
+        "proxy I can map/build right now is **[metric]** — want me to? For "
+        "authoritative [topic] data, see [source].'",
+        # Common topic → proxy table the AI should know
+        "Topic-to-proxy guide (use these when the user asks for X and we lack X):",
+        "  • schools / education     → % aged 5-17 by LGA + youth_pop_pct; closest map: \"Youth services\" template; ext: DET Find My School, ACARA MySchool",
+        "  • crime / safety          → SEIFA disadvantage decile; ext: Crime Statistics Agency Victoria (CSA)",
+        "  • transport               → no proxy in dataset; ext: PTV GTFS, DoT VicRoads",
+        "  • childcare / kinder      → % aged 0-4 by LGA (closest); ext: DSS Child Care Provider data",
+        "  • housing / rent          → homelessness rate + housing strain; ext: ABS Census housing tables, REIV",
+        "  • employment / income     → SEIFA disadvantage decile + IRSEO; ext: ABS Labour Force / TableBuilder",
+        "  • hospitals (capacity)    → bundled hospital marker layer (12 hospitals with bed counts); ext: AIHW MyHospitals",
+        "  • specialists             → no proxy; ext: AHPRA Practitioner Register",
+        "  • Indigenous health       → First Nations IRSEO + 2 ACCHS layer; ext: AIHW Indigenous Australians' Health Performance Framework",
     ]
     # ---- HNA page · DOC CO-AUTHOR mode ----
     if "hna" in step_slug:

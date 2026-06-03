@@ -105,6 +105,8 @@
         { icon: '⚡', label: 'Equity overlay',          mapTemplate: 'equity' },
         { icon: '⚡', label: 'First Nations services',  mapTemplate: 'first-nations' },
         { icon: '⚡', label: 'Homelessness',            mapTemplate: 'homelessness' },
+        { icon: '⚡', label: 'Youth services',          mapTemplate: 'youth-services' },
+        { icon: '⚡', label: 'School density',          mapTemplate: 'school-density' },
       ]},
       { section: 'Service points · drop a layer', items: [
         { icon: '⊙', label: '9 headspace centres',      mapPoints: ['headspace'] },
@@ -709,6 +711,42 @@
         ],
       },
       layers: ['headspace', 'mh'],
+    },
+    'youth-services': {
+      title: 'Youth services',
+      description: '% aged 5-17 choropleth + 9 headspace centres — where school-age need meets MH supply',
+      choropleth: {
+        type: 'choropleth',
+        title: '% aged 5-17',
+        unit: 'pct', unit_label: '% of residents aged 5-17 · ABS Census 2021',
+        source_id: 'abs_census_2021_age', highlight: 'Casey',
+        data: [
+          { label: 'Casey', value: 18.1 }, { label: 'Cardinia', value: 17.4 },
+          { label: 'Greater Dandenong', value: 14.2 }, { label: 'Frankston', value: 12.4 },
+          { label: 'Bayside (Vic.)', value: 12.0 }, { label: 'Glen Eira', value: 11.8 },
+          { label: 'Kingston (Vic.)', value: 11.6 }, { label: 'Mornington Peninsula', value: 11.2 },
+          { label: 'Stonnington', value: 8.9 }, { label: 'Port Phillip', value: 8.4 },
+        ],
+      },
+      layers: ['headspace', 'mh'],
+    },
+    'school-density': {
+      title: 'School density',
+      description: 'Government schools per LGA choropleth + headspace — co-location with MH services',
+      choropleth: {
+        type: 'choropleth',
+        title: 'Government schools · count by LGA',
+        unit: 'count', unit_label: 'government schools (DET 2024)',
+        source_id: 'det_vic_2024', highlight: 'Casey',
+        data: [
+          { label: 'Casey', value: 84 }, { label: 'Greater Dandenong', value: 62 },
+          { label: 'Cardinia', value: 38 }, { label: 'Mornington Peninsula', value: 36 },
+          { label: 'Glen Eira', value: 34 }, { label: 'Frankston', value: 32 },
+          { label: 'Kingston (Vic.)', value: 31 }, { label: 'Bayside (Vic.)', value: 24 },
+          { label: 'Port Phillip', value: 18 }, { label: 'Stonnington', value: 14 },
+        ],
+      },
+      layers: ['headspace'],
     },
   };
 
@@ -3533,8 +3571,104 @@
   /* Pick 2-3 follow-up chips for a freshly completed turn.
    * If the turn produced a widget on the dashboards page, key off the
    * widget type. Otherwise use a per-page default set. */
+  /* Topic-aware proxy suggestions · when the user asked about something we
+   * don't have data for, the AI's reply will say "I don't have…" and we
+   * surface alternative actions tied to the user's actual topic. Keys are
+   * lowercase substrings found in the prompt; values are 2-3 chips. */
+  var TOPIC_PROXIES = {
+    'school': [
+      { label: '⚡ Youth services map',   mapTemplate: 'youth-services' },
+      { label: '⚡ School density map',   mapTemplate: 'school-density' },
+      { label: 'Open DET Find My School', prompt: 'Where can I get authoritative school location + enrolment data for the SEMPHN catchment? Reply in prose, no widget.' },
+    ],
+    'kinder': [
+      { label: 'Map % aged 0-4',          prompt: 'Map % of residents aged 0-4 by SEMPHN LGA. Unit pct.' },
+      { label: 'Map youth services',      mapTemplate: 'youth-services' },
+    ],
+    'child': [
+      { label: '⚡ Youth services map',   mapTemplate: 'youth-services' },
+      { label: 'Map % aged 0-17',         prompt: 'Map % of residents aged 0-17 by SEMPHN LGA. Unit pct.' },
+    ],
+    'crime': [
+      { label: 'Map SEIFA disadvantage',  prompt: 'Map ABS SEIFA disadvantage decile by SEMPHN LGA. Highlight Greater Dandenong. Unit count.' },
+      { label: 'CSA Victoria',            prompt: 'Where can I get authoritative crime statistics for the SEMPHN catchment? Reply in prose, no widget.' },
+    ],
+    'safety': [
+      { label: 'Map SEIFA disadvantage',  prompt: 'Map ABS SEIFA disadvantage decile by SEMPHN LGA. Highlight Greater Dandenong. Unit count.' },
+    ],
+    'transport': [
+      { label: 'Map SEIFA disadvantage',  prompt: 'Map ABS SEIFA disadvantage decile by SEMPHN LGA — proxy for transport-disadvantaged areas.' },
+      { label: 'PTV / DoT VicRoads',      prompt: 'Where can I get authoritative public transport coverage data for the SEMPHN catchment? Reply in prose, no widget.' },
+    ],
+    'housing': [
+      { label: '⚡ Homelessness map',     mapTemplate: 'homelessness' },
+      { label: 'Map housing strain',      prompt: 'Map % of households needing additional bedrooms by SEMPHN LGA — proxy for housing strain.' },
+    ],
+    'rent': [
+      { label: '⚡ Homelessness map',     mapTemplate: 'homelessness' },
+    ],
+    'employment': [
+      { label: 'Map SEIFA disadvantage',  prompt: 'Map ABS SEIFA disadvantage decile by SEMPHN LGA. Unit count.' },
+      { label: 'Map First Nations IRSEO', mapTemplate: 'first-nations' },
+    ],
+    'income': [
+      { label: 'Map SEIFA disadvantage',  prompt: 'Map ABS SEIFA disadvantage decile by SEMPHN LGA. Unit count.' },
+    ],
+    'specialist': [
+      { label: '⚡ GP supply map',        mapTemplate: 'gp-supply' },
+      { label: 'AHPRA Practitioner Register', prompt: 'Where can I get authoritative specialist workforce data for the SEMPHN catchment? Reply in prose, no widget.' },
+    ],
+    'hospital': [
+      { label: 'Add hospital markers',    mapPoints: ['hospital'] },
+      { label: 'AIHW My Hospitals',       prompt: 'Where can I get authoritative public hospital activity data for the SEMPHN catchment? Reply in prose, no widget.' },
+    ],
+    'gp': [
+      { label: '⚡ GP supply map',        mapTemplate: 'gp-supply' },
+      { label: 'Add GP markers',          mapPoints: ['gp'] },
+    ],
+    'cancer': [
+      { label: '⚡ Bowel screening gap',  mapTemplate: 'screening-gap' },
+    ],
+    'screening': [
+      { label: '⚡ Bowel screening gap',  mapTemplate: 'screening-gap' },
+    ],
+    'indigenous': [
+      { label: '⚡ First Nations map',    mapTemplate: 'first-nations' },
+    ],
+    'aboriginal': [
+      { label: '⚡ First Nations map',    mapTemplate: 'first-nations' },
+    ],
+  };
+
+  function noDataReply(text) {
+    if (!text) return false;
+    var t = text.toLowerCase();
+    return /(\bi['’]?m unable\b|\bisn['’]?t available\b|\bnot in the (current )?dataset\b|\bdon['’]?t have (data|that|access)\b|\bno data\b|\bunable to provide\b|\bcannot provide\b|\bsorry[,.]?\s+i\b)/i.test(t);
+  }
+  function topicChipsFor(promptText) {
+    if (!promptText) return null;
+    var lc = promptText.toLowerCase();
+    var matched = [];
+    Object.keys(TOPIC_PROXIES).forEach(function (k) {
+      if (lc.indexOf(k) >= 0) {
+        TOPIC_PROXIES[k].forEach(function (c) {
+          // Dedupe by label
+          if (!matched.some(function (m) { return m.label === c.label; })) matched.push(c);
+        });
+      }
+    });
+    return matched.length ? matched.slice(0, 4) : null;
+  }
+
   function pickFollowups(turn, widget) {
     var page = pageId();
+    // Universal: if the AI's reply admits no data, surface topic-relevant
+    // proxies based on what the user actually asked. This rescues every
+    // out-of-scope ask with concrete, clickable next steps.
+    if (turn && noDataReply(turn.summary)) {
+      var topic = topicChipsFor(turn.prompt);
+      if (topic) return topic;
+    }
     if (page === 'dashboards') {
       return getFollowups(widget);
     }
@@ -3555,10 +3689,18 @@
       ];
     }
     if (page === 'maps') {
+      // After a successful map render, suggest related layers
+      if (widget && (widget.type === 'choropleth' || widget.type === 'map')) {
+        return [
+          { label: '+ Add headspace markers', mapPoints: ['headspace'] },
+          { label: '+ Add ACCHS markers',     mapPoints: ['acchs'] },
+          { label: '+ Add hospitals',         mapPoints: ['hospital'] },
+        ];
+      }
       return [
-        { label: 'Add point overlay',       prompt: 'Add the 9 headspace centres + 2 ACCHS as a point overlay on the current map.' },
-        { label: 'Switch palette',          prompt: 'Switch the palette to navy-to-teal sequential.' },
-        { label: 'Export as PNG',           prompt: 'Stage the current map for export as PNG.' },
+        { label: '⚡ Mental health hotspots', mapTemplate: 'mh-hotspots' },
+        { label: '⚡ Service network',        mapTemplate: 'service-network' },
+        { label: '⚡ Equity overlay',         mapTemplate: 'equity' },
       ];
     }
     return [];
