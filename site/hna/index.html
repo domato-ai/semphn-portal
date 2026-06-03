@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1783900000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1784000000" />
 
 <style>
   /* HNA-specific artifact styles */
@@ -179,6 +179,7 @@
         <small>Â· 2025â€“28 annual update Â· v1.2 draft</small>
       </span>
       <div class="canvas-actions">
+        <button type="button" id="hna-preflight-btn" title="Run DoH rubric pre-flight across all 12 chapters">Pre-flight</button>
         <div class="hna-export-menu" id="hna-export-wrap">
           <button type="button" id="hna-export-btn" aria-haspopup="menu" aria-expanded="false" title="Export options">
             Export <span class="caret">â–¾</span>
@@ -249,10 +250,52 @@
           <div class="footnote" id="hna-doc-footnote">
             Sources Â· last ingest 21 May 2026 Â· figures dated to source
           </div>
+          <!-- Mark-complete CTA · appears when chapter is 80%+ complete -->
+          <div class="hna-mark-complete" id="hna-mark-complete" hidden>
+            <div class="hna-mc-l">
+              <div class="hna-mc-h">This chapter looks ready</div>
+              <div class="hna-mc-s">All DoH rubric checks pass and word target met. Lock it in?</div>
+            </div>
+            <button type="button" class="hna-mc-btn" id="hna-mc-btn">âœ“ Mark complete</button>
+          </div>
         </article>
+
+        <!-- In-chapter TOC right-rail · jump to section -->
+        <aside class="hna-toc" id="hna-toc" aria-label="Chapter sections" hidden></aside>
       </div>
     </div>
   </section>
+</div>
+
+<!-- Pre-flight modal · full DoH rubric check across all chapters -->
+<div class="hna-preflight" id="hna-preflight" hidden aria-modal="true" role="dialog" aria-label="Pre-flight check">
+  <div class="hna-preflight-card">
+    <div class="hna-preflight-head">
+      <div>
+        <div class="hna-preflight-eyebrow">DoH performance rubric Â· pre-flight check</div>
+        <h2 id="hna-preflight-title">Reviewing all 12 chaptersâ€¦</h2>
+      </div>
+      <button type="button" class="hna-preflight-x" id="hna-preflight-x" aria-label="Close pre-flight">Ã—</button>
+    </div>
+    <div class="hna-preflight-summary" id="hna-preflight-summary"></div>
+    <div class="hna-preflight-list" id="hna-preflight-list"></div>
+    <div class="hna-preflight-foot">
+      <span class="hna-preflight-tip">Clicking a chapter jumps you to it Â· clicking a Fix button auto-fires a draft prompt</span>
+      <button type="button" class="hna-preflight-close" id="hna-preflight-close-2">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recent activity panel · floating right side, expandable -->
+<div class="hna-activity" id="hna-activity" hidden aria-label="Recent activity">
+  <button type="button" class="hna-activity-tab" id="hna-activity-tab" aria-controls="hna-activity-pop">
+    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l2.5 2"/></svg>
+    <span class="hna-activity-count" id="hna-activity-count">0</span>
+  </button>
+  <div class="hna-activity-pop" id="hna-activity-pop" hidden role="menu">
+    <div class="hna-activity-h">Recent activity</div>
+    <div class="hna-activity-list" id="hna-activity-list"></div>
+  </div>
 </div>
 
 
@@ -267,6 +310,6 @@
     <span class="statusbar-item hide-mobile"><kbd>âŒ˜\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1783900000"></script>
+<script src="/_assets/shell.js?v=1784000000"></script>
 </body>
 </html>

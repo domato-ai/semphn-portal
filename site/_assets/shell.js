@@ -3361,6 +3361,8 @@
     });
     updateHnaStatusBar();
     renderHnaSources();
+    if (typeof renderActivity === 'function') renderActivity();
+    if (typeof renderMarkComplete === 'function') renderMarkComplete();
   }
 
   function renderHnaSources() {
@@ -3448,6 +3450,9 @@
     renderChapterRail();
     renderHnaEdits();
     renderChapterGuide();
+    renderMarkComplete();
+    renderToc();
+    renderActivity();
   }
 
   /* ============================================================
@@ -3622,6 +3627,229 @@
   }
   window.__renderChapterGuide = renderChapterGuide;
 
+  /* ============================================================
+   * HNA Mark Complete · per-chapter completion flag
+   * ============================================================ */
+  var HNA_COMPLETE_KEY = 'semphn.workbench.hna_complete.v1';
+  function readChapterComplete() {
+    try { return JSON.parse(localStorage.getItem(HNA_COMPLETE_KEY) || '{}'); }
+    catch (_) { return {}; }
+  }
+  function writeChapterComplete(map) {
+    try { localStorage.setItem(HNA_COMPLETE_KEY, JSON.stringify(map)); }
+    catch (_) {}
+  }
+  function isChapterComplete(slug) {
+    return !!readChapterComplete()[slug];
+  }
+  function setChapterComplete(slug, val) {
+    var m = readChapterComplete();
+    if (val) m[slug] = Date.now();
+    else delete m[slug];
+    writeChapterComplete(m);
+  }
+  window.__readChapterComplete = readChapterComplete;
+
+  function renderMarkComplete() {
+    var el = document.getElementById('hna-mark-complete');
+    var btn = document.getElementById('hna-mc-btn');
+    if (!el || !btn) return;
+    var slug = currentChapterSlug();
+    var state = chapterState(slug);
+    if (!state) { el.setAttribute('hidden', ''); return; }
+    var complete = isChapterComplete(slug);
+    var ready = state.rubricMissing.length === 0 && state.pctOfTarget >= 60;
+    if (!ready && !complete) { el.setAttribute('hidden', ''); return; }
+    el.removeAttribute('hidden');
+    el.classList.toggle('is-complete', complete);
+    if (complete) {
+      el.querySelector('.hna-mc-h').textContent = 'Marked complete';
+      el.querySelector('.hna-mc-s').textContent = 'You can keep editing — re-open by un-marking.';
+      btn.textContent = 'Un-mark';
+    } else {
+      el.querySelector('.hna-mc-h').textContent = 'This chapter looks ready';
+      el.querySelector('.hna-mc-s').textContent = 'All DoH rubric checks pass and word target met. Lock it in?';
+      btn.textContent = '✓ Mark complete';
+    }
+    btn.onclick = function () {
+      setChapterComplete(slug, !complete);
+      renderMarkComplete();
+      renderChapterRail();
+      showToast(complete ? 'Re-opened for editing' : '✓ Chapter marked complete', 'success');
+    };
+  }
+
+  /* ============================================================
+   * Pre-flight modal · DoH rubric check across all 12 chapters
+   * ============================================================ */
+  function buildPreflight() {
+    var summaryEl = document.getElementById('hna-preflight-summary');
+    var listEl = document.getElementById('hna-preflight-list');
+    var titleEl = document.getElementById('hna-preflight-title');
+    if (!summaryEl || !listEl || !titleEl) return;
+    var slugs = Object.keys(HNA_CHAPTERS);
+    var passed = 0, totalChecks = 0, missingChecks = 0;
+    var rows = [];
+    slugs.forEach(function (s) {
+      var ch = HNA_CHAPTERS[s];
+      var pct = computeChapterCompletion(s);
+      var rubric = ch.rubric || [];
+      // Build text for rubric matching
+      var text = (ch.deck || '');
+      (ch.sections || []).forEach(function (sec) { text += ' ' + (sec.heading || '') + ' ' + (sec.body || ''); });
+      readHnaEdits().filter(function (e) { return (e.chapter || DEFAULT_HNA_CHAPTER) === s; })
+        .forEach(function (e) { text += ' ' + (e.heading || '') + ' ' + (e.text || ''); });
+      var lc = text.toLowerCase();
+      var perRubric = rubric.map(function (k) { return { topic: k, pass: lc.indexOf(k.toLowerCase()) >= 0 }; });
+      totalChecks += rubric.length;
+      var checkPass = perRubric.filter(function (r) { return r.pass; }).length;
+      missingChecks += (rubric.length - checkPass);
+      var stageOk = pct >= 60 && checkPass === rubric.length && !ch.stub;
+      var manuallyMarked = isChapterComplete(s);
+      if (stageOk || manuallyMarked) passed++;
+      rows.push({ slug: s, ch: ch, pct: pct, perRubric: perRubric, stageOk: stageOk, marked: manuallyMarked });
+    });
+    var totalCh = slugs.length;
+    titleEl.textContent = passed + '/' + totalCh + ' chapters ready for lodgement';
+    var ready = passed === totalCh;
+    summaryEl.innerHTML =
+      '<div class="hna-preflight-stats">' +
+        '<div class="hna-pf-stat"><div class="v">' + passed + '/' + totalCh + '</div><div class="l">Chapters complete</div></div>' +
+        '<div class="hna-pf-stat"><div class="v">' + (totalChecks - missingChecks) + '/' + totalChecks + '</div><div class="l">Rubric items passed</div></div>' +
+        '<div class="hna-pf-stat is-' + (ready ? 'pass' : 'warn') + '"><div class="v">' + (ready ? 'Ready' : 'Not ready') + '</div><div class="l">Lodgement status</div></div>' +
+      '</div>';
+    listEl.innerHTML = rows.map(function (r) {
+      var checks = r.perRubric.map(function (rb) {
+        return '<span class="hna-pf-check is-' + (rb.pass ? 'pass' : 'miss') + '">' +
+          (rb.pass ? '✓' : '○') + ' ' + escHtml(rb.topic) + '</span>';
+      }).join('');
+      var titleClean = r.ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '').trim();
+      var missingRubric = r.perRubric.filter(function (x) { return !x.pass; });
+      var statusClass = (r.stageOk || r.marked) ? 'is-ready' : (r.pct >= 30 ? 'is-progress' : 'is-stub');
+      var statusLabel = r.marked ? 'Marked ✓' : (r.stageOk ? 'Ready' : (r.pct >= 30 ? r.pct + '% drafted' : 'Not started'));
+      var fixBtn = missingRubric.length ? (
+        '<button type="button" class="hna-pf-fix" data-slug="' + escHtml(r.slug) + '" data-topic="' + escHtml(missingRubric[0].topic) + '">' +
+          'Draft ' + escHtml(missingRubric[0].topic) + ' →</button>'
+      ) : '';
+      return '<div class="hna-pf-row ' + statusClass + '">' +
+        '<div class="hna-pf-num">' + escHtml(r.ch.num) + '</div>' +
+        '<div class="hna-pf-body">' +
+          '<div class="hna-pf-titlerow"><a class="hna-pf-link" href="#' + escHtml(r.slug) + '" data-jump="' + escHtml(r.slug) + '">' + escHtml(titleClean) + '</a>' +
+          '<span class="hna-pf-status">' + statusLabel + '</span></div>' +
+          '<div class="hna-pf-checks">' + checks + '</div>' +
+          fixBtn +
+        '</div>' +
+      '</div>';
+    }).join('');
+    // Wire jump links + fix buttons
+    Array.prototype.forEach.call(listEl.querySelectorAll('[data-jump]'), function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.hash = '#' + a.getAttribute('data-jump');
+        closePreflight();
+      });
+    });
+    Array.prototype.forEach.call(listEl.querySelectorAll('.hna-pf-fix'), function (b) {
+      b.addEventListener('click', function () {
+        var slug = b.getAttribute('data-slug');
+        var topic = b.getAttribute('data-topic');
+        window.location.hash = '#' + slug;
+        closePreflight();
+        setTimeout(function () {
+          var input = document.getElementById('chat-input');
+          var send  = document.getElementById('chat-send');
+          if (!input) return;
+          input.value = 'Draft a paragraph for this chapter focused on **' + topic + '**. Use real SEMPHN figures from the ground truth. New paragraph.';
+          input.dispatchEvent(new Event('input'));
+          input.focus();
+          if (send && !send.disabled) send.click();
+        }, 500);
+      });
+    });
+  }
+  function openPreflight() {
+    var modal = document.getElementById('hna-preflight');
+    if (!modal) return;
+    buildPreflight();
+    modal.removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closePreflight() {
+    var modal = document.getElementById('hna-preflight');
+    if (modal) modal.setAttribute('hidden', '');
+    document.body.style.overflow = '';
+  }
+  window.__openPreflight = openPreflight;
+
+  /* ============================================================
+   * Recent activity panel · floating right edge
+   * ============================================================ */
+  function renderActivity() {
+    var panel = document.getElementById('hna-activity');
+    var listEl = document.getElementById('hna-activity-list');
+    var countEl = document.getElementById('hna-activity-count');
+    if (!panel || !listEl || !countEl) return;
+    var edits = readHnaEdits().slice().reverse().slice(0, 6);
+    if (!edits.length) { panel.setAttribute('hidden', ''); return; }
+    panel.removeAttribute('hidden');
+    countEl.textContent = readHnaEdits().length;
+    listEl.innerHTML = edits.map(function (e) {
+      var ch = HNA_CHAPTERS[e.chapter || DEFAULT_HNA_CHAPTER];
+      var chName = ch ? ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '').trim() : 'Unknown';
+      var when = e.ts ? relativeTime(e.ts) : '';
+      var snippet = (e.text || e.heading || '').slice(0, 80);
+      var isChart = !!e.widget;
+      return '<a class="hna-activity-item" href="#' + escHtml(e.chapter || DEFAULT_HNA_CHAPTER) + '">' +
+        '<span class="hna-ai-pip ' + (isChart ? 'is-chart' : '') + '">' + (isChart ? '◐' : '✎') + '</span>' +
+        '<div class="hna-ai-body">' +
+          '<div class="hna-ai-row1">' +
+            '<span class="hna-ai-chapter">Ch ' + escHtml(ch ? ch.num : '?') + ' · ' + escHtml(chName) + '</span>' +
+            '<span class="hna-ai-when">' + escHtml(when) + '</span>' +
+          '</div>' +
+          '<div class="hna-ai-snippet">' + escHtml(snippet) + (snippet.length === 80 ? '…' : '') + '</div>' +
+        '</div>' +
+      '</a>';
+    }).join('');
+  }
+  function relativeTime(ts) {
+    var diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return diff + 's ago';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+  }
+  window.__renderActivity = renderActivity;
+
+  /* ============================================================
+   * In-chapter TOC right-rail
+   * ============================================================ */
+  function renderToc() {
+    var tocEl = document.getElementById('hna-toc');
+    if (!tocEl) return;
+    var body = document.getElementById('hna-doc-body');
+    if (!body) { tocEl.setAttribute('hidden', ''); return; }
+    var headings = body.querySelectorAll('h2');
+    if (headings.length < 3) { tocEl.setAttribute('hidden', ''); return; }
+    tocEl.removeAttribute('hidden');
+    var html = '<div class="hna-toc-h">In this chapter</div><ol class="hna-toc-list">';
+    Array.prototype.forEach.call(headings, function (h, i) {
+      var id = 'sec-' + i;
+      h.id = id;
+      html += '<li><a href="#' + id + '" data-toc>' + escHtml(h.textContent.trim()) + '</a></li>';
+    });
+    html += '</ol>';
+    tocEl.innerHTML = html;
+    Array.prototype.forEach.call(tocEl.querySelectorAll('[data-toc]'), function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var id = a.getAttribute('href').replace('#', '');
+        var el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+  window.__renderToc = renderToc;
+
   /* Auto-draft · run a chapter's starter prompts in sequence. Shows a
    * floating progress chip so the user knows the queue is running.
    * Spaced 5s apart so the AI's reply for each lands before the next
@@ -3712,19 +3940,22 @@
     Object.keys(HNA_CHAPTERS).forEach(function (key) {
       var ch = HNA_CHAPTERS[key];
       var pct = computeChapterCompletion(key);
+      var manuallyMarked = isChapterComplete(key);
+      var displayPct = manuallyMarked ? 100 : pct;
+      var isComplete = manuallyMarked || pct >= 80;
       var a = document.createElement('a');
       a.className = 'chapter-chip' +
                     (key === slug ? ' is-on' : '') +
                     (ch.stub ? ' is-stub' : '') +
-                    (pct >= 80 ? ' is-complete' : '') +
-                    (pct >= 30 && pct < 80 ? ' is-progress' : '');
+                    (isComplete ? ' is-complete' : '') +
+                    (pct >= 30 && pct < 80 && !manuallyMarked ? ' is-progress' : '');
       a.href = '#' + key;
-      a.title = ch.title.replace(/<[^>]+>/g, '') + ' · ' + pct + '% complete';
+      a.title = ch.title.replace(/<[^>]+>/g, '') + ' · ' + displayPct + '% complete' + (manuallyMarked ? ' (marked)' : '');
       var label = ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, ' ').split(' ').slice(0, 2).join(' ');
       a.innerHTML =
         '<span class="n">' + escHtml(ch.num) + '</span>' +
         '<span class="lab">' + escHtml(label) + '</span>' +
-        '<span class="prog" style="width:' + pct + '%;"></span>';
+        '<span class="prog" style="width:' + displayPct + '%;"></span>';
       rail.appendChild(a);
     });
   }
@@ -5734,6 +5965,53 @@
       if (expLegacy) expLegacy.addEventListener('click', function () {
         if (typeof window.__exportHnaChapterMd === 'function') window.__exportHnaChapterMd();
       });
+      var preflight = document.getElementById('hna-preflight-btn');
+      if (preflight) preflight.addEventListener('click', function () {
+        if (typeof window.__openPreflight === 'function') window.__openPreflight();
+      });
+      var preflightX = document.getElementById('hna-preflight-x');
+      var preflightClose = document.getElementById('hna-preflight-close-2');
+      if (preflightX) preflightX.addEventListener('click', function () {
+        var m = document.getElementById('hna-preflight');
+        if (m) m.setAttribute('hidden', '');
+        document.body.style.overflow = '';
+      });
+      if (preflightClose) preflightClose.addEventListener('click', function () {
+        var m = document.getElementById('hna-preflight');
+        if (m) m.setAttribute('hidden', '');
+        document.body.style.overflow = '';
+      });
+      // Close pre-flight by clicking outside the card
+      var preflightModal = document.getElementById('hna-preflight');
+      if (preflightModal) preflightModal.addEventListener('click', function (e) {
+        if (e.target === preflightModal) {
+          preflightModal.setAttribute('hidden', '');
+          document.body.style.overflow = '';
+        }
+      });
+      // Esc closes
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          var m = document.getElementById('hna-preflight');
+          if (m && !m.hasAttribute('hidden')) { m.setAttribute('hidden', ''); document.body.style.overflow = ''; }
+        }
+      });
+      // Activity panel · toggle on tab click
+      var actTab = document.getElementById('hna-activity-tab');
+      var actPop = document.getElementById('hna-activity-pop');
+      if (actTab && actPop) {
+        actTab.addEventListener('click', function () {
+          var open = !actPop.hasAttribute('hidden');
+          if (open) actPop.setAttribute('hidden', '');
+          else actPop.removeAttribute('hidden');
+        });
+        document.addEventListener('click', function (e) {
+          if (!actPop.hasAttribute('hidden') &&
+              !actTab.contains(e.target) && !actPop.contains(e.target)) {
+            actPop.setAttribute('hidden', '');
+          }
+        });
+      }
       var lodge = document.getElementById('hna-lodge');
       if (lodge) lodge.addEventListener('click', function () {
         var c = window.__HNA_CHAPTERS && window.__HNA_CHAPTERS[window.__currentChapter || '04-first-nations'];
