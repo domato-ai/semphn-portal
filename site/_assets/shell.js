@@ -638,6 +638,78 @@
       },
       layers: ['mh', 'aod'],
     },
+    'growth-corridor': {
+      title: 'Growth corridor',
+      description: 'Population growth pa choropleth + RACFs + GP practices — where infrastructure must scale',
+      choropleth: {
+        type: 'choropleth',
+        title: 'Population growth pa',
+        unit: 'pct', unit_label: '% annual growth · ABS ERP 2019-2024',
+        source_id: 'abs_erp_2024', highlight: 'Casey',
+        data: [
+          { label: 'Casey', value: 3.4 }, { label: 'Cardinia', value: 3.2 },
+          { label: 'Greater Dandenong', value: 1.6 }, { label: 'Frankston', value: 1.1 },
+          { label: 'Mornington Peninsula', value: 0.9 }, { label: 'Kingston (Vic.)', value: 0.8 },
+          { label: 'Port Phillip', value: 0.5 }, { label: 'Glen Eira', value: 0.6 },
+          { label: 'Bayside (Vic.)', value: 0.3 }, { label: 'Stonnington', value: 0.2 },
+        ],
+      },
+      layers: ['gp', 'racf'],
+    },
+    'gp-supply': {
+      title: 'GP supply',
+      description: 'GP-practice density choropleth + GP markers — supply mapped against population',
+      choropleth: {
+        type: 'choropleth',
+        title: 'GP practices · per 10,000 residents',
+        unit: 'per_10k', unit_label: 'GP practices per 10,000 residents',
+        source_id: 'semphn_locator_2024', highlight: 'Stonnington',
+        data: [
+          { label: 'Stonnington', value: 3.55 }, { label: 'Port Phillip', value: 2.72 },
+          { label: 'Bayside (Vic.)', value: 3.10 }, { label: 'Glen Eira', value: 4.04 },
+          { label: 'Greater Dandenong', value: 4.24 }, { label: 'Frankston', value: 3.72 },
+          { label: 'Casey', value: 2.14 }, { label: 'Mornington Peninsula', value: 3.02 },
+          { label: 'Kingston (Vic.)', value: 3.44 }, { label: 'Cardinia', value: 3.10 },
+        ],
+      },
+      layers: ['gp'],
+    },
+    'screening-gap': {
+      title: 'Bowel screening gap',
+      description: 'Bowel screening % choropleth + GP markers — Casey is the lowest LGA in Australia',
+      choropleth: {
+        type: 'choropleth',
+        title: 'Bowel screening participation',
+        unit: 'pct', unit_label: '% NBCSP participation',
+        source_id: 'aihw_nbcsp_2024', highlight: 'Casey',
+        data: [
+          { label: 'Stonnington', value: 51.4 }, { label: 'Port Phillip', value: 50.2 },
+          { label: 'Bayside (Vic.)', value: 49.1 }, { label: 'Glen Eira', value: 47.8 },
+          { label: 'Kingston (Vic.)', value: 46.3 }, { label: 'Frankston', value: 44.6 },
+          { label: 'Mornington Peninsula', value: 42.8 }, { label: 'Cardinia', value: 41.2 },
+          { label: 'Greater Dandenong', value: 38.4 }, { label: 'Casey', value: 35.9 },
+        ],
+      },
+      layers: ['gp'],
+    },
+    'cald-density': {
+      title: 'CALD density',
+      description: '% LOTE-at-home choropleth + headspace + MH — multicultural settlement footprint',
+      choropleth: {
+        type: 'choropleth',
+        title: '% LOTE at home',
+        unit: 'pct', unit_label: '% adults speaking LOTE at home',
+        source_id: 'abs_census_2021_lote', highlight: 'Greater Dandenong',
+        data: [
+          { label: 'Greater Dandenong', value: 64.2 }, { label: 'Casey', value: 42.8 },
+          { label: 'Glen Eira', value: 38.6 }, { label: 'Kingston (Vic.)', value: 33.4 },
+          { label: 'Stonnington', value: 28.1 }, { label: 'Port Phillip', value: 24.7 },
+          { label: 'Cardinia', value: 18.4 }, { label: 'Frankston', value: 14.6 },
+          { label: 'Bayside (Vic.)', value: 11.8 }, { label: 'Mornington Peninsula', value: 9.2 },
+        ],
+      },
+      layers: ['headspace', 'mh'],
+    },
   };
 
   /* Click handler · applies the template to the live default map.
@@ -661,6 +733,288 @@
   }
   window.__loadMapTemplate = loadMapTemplate;
   window.__MAP_TEMPLATES = MAP_TEMPLATES;
+
+  /* ============================================================
+   * SEMPHN LGA facts · 10 LGAs × headline stats
+   *
+   * The single source of truth the LGA-click drawer reads from.
+   * Each entry mirrors SEMPHN_GROUND_TRUTH in the backend so a
+   * staffer clicking 'Frankston' on the map sees the same numbers
+   * the AI cites in chat. Numbers from ABS Census 2021 + ABS ERP
+   * 2024 + AIHW PHIDU + POLAR + SEMPHN service locator.
+   * ============================================================ */
+  var SEMPHN_LGA_FACTS = {
+    'Bayside': {
+      corridor: 'Inner bayside · affluent suburbs',
+      pop: 109800, growth_pa: 0.3, seifa: 10, area_km2: 37,
+      metrics: {
+        mh_per_1k: 82.5, bowel_pct: 49.1, homeless_per_10k: 42.1,
+        gp_practices: 34, age65_pct: 24.8, lote_pct: 11.8, irseo_fn: 20,
+      },
+      strongest: 'High GP supply (3.10/10k). Low MH need. Highest screening rates in catchment.',
+      weakest: 'Ageing population: 24.8% over 65 — second highest after Mornington.',
+    },
+    'Cardinia': {
+      corridor: 'Outer south-east · growth corridor',
+      pop: 122400, growth_pa: 3.2, seifa: 5, area_km2: 1281,
+      metrics: {
+        mh_per_1k: 88.4, bowel_pct: 41.2, homeless_per_10k: 64.3,
+        gp_practices: 38, age65_pct: 13.0, lote_pct: 18.4, irseo_fn: 26,
+      },
+      strongest: 'Lowest allied health FTE per 10k in catchment — large headroom.',
+      weakest: 'Population growing 3.2% pa · GP supply not keeping pace.',
+    },
+    'Casey': {
+      corridor: 'South-east · largest LGA, growth corridor',
+      pop: 393000, growth_pa: 3.4, seifa: 5, area_km2: 396,
+      metrics: {
+        mh_per_1k: 94.1, bowel_pct: 35.9, homeless_per_10k: 96.4,
+        gp_practices: 84, age65_pct: 11.8, lote_pct: 42.8, irseo_fn: 27,
+      },
+      strongest: 'Largest LGA by population (393K). Most GP practices (84). Largest First Nations population (23.4% of catchment).',
+      weakest: 'Lowest bowel screening in Australia (35.9%). MH ED presentations rising fastest.',
+    },
+    'Frankston': {
+      corridor: 'Peninsula north',
+      pop: 145200, growth_pa: 1.1, seifa: 4, area_km2: 130,
+      metrics: {
+        mh_per_1k: 116.1, bowel_pct: 44.6, homeless_per_10k: 124.8,
+        gp_practices: 54, age65_pct: 20.2, lote_pct: 14.6, irseo_fn: 24,
+      },
+      strongest: 'Strong workforce — Peninsula Health hub + Bunurong ACCHS. headspace + 2 hospitals.',
+      weakest: 'Highest MH conditions per 1k in catchment (116.1 · 48% above Vic). Highest MH ED rate.',
+    },
+    'Glen Eira': {
+      corridor: 'Inner south-east',
+      pop: 158400, growth_pa: 0.6, seifa: 9, area_km2: 39,
+      metrics: {
+        mh_per_1k: 78.3, bowel_pct: 47.8, homeless_per_10k: 58.9,
+        gp_practices: 64, age65_pct: 17.9, lote_pct: 38.6, irseo_fn: 19,
+      },
+      strongest: 'Lowest MH conditions in catchment (78.3/1k). 64 GP practices.',
+      weakest: 'Growing 65+ cohort meets only 1 RACF density rating below catchment median.',
+    },
+    'Greater Dandenong': {
+      corridor: 'Multicultural hub · most disadvantaged LGA',
+      pop: 169900, growth_pa: 1.6, seifa: 2, area_km2: 130,
+      metrics: {
+        mh_per_1k: 97.4, bowel_pct: 38.4, homeless_per_10k: 149.5,
+        gp_practices: 72, age65_pct: 13.4, lote_pct: 64.2, irseo_fn: 28,
+      },
+      strongest: 'Multicultural hub — 64.2% LOTE, highest in VIC. DDACL ACCHS. 72 GP practices.',
+      weakest: 'Highest homelessness rate in catchment (149.5/10k). SEIFA decile 2. Type 2 diabetes 8.9% — highest.',
+    },
+    'Kingston (Vic.)': {
+      corridor: 'Bayside south',
+      pop: 168500, growth_pa: 0.8, seifa: 8, area_km2: 91,
+      metrics: {
+        mh_per_1k: 83.7, bowel_pct: 46.3, homeless_per_10k: 62.0,
+        gp_practices: 58, age65_pct: 21.4, lote_pct: 33.4, irseo_fn: 22,
+      },
+      strongest: 'Balanced profile — moderate everything. 58 GP practices.',
+      weakest: 'Growing 65+ share (21.4%) but allied health FTE only mid-pack.',
+    },
+    'Mornington Peninsula': {
+      corridor: 'Peninsula · oldest LGA',
+      pop: 169000, growth_pa: 0.9, seifa: 7, area_km2: 723,
+      metrics: {
+        mh_per_1k: 102.6, bowel_pct: 42.8, homeless_per_10k: 78.1,
+        gp_practices: 51, age65_pct: 27.6, lote_pct: 9.2, irseo_fn: 25,
+      },
+      strongest: '2 hospitals (Rosebud + The Bays). headspace Rosebud + Hastings. 12 RACFs.',
+      weakest: '27.6% aged 65+ — oldest LGA. MH conditions 102.6/1k. Geographic isolation from tertiary care.',
+    },
+    'Port Phillip': {
+      corridor: 'Inner · St Kilda + South Melbourne',
+      pop: 113800, growth_pa: 0.5, seifa: 9, area_km2: 21,
+      metrics: {
+        mh_per_1k: 91.8, bowel_pct: 50.2, homeless_per_10k: 118.2,
+        gp_practices: 31, age65_pct: 14.1, lote_pct: 24.7, irseo_fn: 18,
+      },
+      strongest: 'Star Health + Alfred + 2 headspace. 50.2% bowel screening — 2nd highest.',
+      weakest: '3rd highest homeless rate (118.2/10k). Lowest GP practice count (31).',
+    },
+    'Stonnington': {
+      corridor: 'Inner east · most affluent',
+      pop: 118200, growth_pa: 0.2, seifa: 10, area_km2: 25,
+      metrics: {
+        mh_per_1k: 76.9, bowel_pct: 51.4, homeless_per_10k: 71.6,
+        gp_practices: 42, age65_pct: 18.6, lote_pct: 28.1, irseo_fn: 17,
+      },
+      strongest: 'Highest allied health FTE in catchment (64.8/10k). Highest screening rates. Most-affluent LGA.',
+      weakest: 'Stable but small absolute population means GP practice density is mid-pack.',
+    },
+  };
+  window.__SEMPHN_LGA_FACTS = SEMPHN_LGA_FACTS;
+
+  /* ============================================================
+   * Point-in-polygon (ray casting) · cheap + dependency-free.
+   * Used to count which services fall inside each LGA polygon for
+   * the drawer's "Services in this LGA" breakdown.
+   * ============================================================ */
+  function pointInPolygon(lat, lng, ring) {
+    var inside = false;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      var xi = ring[i][0], yi = ring[i][1];
+      var xj = ring[j][0], yj = ring[j][1];
+      var intersect = ((yi > lng) !== (yj > lng)) &&
+                      (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+  function pointInFeature(lat, lng, feature) {
+    // GeoJSON Polygon / MultiPolygon · only checks the outer ring (good enough
+    // for LGA boundaries — holes are vanishingly rare at this scale).
+    if (!feature || !feature.geometry) return false;
+    var geom = feature.geometry;
+    if (geom.type === 'Polygon') {
+      // Note: GeoJSON is [lng, lat]; the ring above expects [lat, lng] in pos 0/1
+      var ring = geom.coordinates[0].map(function (c) { return [c[1], c[0]]; });
+      return pointInPolygon(lat, lng, ring);
+    }
+    if (geom.type === 'MultiPolygon') {
+      return geom.coordinates.some(function (poly) {
+        var r = poly[0].map(function (c) { return [c[1], c[0]]; });
+        return pointInPolygon(lat, lng, r);
+      });
+    }
+    return false;
+  }
+  window.__pointInFeature = pointInFeature;
+
+  /* ============================================================
+   * LGA detail drawer · slide-in panel triggered by LGA polygon click.
+   *
+   * Reads from SEMPHN_LGA_FACTS + counts services-in-this-LGA from the
+   * already-loaded SEMPHN_SERVICES. Doesn't depend on the backend.
+   * ============================================================ */
+  function unitFmt(value, unit) {
+    if (unit === 'pct')      return value.toFixed(1) + '%';
+    if (unit === 'per_1k')   return value.toFixed(1) + ' /1k';
+    if (unit === 'per_10k')  return value.toFixed(1) + ' /10k';
+    if (unit === 'per_100k') return Math.round(value).toLocaleString('en-AU') + ' /100k';
+    if (unit === 'count')    return Math.round(value).toLocaleString('en-AU');
+    if (value === Math.floor(value)) return value.toLocaleString('en-AU');
+    return value.toFixed(1);
+  }
+  function fireSendIfReady(text) {
+    var input = document.getElementById('chat-input');
+    var send  = document.getElementById('chat-send');
+    if (!input) return;
+    input.value = text;
+    input.dispatchEvent(new Event('input'));
+    input.focus();
+    if (send && !send.disabled) send.click();
+  }
+  function openLgaDrawer(lgaName, feature) {
+    var drawer = document.getElementById('lga-drawer');
+    if (!drawer) return;
+    var facts = SEMPHN_LGA_FACTS[lgaName];
+    if (!facts) {
+      // Still open the drawer with a graceful empty state — better than nothing.
+      facts = { corridor: '', pop: null, seifa: null, growth_pa: null, area_km2: null, metrics: {}, strongest: '', weakest: '' };
+    }
+    // Build services-in-this-LGA breakdown from the already-loaded JSON
+    var servicesPromise = loadSemphnServices().then(function (data) {
+      var by = {};
+      (data.services || []).forEach(function (s) {
+        if (pointInFeature(s.lat, s.lng, feature)) {
+          by[s.type] = (by[s.type] || 0) + 1;
+        }
+      });
+      return by;
+    }).catch(function () { return {}; });
+
+    servicesPromise.then(function (svcs) {
+      var m = facts.metrics || {};
+      var svcRows = '';
+      var totalSvc = 0;
+      ['acchs','headspace','hospital','gp','mh','aod','racf','semphn'].forEach(function (t) {
+        var n = svcs[t] || 0;
+        if (!n) return;
+        totalSvc += n;
+        var style = SERVICE_STYLE[t] || { color: '#666', label: t };
+        svcRows +=
+          '<div class="lgadr-svc-row" data-type="' + escHtml(t) + '">' +
+            '<span class="lgadr-svc-dot" style="background:' + style.color + ';"></span>' +
+            '<span class="lgadr-svc-lab">' + escHtml(style.plural || style.label) + '</span>' +
+            '<span class="lgadr-svc-ct">' + n + '</span>' +
+          '</div>';
+      });
+      if (!svcRows) svcRows = '<div class="lgadr-svc-empty">No bundled service points fall inside this LGA.</div>';
+      var metricRow = function (label, value, unit, sourceLink) {
+        if (value == null) return '';
+        return '<div class="lgadr-mrow">' +
+                  '<span class="lgadr-mlab">' + escHtml(label) + '</span>' +
+                  '<span class="lgadr-mval">' + escHtml(unitFmt(value, unit)) + '</span>' +
+                '</div>';
+      };
+      drawer.innerHTML =
+        '<div class="lgadr-head">' +
+          '<div class="lgadr-head-l">' +
+            '<div class="lgadr-corridor">' + escHtml(facts.corridor || 'SEMPHN catchment') + '</div>' +
+            '<h2 class="lgadr-name">' + escHtml(lgaName) + '</h2>' +
+          '</div>' +
+          '<button type="button" class="lgadr-x" title="Close" aria-label="Close LGA panel">×</button>' +
+        '</div>' +
+
+        '<div class="lgadr-snap">' +
+          (facts.pop ? '<div class="lgadr-snap-cell"><div class="v">' + facts.pop.toLocaleString('en-AU') + '</div><div class="l">Residents</div></div>' : '') +
+          (facts.growth_pa != null ? '<div class="lgadr-snap-cell"><div class="v">+' + facts.growth_pa.toFixed(1) + '% pa</div><div class="l">Growth</div></div>' : '') +
+          (facts.seifa != null ? '<div class="lgadr-snap-cell"><div class="v">' + facts.seifa + '</div><div class="l">SEIFA decile</div></div>' : '') +
+          (facts.area_km2 != null ? '<div class="lgadr-snap-cell"><div class="v">' + facts.area_km2.toLocaleString('en-AU') + '</div><div class="l">km²</div></div>' : '') +
+        '</div>' +
+
+        '<div class="lgadr-section-h">Key metrics</div>' +
+        '<div class="lgadr-metrics">' +
+          metricRow('MH conditions', m.mh_per_1k, 'per_1k') +
+          metricRow('Bowel screening', m.bowel_pct, 'pct') +
+          metricRow('Homelessness', m.homeless_per_10k, 'per_10k') +
+          metricRow('GP practices', m.gp_practices, 'count') +
+          metricRow('Aged 65+', m.age65_pct, 'pct') +
+          metricRow('LOTE at home', m.lote_pct, 'pct') +
+          metricRow('First Nations IRSEO', m.irseo_fn, 'count') +
+        '</div>' +
+
+        (facts.strongest ? '<div class="lgadr-section-h">Strongest</div><p class="lgadr-prose">' + escHtml(facts.strongest) + '</p>' : '') +
+        (facts.weakest   ? '<div class="lgadr-section-h">Weakest</div><p class="lgadr-prose">'   + escHtml(facts.weakest)   + '</p>' : '') +
+
+        '<div class="lgadr-section-h">Services in this LGA <span class="lgadr-section-ct">' + totalSvc + '</span></div>' +
+        '<div class="lgadr-svcs">' + svcRows + '</div>' +
+
+        '<div class="lgadr-actions">' +
+          '<button type="button" class="lgadr-cta primary" data-act="focus">Focus map on ' + escHtml(lgaName) + '</button>' +
+          '<button type="button" class="lgadr-cta" data-act="dash">Build dashboard for this LGA →</button>' +
+          '<button type="button" class="lgadr-cta" data-act="hna">Draft HNA paragraph for this LGA →</button>' +
+        '</div>';
+
+      // Wire actions
+      drawer.querySelector('.lgadr-x').addEventListener('click', closeLgaDrawer);
+      drawer.querySelector('[data-act="focus"]').addEventListener('click', function () {
+        var api = window.__defaultMapApi;
+        if (!api || !feature || !feature.geometry) return;
+        try {
+          var bounds = L.geoJSON(feature).getBounds();
+          api.map.flyToBounds(bounds, { padding: [40, 40], maxZoom: 13, duration: 0.8 });
+        } catch (_) {}
+      });
+      drawer.querySelector('[data-act="dash"]').addEventListener('click', function () {
+        // Cross-page: kick to dashboards with a context-specific prompt
+        window.location.href = '/dashboards/?prompt=' + encodeURIComponent('Build a 5-tile dashboard focused on ' + lgaName + '. Cover: MH prevalence, screening, homelessness, GP supply, and the largest funding stream we run there.');
+      });
+      drawer.querySelector('[data-act="hna"]').addEventListener('click', function () {
+        window.location.href = '/hna/?prompt=' + encodeURIComponent('Draft a paragraph for the HNA covering ' + lgaName + '. Use real figures from the catchment data for this LGA.');
+      });
+      drawer.classList.add('is-open');
+    });
+  }
+  function closeLgaDrawer() {
+    var drawer = document.getElementById('lga-drawer');
+    if (drawer) drawer.classList.remove('is-open');
+  }
+  window.__openLgaDrawer = openLgaDrawer;
+  window.__closeLgaDrawer = closeLgaDrawer;
 
   /* ============================================================
    * SEMPHN catchment insights · always-visible findings strip
@@ -1494,7 +1848,13 @@
             lyr.bindTooltip(tooltipHtml, { sticky: true, direction: 'top', offset: [0, -8], opacity: 0.96, className: 'wgt-leaflet-tt' });
             lyr.on({
               mouseover: function (e) { e.target.setStyle({ weight: 2.4, color: '#0A0A0A' }); e.target.bringToFront(); },
-              mouseout: function (e) { lgaLayer.resetStyle(e.target); },
+              mouseout:  function (e) { lgaLayer.resetStyle(e.target); },
+              // LGA click → open the detail drawer (only on the maps page)
+              click: function (e) {
+                if (typeof window.__openLgaDrawer !== 'function') return;
+                if (document.body.getAttribute('data-page') !== 'maps') return;
+                window.__openLgaDrawer(feature.properties.name, feature);
+              },
             });
           },
         }).addTo(map);
@@ -1696,6 +2056,10 @@
               pts.forEach(function (s) {
                 var m = L.marker([s.lat, s.lng], { icon: semphnMarkerIcon(s.type) });
                 m.bindPopup(makeServicePopup(s));
+                // Click on marker → draw 2/5/10 km accessibility rings around it
+                m.on('click', function () {
+                  drawAccessibilityRings([s.lat, s.lng], s);
+                });
                 cluster.addLayer(m);
               });
               cluster.addTo(map);
@@ -1730,10 +2094,54 @@
           updateLayerLegend();
         }
         mapApi.clearAllPoints = clearAllPoints;
+
+        /* Accessibility rings · 2 / 5 / 10 km circles around a service marker.
+         * Click any service to see catchment radius; useful for "how far is the
+         * nearest headspace?" type planning conversations. */
+        var ringsGroup = null;
+        function drawAccessibilityRings(latlng, service) {
+          clearRings();
+          var color = (SERVICE_STYLE[service.type] || {}).color || '#04264E';
+          ringsGroup = L.layerGroup();
+          [
+            { km: 10, op: 0.06, w: 1, label: '10 km' },
+            { km: 5,  op: 0.10, w: 1.3, label: '5 km' },
+            { km: 2,  op: 0.16, w: 1.6, label: '2 km' },
+          ].forEach(function (r) {
+            L.circle(latlng, {
+              radius: r.km * 1000,
+              color: color, weight: r.w, opacity: 0.7,
+              fillColor: color, fillOpacity: r.op,
+              interactive: false,
+            }).addTo(ringsGroup);
+          });
+          // Tiny labels at the right edge of each ring
+          [10, 5, 2].forEach(function (km) {
+            var lat = latlng[0];
+            var lngOffset = (km / 111) / Math.cos(lat * Math.PI / 180);
+            L.marker([lat, latlng[1] + lngOffset], {
+              icon: L.divIcon({
+                className: 'semphn-ring-label',
+                html: km + ' km',
+                iconSize: [42, 18],
+                iconAnchor: [21, 9],
+              }),
+              interactive: false,
+            }).addTo(ringsGroup);
+          });
+          ringsGroup.addTo(map);
+          showToast('2 / 5 / 10 km from ' + (service.name || 'service'), 'success');
+        }
+        function clearRings() {
+          if (ringsGroup) { try { map.removeLayer(ringsGroup); } catch (_) {} ringsGroup = null; }
+        }
+        mapApi.clearRings = clearRings;
+
         // Full reset · empty map state (used by the "Reset map" affordance)
         mapApi.reset = function () {
           clearData();
           clearAllPoints();
+          clearRings();
         };
 
         /* Layer legend · top-left chip showing which point types are on */
@@ -3493,6 +3901,24 @@
     });
     // Initial sync (in case there's persisted text or prior turns on load)
     if (typeof window.__syncChatState === 'function') window.__syncChatState();
+
+    // Honour ?prompt=... query param so cross-page bridges (LGA drawer, etc.)
+    // can land users straight into the composer with a prefilled question.
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var seed = params.get('prompt');
+      if (seed) {
+        input.value = seed;
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+        // Auto-send so the dashboard / HNA reply appears immediately
+        setTimeout(function () { if (send && !send.disabled) send.click(); }, 80);
+        // Strip the query so refresh doesn't re-fire
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+      }
+    } catch (_) {}
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey && document.querySelector('.slash-menu') == null) {
         e.preventDefault(); handleSend();
