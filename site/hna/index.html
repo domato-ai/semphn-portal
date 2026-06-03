@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1783700000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1783800000" />
 
 <style>
   /* HNA-specific artifact styles */
@@ -179,7 +179,25 @@
         <small>Â· 2025â€“28 annual update Â· v1.2 draft</small>
       </span>
       <div class="canvas-actions">
-        <button type="button" id="hna-export-md" title="Export current chapter as Markdown">Export chapter</button>
+        <div class="hna-export-menu" id="hna-export-wrap">
+          <button type="button" id="hna-export-btn" aria-haspopup="menu" aria-expanded="false" title="Export options">
+            Export <span class="caret">â–¾</span>
+          </button>
+          <div class="hna-export-pop" id="hna-export-pop" role="menu" hidden>
+            <button type="button" role="menuitem" data-export="md">
+              <span class="lab">This chapter Â· Markdown</span>
+              <span class="sub">.md Â· version-control friendly</span>
+            </button>
+            <button type="button" role="menuitem" data-export="doc">
+              <span class="lab">This chapter Â· Word</span>
+              <span class="sub">.doc Â· opens in MS Word / Pages</span>
+            </button>
+            <button type="button" role="menuitem" data-export="full">
+              <span class="lab">Full HNA Â· all 12 chapters</span>
+              <span class="sub">.md Â· cover + TOC + every chapter</span>
+            </button>
+          </div>
+        </div>
         <button type="button" class="primary" id="hna-lodge" title="Lodge the HNA to the Department of Health via PPERS">Lodge to PPERS</button>
       </div>
     </header>
@@ -249,6 +267,6 @@
     <span class="statusbar-item hide-mobile"><kbd>âŒ˜\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1783700000"></script>
+<script src="/_assets/shell.js?v=1783800000"></script>
 </body>
 </html>

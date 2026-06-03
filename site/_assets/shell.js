@@ -3622,9 +3622,10 @@
   }
   window.__renderChapterGuide = renderChapterGuide;
 
-  /* Auto-draft · run a chapter's starter prompts in sequence. Spaced 2.5s
-   * apart so the AI's reply for each lands before the next prompt fires.
-   * Used by the "Auto-draft this chapter" primary CTA on stubs. */
+  /* Auto-draft · run a chapter's starter prompts in sequence. Shows a
+   * floating progress chip so the user knows the queue is running.
+   * Spaced 5s apart so the AI's reply for each lands before the next
+   * prompt fires (matches typical Foundry latency under MAX_OUTPUT_TOKENS). */
   function autoDraftChapter(slug) {
     var ch = HNA_CHAPTERS[slug];
     if (!ch || !ch.starter_prompts || !ch.starter_prompts.length) {
@@ -3632,7 +3633,7 @@
       return;
     }
     var prompts = ch.starter_prompts;
-    showToast('Auto-drafting · ' + prompts.length + ' prompts queued', 'success');
+    showAutoDraftProgress(0, prompts.length, ch.title.replace(/<[^>]+>/g, ''));
     prompts.forEach(function (p, i) {
       setTimeout(function () {
         var input = document.getElementById('chat-input');
@@ -3641,10 +3642,67 @@
         input.value = p;
         input.dispatchEvent(new Event('input'));
         if (send && !send.disabled) send.click();
-      }, i * 2500);
+        showAutoDraftProgress(i + 1, prompts.length, ch.title.replace(/<[^>]+>/g, ''));
+      }, i * 5000);
     });
+    // Auto-hide the chip 4s after the final prompt fires
+    setTimeout(hideAutoDraftProgress, prompts.length * 5000 + 4000);
   }
   window.__autoDraftChapter = autoDraftChapter;
+
+  function showAutoDraftProgress(done, total, chapterName) {
+    var el = document.getElementById('hna-autodraft-chip');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'hna-autodraft-chip';
+      el.className = 'hna-autodraft-chip';
+      document.body.appendChild(el);
+    }
+    var pct = Math.round((done / total) * 100);
+    el.innerHTML =
+      '<div class="hna-ad-spinner"></div>' +
+      '<div class="hna-ad-body">' +
+        '<div class="hna-ad-title">Auto-drafting · ' + escHtml(chapterName) + '</div>' +
+        '<div class="hna-ad-meta">' + done + ' of ' + total + ' prompts sent · ' + pct + '%</div>' +
+      '</div>' +
+      '<div class="hna-ad-bar"><span style="width:' + pct + '%"></span></div>';
+    el.classList.add('is-open');
+  }
+  function hideAutoDraftProgress() {
+    var el = document.getElementById('hna-autodraft-chip');
+    if (el) el.classList.remove('is-open');
+  }
+
+  /* Compute a 0-100 completion percentage for a single chapter.
+   * Combines: seed-content presence + rubric pass rate + word-count-to-target.
+   * Read by renderChapterRail to draw the progress ring on each chip. */
+  function computeChapterCompletion(slug) {
+    var ch = HNA_CHAPTERS[slug];
+    if (!ch) return 0;
+    var rubric = ch.rubric || [];
+    var rubricCount = rubric.length || 1;
+    // Build the chapter's full text without mounting it: concat seed + edits
+    var text = (ch.deck || '');
+    (ch.sections || []).forEach(function (s) {
+      text += ' ' + (s.heading || '') + ' ' + (s.body || '');
+    });
+    var edits = readHnaEdits().filter(function (e) {
+      return (e.chapter || DEFAULT_HNA_CHAPTER) === slug;
+    });
+    edits.forEach(function (e) { text += ' ' + (e.heading || '') + ' ' + (e.text || ''); });
+    var textLc = text.toLowerCase();
+    var rubricPassed = rubric.filter(function (k) { return textLc.indexOf(k.toLowerCase()) >= 0; }).length;
+    var rubricPct = (rubricPassed / rubricCount) * 100;
+    // Word count vs target
+    var words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    var target = ch.target_words || 1000;
+    var wordPct = Math.min(100, (words / target) * 100);
+    // Seed weight: fleshed chapters start at 30% just for having seed content
+    var seedPct = ch.stub ? 0 : 30;
+    var aiBoost = ch.stub ? Math.min(50, edits.length * 20) : 0;
+    var raw = seedPct + aiBoost + 0.35 * rubricPct + 0.35 * wordPct;
+    return Math.max(0, Math.min(100, Math.round(raw)));
+  }
 
   function renderChapterRail() {
     var rail = document.getElementById('hna-chapter-rail');
@@ -3653,10 +3711,20 @@
     rail.innerHTML = '';
     Object.keys(HNA_CHAPTERS).forEach(function (key) {
       var ch = HNA_CHAPTERS[key];
+      var pct = computeChapterCompletion(key);
       var a = document.createElement('a');
-      a.className = 'chapter-chip' + (key === slug ? ' is-on' : '') + (ch.stub ? ' is-stub' : '');
+      a.className = 'chapter-chip' +
+                    (key === slug ? ' is-on' : '') +
+                    (ch.stub ? ' is-stub' : '') +
+                    (pct >= 80 ? ' is-complete' : '') +
+                    (pct >= 30 && pct < 80 ? ' is-progress' : '');
       a.href = '#' + key;
-      a.innerHTML = '<span class="n">' + escHtml(ch.num) + '</span>' + ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, ' ').split(' ').slice(0, 2).join(' ');
+      a.title = ch.title.replace(/<[^>]+>/g, '') + ' · ' + pct + '% complete';
+      var label = ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, ' ').split(' ').slice(0, 2).join(' ');
+      a.innerHTML =
+        '<span class="n">' + escHtml(ch.num) + '</span>' +
+        '<span class="lab">' + escHtml(label) + '</span>' +
+        '<span class="prog" style="width:' + pct + '%;"></span>';
       rail.appendChild(a);
     });
   }
@@ -3821,18 +3889,142 @@
       lines.push('');
     }
     var md = lines.join('\n');
-    var blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    var url = URL.createObjectURL(blob);
-    var iso = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'semphn-hna-' + slug + '-' + iso + '.md';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () { try { URL.revokeObjectURL(url); a.remove(); } catch (_) {} }, 1000);
+    triggerDownload(md, 'semphn-hna-' + slug + '-' + isoStamp() + '.md', 'text/markdown;charset=utf-8');
     showToast('Exported chapter ' + ch.num, 'success');
   }
   window.__exportHnaChapterMd = exportHnaChapterMd;
+
+  function isoStamp() {
+    return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  }
+  function triggerDownload(content, filename, mime) {
+    var blob = new Blob([content], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { try { URL.revokeObjectURL(url); a.remove(); } catch (_) {} }, 1000);
+  }
+
+  /* Export the FULL HNA · all 12 chapters bundled with cover + TOC */
+  function exportHnaFullMd() {
+    var date = new Date();
+    var lines = [
+      '# SEMPHN Health Needs Assessment 2025-28',
+      '',
+      '> South Eastern Melbourne PHN · annual update',
+      '> Exported ' + date.toUTCString(),
+      '> Lodgement target · PPERS · 15 Nov 2026',
+      '',
+      '---',
+      '',
+      '## Table of contents',
+      '',
+    ];
+    var slugs = Object.keys(HNA_CHAPTERS);
+    slugs.forEach(function (s) {
+      var ch = HNA_CHAPTERS[s];
+      var pct = computeChapterCompletion(s);
+      var titleClean = ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '');
+      lines.push('- **Ch ' + ch.num + ' · ' + titleClean + '** — ' + pct + '% complete');
+    });
+    lines.push(''); lines.push('---'); lines.push('');
+    var edits = readHnaEdits();
+    slugs.forEach(function (s) {
+      var ch = HNA_CHAPTERS[s];
+      var titleClean = ch.title.replace(/<\/?em>/g, '*').replace(/<[^>]+>/g, '');
+      lines.push('# Chapter ' + ch.num + ' · ' + titleClean);
+      lines.push('');
+      if (ch.subtitle) { lines.push('*' + ch.subtitle + '*'); lines.push(''); }
+      if (ch.deck) {
+        lines.push('**' + stripHtml(ch.deck) + '**');
+        lines.push('');
+      }
+      (ch.sections || []).forEach(function (sec) {
+        lines.push('## ' + sec.heading);
+        lines.push('');
+        lines.push(stripHtml(sec.body));
+        lines.push('');
+      });
+      // AI edits for this chapter
+      edits.filter(function (e) { return (e.chapter || DEFAULT_HNA_CHAPTER) === s; }).forEach(function (e) {
+        if (e.heading) { lines.push('## ' + e.heading); lines.push(''); }
+        if (e.text) { lines.push(stripHtml(e.text)); lines.push(''); }
+      });
+      // Sources
+      if (ch.sources && ch.sources.length) {
+        lines.push('### Sources'); lines.push('');
+        ch.sources.forEach(function (id) {
+          lines.push('- **' + id + '** · ' + (SOURCE_LABELS[id] || id));
+        });
+        lines.push('');
+      }
+      lines.push('---'); lines.push('');
+    });
+    triggerDownload(lines.join('\n'), 'semphn-hna-FULL-' + isoStamp() + '.md', 'text/markdown;charset=utf-8');
+    showToast('Exported full HNA · ' + slugs.length + ' chapters', 'success');
+  }
+  window.__exportHnaFullMd = exportHnaFullMd;
+
+  function stripHtml(html) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    return (tmp.textContent || '').trim();
+  }
+
+  /* Export current chapter as a Word-compatible .doc file
+   * Word opens HTML files cleanly when given proper meta + .doc extension.
+   * No external libs needed — the Microsoft Word Pre-2007 HTML format. */
+  function exportHnaChapterDoc() {
+    var slug = currentChapterSlug();
+    var ch = HNA_CHAPTERS[slug];
+    if (!ch) return;
+    var body = document.getElementById('hna-doc-body');
+    if (!body) return;
+    var titleClean = ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '');
+    // Strip our action UI from a clone of the body
+    var clone = body.cloneNode(true);
+    Array.prototype.forEach.call(clone.querySelectorAll('.hna-ai-edit-actions, .hna-stub, button, .turn-prompt-acts'), function (n) { n.remove(); });
+    // Promote AI-edit paragraphs to clean <p>
+    Array.prototype.forEach.call(clone.querySelectorAll('.hna-ai-edit'), function (p) {
+      p.classList.remove('hna-ai-edit');
+      p.removeAttribute('class');
+    });
+    Array.prototype.forEach.call(clone.querySelectorAll('.hna-ai-edit-wrap'), function (w) {
+      w.replaceWith.apply(w, Array.from(w.children));
+    });
+    var bodyHtml = clone.innerHTML;
+    var sourcesHtml = '';
+    if (ch.sources && ch.sources.length) {
+      sourcesHtml = '<h2>Sources</h2><ul>' + ch.sources.map(function (id) {
+        return '<li><strong>' + id + '</strong> · ' + (SOURCE_LABELS[id] || id) + '</li>';
+      }).join('') + '</ul>';
+    }
+    var html =
+      '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+      '<head><meta charset="utf-8"/><title>' + escHtml(titleClean) + '</title>' +
+      '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->' +
+      '<style>' +
+        'body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#0A0A0A;line-height:1.5;max-width:800px;margin:24pt auto;padding:0 24pt}' +
+        'h1{color:#04264E;font-size:24pt;font-weight:400;margin:0 0 12pt;line-height:1.1}' +
+        'h2{color:#04264E;font-size:13pt;font-weight:600;margin:18pt 0 6pt}' +
+        'h3{color:#04264E;font-size:11pt;font-weight:600;margin:14pt 0 4pt}' +
+        '.deck{font-size:12pt;color:#444;border-bottom:1px solid #ddd;padding-bottom:10pt;margin-bottom:14pt}' +
+        '.doc-meta{color:#666;font-size:9pt;border-bottom:1px solid #ddd;padding-bottom:8pt;margin-bottom:14pt}' +
+        'p{margin:0 0 8pt}' +
+        '.chip{background:#E5F4F0;color:#04264E;padding:1pt 4pt;border:1px solid #82D9C4;border-radius:3pt;font-size:10pt}' +
+        'ul{margin:6pt 0 12pt 18pt}' +
+        'li{margin:2pt 0}' +
+      '</style></head><body>' +
+      '<div class="doc-meta">SEMPHN HNA 2025-28 · Chapter ' + ch.num + ' · ' + escHtml(ch.subtitle || '') + ' · target ' + (ch.target_words || '—') + ' words</div>' +
+      '<h1>' + titleClean + '</h1>' +
+      bodyHtml +
+      sourcesHtml +
+      '</body></html>';
+    triggerDownload(html, 'semphn-hna-' + slug + '-' + isoStamp() + '.doc', 'application/msword');
+    showToast('Exported chapter ' + ch.num + ' as Word doc', 'success');
+  }
+  window.__exportHnaChapterDoc = exportHnaChapterDoc;
 
   /* ============================================================
    * Storage helpers
@@ -5486,9 +5678,38 @@
       window.addEventListener('hashchange', function () {
         window.__renderHnaChapter();
       });
-      // Wire toolbar buttons
-      var exp = document.getElementById('hna-export-md');
-      if (exp) exp.addEventListener('click', function () {
+      // Wire toolbar export dropdown
+      var expBtn = document.getElementById('hna-export-btn');
+      var expPop = document.getElementById('hna-export-pop');
+      if (expBtn && expPop) {
+        expBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var open = !expPop.hasAttribute('hidden');
+          if (open) { expPop.setAttribute('hidden', ''); expBtn.setAttribute('aria-expanded', 'false'); }
+          else { expPop.removeAttribute('hidden'); expBtn.setAttribute('aria-expanded', 'true'); }
+        });
+        Array.prototype.forEach.call(expPop.querySelectorAll('[data-export]'), function (item) {
+          item.addEventListener('click', function () {
+            var kind = item.getAttribute('data-export');
+            expPop.setAttribute('hidden', '');
+            expBtn.setAttribute('aria-expanded', 'false');
+            if (kind === 'md' && typeof window.__exportHnaChapterMd === 'function') window.__exportHnaChapterMd();
+            if (kind === 'doc' && typeof window.__exportHnaChapterDoc === 'function') window.__exportHnaChapterDoc();
+            if (kind === 'full' && typeof window.__exportHnaFullMd === 'function') window.__exportHnaFullMd();
+          });
+        });
+        // Click outside to close
+        document.addEventListener('click', function (e) {
+          if (!expPop.hasAttribute('hidden') &&
+              !expBtn.contains(e.target) && !expPop.contains(e.target)) {
+            expPop.setAttribute('hidden', '');
+            expBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+      // Legacy single button (back-compat for stale HTML)
+      var expLegacy = document.getElementById('hna-export-md');
+      if (expLegacy) expLegacy.addEventListener('click', function () {
         if (typeof window.__exportHnaChapterMd === 'function') window.__exportHnaChapterMd();
       });
       var lodge = document.getElementById('hna-lodge');

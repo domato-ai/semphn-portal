@@ -1076,6 +1076,130 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .chapter-chip.is-stub .n { background: var(--rule); color: var(--slate); }
 .chapter-chip.is-stub:hover .n { background: var(--teal); color: var(--navy); }
 
+/* Chapter rail · completion progress fill at the bottom of each chip */
+.chapter-chip { position: relative; overflow: hidden; }
+.chapter-chip .prog {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--teal, #55BFAF), #4C86FF);
+  transition: width 600ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  border-radius: 0 0 999px 999px;
+  opacity: 0.85;
+}
+.chapter-chip.is-on .prog {
+  background: linear-gradient(90deg, var(--teal-mint, #82D9C4), #FFFFFF);
+}
+.chapter-chip.is-complete .n {
+  background: var(--positive, #10B981);
+  color: white;
+  position: relative;
+}
+.chapter-chip.is-complete .n::after {
+  content: "✓";
+  position: absolute;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.chapter-chip.is-complete.is-stub .n::after { content: ""; }
+
+/* Auto-draft progress · floating bottom-left chip while queue runs */
+.hna-autodraft-chip {
+  position: fixed;
+  bottom: 56px; left: 24px;
+  z-index: 700;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--r);
+  padding: 0.9rem 1rem 1rem 0.9rem;
+  min-width: 280px;
+  max-width: 360px;
+  box-shadow: 0 20px 48px -16px rgba(10,10,10,0.4);
+  font-family: var(--sans);
+  display: flex; align-items: center; gap: 0.7rem;
+  transform: translateY(150%);
+  opacity: 0;
+  transition: transform 280ms cubic-bezier(0.2, 0.6, 0.2, 1), opacity 200ms;
+}
+.hna-autodraft-chip.is-open {
+  transform: translateY(0);
+  opacity: 1;
+}
+.hna-ad-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: var(--teal, #55BFAF);
+  border-radius: 50%;
+  animation: hna-ad-spin 700ms linear infinite;
+  flex: none;
+}
+@keyframes hna-ad-spin { to { transform: rotate(360deg); } }
+.hna-ad-body { flex: 1; min-width: 0; }
+.hna-ad-title {
+  font-size: 0.82rem; font-weight: 600;
+  margin-bottom: 0.15rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hna-ad-meta {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.6);
+  font-family: var(--mono);
+}
+.hna-ad-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 0 0 var(--r) var(--r);
+  overflow: hidden;
+}
+.hna-ad-bar span {
+  display: block; height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--teal, #55BFAF), #4C86FF);
+  transition: width 400ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+/* Export dropdown menu (canvas-actions) */
+.hna-export-menu { position: relative; display: inline-block; }
+.hna-export-menu > button {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.hna-export-menu > button .caret {
+  font-size: 0.65rem; color: var(--slate-mute);
+  transition: transform var(--motion-fast);
+}
+.hna-export-menu > button[aria-expanded="true"] .caret { transform: rotate(180deg); }
+.hna-export-pop {
+  position: absolute;
+  top: calc(100% + 6px); right: 0;
+  z-index: 500;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  box-shadow: 0 16px 32px -12px rgba(10,10,10,0.16);
+  padding: 0.4rem;
+  min-width: 260px;
+  display: flex; flex-direction: column;
+  gap: 0.1rem;
+  animation: cmdk-in 160ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.hna-export-pop[hidden] { display: none; }
+.hna-export-pop button {
+  display: flex; flex-direction: column;
+  gap: 0.15rem;
+  background: none; border: none;
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink);
+  transition: background var(--motion-fast);
+}
+.hna-export-pop button:hover { background: var(--rule-soft); }
+.hna-export-pop .lab { font-size: 0.86rem; font-weight: 500; }
+.hna-export-pop .sub { font-size: 0.72rem; color: var(--slate-soft); }
+
 /* ───────── HNA · Next steps guide panel (always-on per chapter) ───────── */
 .hna-next {
   max-width: 820px;
