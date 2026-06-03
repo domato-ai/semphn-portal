@@ -3329,7 +3329,23 @@
     pTxt.textContent = turn.prompt || '';
     var pAv = document.createElement('div'); pAv.className = 'avatar';
     pAv.textContent = turn.avatar || 'U';
-    pr.appendChild(pTxt); pr.appendChild(pAv);
+    // Action chips on hover · edit (load back into composer) + retry
+    var pActs = document.createElement('div'); pActs.className = 'turn-prompt-acts';
+    var editBtn = document.createElement('button');
+    editBtn.type = 'button'; editBtn.className = 'turn-act-btn'; editBtn.title = 'Edit and resend'; editBtn.setAttribute('aria-label', 'Edit prompt');
+    editBtn.innerHTML = '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5 13.5 5l-8 8H3v-2.5l8-8Z"/><path d="m10 3.5 2.5 2.5"/></svg>';
+    editBtn.addEventListener('click', function () {
+      var input = document.getElementById('chat-input');
+      if (!input) return;
+      input.value = turn.prompt || '';
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+      input.selectionStart = 0;
+      input.selectionEnd = input.value.length;
+      showToast('Loaded into composer · edit and send', 'success');
+    });
+    pActs.appendChild(editBtn);
+    pr.appendChild(pTxt); pr.appendChild(pActs); pr.appendChild(pAv);
     wrap.appendChild(pr);
 
     if (turn.reasoning) {
@@ -3380,6 +3396,14 @@
       dots.appendChild(document.createElement('span'));
       dots.appendChild(document.createElement('span'));
       th.appendChild(dots);
+      // Stop button · cancels in-flight generation via __chatAbort
+      var stopBtn = document.createElement('button');
+      stopBtn.type = 'button'; stopBtn.className = 'turn-stop'; stopBtn.title = 'Stop generating';
+      stopBtn.innerHTML = '<svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><rect x="3" y="3" width="10" height="10" rx="1.5"/></svg><span>Stop</span>';
+      stopBtn.addEventListener('click', function () {
+        if (typeof window.__chatAbort === 'function') window.__chatAbort();
+      });
+      th.appendChild(stopBtn);
       // Rotate the label through page-aware stages every 1.4s while thinking
       var stages = THINKING_STAGES[pageId()] || THINKING_STAGES._default;
       var stageIdx = 0;
@@ -3399,6 +3423,20 @@
     if (turn.summary) {
       var bod = document.createElement('div'); bod.className = 'turn-body';
       renderMarkdown(turn.summary, bod);
+      // Copy-reply button · floats top-right of the body, only visible on hover
+      var copyBtn = document.createElement('button');
+      copyBtn.type = 'button'; copyBtn.className = 'turn-body-copy'; copyBtn.title = 'Copy reply';
+      copyBtn.innerHTML = '<svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="9" height="11" rx="1.4"/><path d="M11 13v1.4A0.6.6 0 0 1 10.4 15H2.6A0.6.6 0 0 1 2 14.4V4.6A0.6.6 0 0 1 2.6 4H4"/></svg>';
+      copyBtn.addEventListener('click', function () {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(turn.summary).then(function () {
+            copyBtn.classList.add('is-done');
+            showToast('Reply copied to clipboard', 'success');
+            setTimeout(function () { copyBtn.classList.remove('is-done'); }, 1500);
+          }).catch(function () { showToast('Copy failed', 'warn'); });
+        }
+      });
+      bod.appendChild(copyBtn);
       wrap.appendChild(bod);
     }
 
@@ -3415,14 +3453,29 @@
 
     if (turn.summary) {
       var fb = document.createElement('div'); fb.className = 'turn-feedback';
-      ['👍', '👎', '↻'].forEach(function (sym) {
+      [
+        { sym: '👍',  cls: 'fb-up',    tip: 'Helpful' },
+        { sym: '👎',  cls: 'fb-down',  tip: 'Not helpful' },
+        { sym: '↻',  cls: 'fb-retry', tip: 'Retry — re-fire this prompt as a new turn' },
+      ].forEach(function (def) {
         var b = document.createElement('button');
-        b.type = 'button'; b.textContent = sym;
+        b.type = 'button'; b.textContent = def.sym; b.title = def.tip;
+        b.className = def.cls;
         b.addEventListener('click', function () {
+          if (def.sym === '↻') {
+            // Actually retry · re-fire the prompt as a new turn
+            var input = document.getElementById('chat-input');
+            var send  = document.getElementById('chat-send');
+            if (!input || !turn.prompt) return;
+            input.value = turn.prompt;
+            input.dispatchEvent(new Event('input'));
+            input.focus();
+            if (send && !send.disabled) send.click();
+            return;
+          }
           b.classList.toggle('is-on');
-          if (sym === '↻') showToast('Regenerating…', 'success');
-          else if (sym === '👍') showToast('Thanks — saved as helpful', 'success');
-          else if (sym === '👎') showToast('Noted — saved as not helpful', 'warn');
+          if (def.sym === '👍') showToast('Thanks — saved as helpful', 'success');
+          else if (def.sym === '👎') showToast('Noted — saved as not helpful', 'warn');
         });
         fb.appendChild(b);
       });
@@ -3943,6 +3996,11 @@
       renderFeed();
       setBusy(true);
 
+      // AbortController · lets the user cancel the in-flight request via the
+      // Stop button on the thinking indicator (rendered by buildTurnNode).
+      var abort = new AbortController();
+      window.__chatAbort = function () { try { abort.abort(); } catch (_) {} };
+
       try {
         var apiSlug = meta.api_slug;
         var historyMessages = turns
@@ -3962,6 +4020,7 @@
             messages: historyMessages,
             context_summary: contextSummary,
           }),
+          signal: abort.signal,
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         var data = await res.json();
@@ -4043,13 +4102,23 @@
         renderSuggestStrip();    // refresh the persistent strip with new follow-ups
         updateLastSaved();
       } catch (err) {
-        turn.summary = 'Sorry — the assist is unreachable right now. Please retry.';
-        turn.thinking = false;
-        setPageTurns(pageId(), turns);
-        renderFeed();
-        renderSuggestStrip();
-        showToast('Chat backend unreachable — retry', 'error');
+        if (err && err.name === 'AbortError') {
+          turn.summary = '_Stopped._';
+          turn.thinking = false;
+          setPageTurns(pageId(), turns);
+          renderFeed();
+          renderSuggestStrip();
+          showToast('Stopped', 'warn');
+        } else {
+          turn.summary = 'Sorry — the assist is unreachable right now. Please retry.';
+          turn.thinking = false;
+          setPageTurns(pageId(), turns);
+          renderFeed();
+          renderSuggestStrip();
+          showToast('Chat backend unreachable — retry', 'error');
+        }
       } finally {
+        window.__chatAbort = null;
         setBusy(false);
         send.disabled = !input.value.trim();
       }
@@ -4253,6 +4322,63 @@
     });
   }
 
+  /* Wire the "Export" button · serialise the current page's turn list to
+   * Markdown and trigger a browser download. Useful for HNA audit trail —
+   * keep a record of how each chapter / dashboard was drafted. */
+  function wireExportButton() {
+    var btn = document.getElementById('chat-export');
+    if (!btn) return;
+    function syncDisabled() {
+      var has = getPageTurns(pageId()).length > 0;
+      btn.disabled = !has;
+      btn.title = has ? 'Export chat as Markdown' : 'Nothing to export yet';
+    }
+    syncDisabled();
+    window.__syncExportBtn = syncDisabled;
+    btn.addEventListener('click', function () {
+      var page = pageId();
+      var turns = getPageTurns(page);
+      if (!turns.length) { showToast('Nothing to export yet', 'warn'); return; }
+      var date = new Date();
+      var iso = date.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      var pageName = (PAGE_META[page] && PAGE_META[page].name) || page;
+      var lines = [
+        '# SEMPHN Workbench · ' + pageName + ' chat',
+        '',
+        '> Exported ' + date.toUTCString(),
+        '> Workspace: SEMPHN (PHN108)',
+        '> ' + turns.length + ' turn' + (turns.length === 1 ? '' : 's'),
+        '',
+        '---',
+        '',
+      ];
+      turns.forEach(function (t, i) {
+        lines.push('## Turn ' + (i + 1));
+        lines.push('');
+        lines.push('**You**');
+        lines.push('');
+        lines.push((t.prompt || '').trim());
+        lines.push('');
+        lines.push('**SEMPHN Workbench**');
+        lines.push('');
+        lines.push((t.summary || '_(no reply captured)_').trim());
+        lines.push('');
+        lines.push('---');
+        lines.push('');
+      });
+      var md = lines.join('\n');
+      var blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'semphn-' + page + '-chat-' + iso + '.md';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { try { URL.revokeObjectURL(url); a.remove(); } catch (_) {} }, 1000);
+      showToast('Exported ' + turns.length + '-turn chat', 'success');
+    });
+  }
+
   /* Sync the chat panel state for declutter:
    *   • Hide suggest strip while user is actively typing (typeahead takes over)
    *   • Hide composer hint after the first turn OR while typing
@@ -4286,6 +4412,7 @@
     var count = document.getElementById('chat-msgcount');
     if (count) count.textContent = turns.length ? turns.length + (turns.length === 1 ? ' message' : ' messages') : '';
     if (typeof window.__syncClearBtn === 'function') window.__syncClearBtn();
+    if (typeof window.__syncExportBtn === 'function') window.__syncExportBtn();
   }
   window.__syncChatState = syncChatState;
 
@@ -4435,6 +4562,7 @@
     wireResize();
     wireGlobalShortcuts();
     wireNewChatButton();
+    wireExportButton();
     renderSuggestStrip();    // initial starter chips (or follow-ups if turns persisted)
     updateStatus('idle');
     refreshSavedLabel();

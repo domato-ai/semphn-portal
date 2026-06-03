@@ -402,12 +402,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .turn-prompt {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 0.6rem;
   align-items: start;
   padding: 0.7rem 0.85rem;
   background: var(--rule-soft);
   border-radius: var(--r);
+  position: relative;
 }
 .turn-prompt .text { font-size: 0.92rem; line-height: 1.5; color: var(--ink); font-weight: 500; }
 .turn-prompt .avatar {
@@ -420,6 +421,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-weight: 600;
   flex: none;
 }
+.turn-prompt-acts {
+  display: inline-flex; align-items: center;
+  opacity: 0;
+  transform: translateY(-1px);
+  transition: opacity var(--motion-fast);
+}
+.turn-prompt:hover .turn-prompt-acts { opacity: 1; }
+.turn-act-btn {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--slate);
+  width: 22px; height: 22px;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all var(--motion-fast);
+}
+.turn-act-btn:hover { color: var(--ink); border-color: var(--slate-mute); background: var(--rule-soft); }
+.turn-act-btn svg { display: block; }
 
 .turn-section {
   display: inline-flex; align-items: center; gap: 0.4rem;
@@ -456,7 +476,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--ink);
   position: relative;
   padding-left: 1.1rem;
+  padding-right: 2rem;  /* room for the floating copy button */
 }
+/* Copy reply · floats top-right of body, only visible on hover */
+.turn-body-copy {
+  position: absolute;
+  top: 0; right: 0;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--slate-mute);
+  width: 24px; height: 24px;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: all var(--motion-fast);
+}
+.turn-body:hover .turn-body-copy { opacity: 1; }
+.turn-body-copy:hover { color: var(--ink); border-color: var(--slate-mute); background: var(--rule-soft); }
+.turn-body-copy.is-done {
+  opacity: 1; color: var(--positive, #10B981); border-color: var(--positive, #10B981);
+  background: rgba(16,185,129,0.08);
+}
+.turn-body-copy svg { display: block; }
 /* AI author pip · small gradient dot to the left of every AI reply */
 .turn-body::before {
   content: "";
@@ -542,6 +584,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @keyframes dot-pulse {
   0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
   40% { opacity: 1; transform: scale(1); }
+}
+.turn-stop {
+  position: relative; z-index: 1;
+  display: inline-flex; align-items: center; gap: 0.32rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 0.18rem 0.55rem 0.18rem 0.45rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 0.25rem;
+  transition: all var(--motion-fast);
+}
+.turn-stop:hover { background: var(--negative, #DC2626); border-color: var(--negative, #DC2626); }
+.turn-stop svg { display: block; }
+
+/* Toolbar icon-only variant (Export button) */
+.chat-tool.chat-tool-icon {
+  width: 28px; padding: 0; justify-content: center;
 }
 
 .turn-version {
