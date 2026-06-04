@@ -437,30 +437,56 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
     if "hna" in step_slug:
         parts.append(
             "\n=== HNA DOC CO-AUTHOR MODE ===\n"
-            "The user sees a real HNA Chapter 4 (First Nations people) doc on "
-            "the right with hardcoded seed paragraphs. ANY drafting request "
-            "(draft / write / add a paragraph on X / open the chapter / "
-            "tighten / soften / etc.) should produce a `paragraph` widget that "
-            "appends to the doc with a teal AI-highlight + Keep/Discard actions.\n\n"
-            "Always emit a paragraph widget when the user asks for drafting. "
-            "For critique-only requests ('what's weak about chapter 4'), "
-            "answer in prose without a widget.\n\n"
-            "Use REAL SEMPHN figures from the data slice below. Australian "
-            "English, professional health-policy register, strengths-based when "
-            "possible.\n\n"
+            "**HARD RULE — read first.** On the HNA page, EVERY drafting request "
+            "(draft / write / add a paragraph / add a section / footnote / tighten "
+            "/ soften / rewrite / open the chapter) MUST be answered with a "
+            "```widget fenced JSON block of type 'paragraph'. No paragraph widget "
+            "= no answer. The frontend renders the widget AS the chapter text; if "
+            "the widget is missing, the user sees nothing. Plain-prose drafts are "
+            "ALWAYS wrong on this page — even if you wrote a great paragraph, if "
+            "it's not in the widget block it won't appear in the document.\n\n"
+            "Use REAL SEMPHN figures from the ground-truth block. Australian "
+            "English, professional health-policy register, strengths-based where "
+            "possible. Include (source_id) tokens inline so citations link.\n\n"
             "Widget schema:\n"
             "```widget\n"
             "{\n"
             '  "type": "paragraph",\n'
             '  "title": "<short title shown in chat>",\n'
-            '  "heading": "<optional · h2 above the paragraph, e.g. \\"Housing · strain in the growth corridor\\">",\n'
-            '  "text": "<paragraph text. May use <strong>X</strong> for emphasis on figures. 60-120 words.>",\n'
+            '  "heading": "<the H2 above the paragraph, e.g. \\"Avoidable admissions · the primary-care signal\\">",\n'
+            '  "text": "<paragraph text. May use <strong>X</strong> for emphasis on figures. 60-150 words.>",\n'
             '  "position": "end"\n'
             "}\n"
-            "```\n"
-            "Prose: ONE short sentence ('Drafted a paragraph on housing strain.'). "
-            "FORBIDDEN: bullet lists, headings, 'Here's the paragraph' framing, "
-            "echoing the paragraph text in prose."
+            "```\n\n"
+            "Prose framing: ONE short sentence ONLY ('Drafted a paragraph on "
+            "avoidable admissions.'). FORBIDDEN: bullet lists, headings in prose, "
+            "'Here's the paragraph' framing, echoing the paragraph text in prose, "
+            "Markdown formatting outside the widget block.\n\n"
+            "=== ONE-SHOT EXAMPLE — follow this format exactly ===\n"
+            "User: Draft a paragraph on avoidable hospital admissions as a "
+            "primary-care performance signal. Heading: \"Avoidable admissions\".\n\n"
+            "Correct response:\n"
+            "Drafted a paragraph on avoidable admissions.\n"
+            "```widget\n"
+            "{\n"
+            '  "type": "paragraph",\n'
+            '  "title": "Avoidable admissions",\n'
+            '  "heading": "Avoidable admissions · the primary-care signal",\n'
+            '  "text": "Ambulatory-Care Sensitive Conditions per 100,000 (FY24) '
+            'concentrate in the catchment\\u2019s most-disadvantaged corridor: '
+            '<strong>Greater Dandenong 3,460</strong>, <strong>Frankston 3,120</strong>, '
+            '<strong>Mornington Peninsula 2,840</strong> (aihw_acsc_2024). These '
+            'are the admissions where strong primary care prevents avoidable '
+            'use \\u2014 diabetes complications, asthma, COPD, hypertension. The '
+            'SEMPHN PIP-QI uplift ($2.4M FY26) targets practices in these three '
+            'LGAs; the measurable indicator is the catchment\\u2019s ACSC rate '
+            'against the Victorian average of 1,980 per 100,000.",\n'
+            '  "position": "end"\n'
+            "}\n"
+            "```\n\n"
+            "=== END EXAMPLE — every paragraph-draft request must follow this "
+            "exact shape: one sentence of prose then a ```widget block. Never one "
+            "without the other. ==="
         )
 
     # ---- Maps page · LIVE MAP OVERLAY mode (different from Dashboards) ----
