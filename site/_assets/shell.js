@@ -82,6 +82,9 @@
         { icon: '⚡', label: 'Bowel screening focus · 5 tiles', template: 'bowel-screening' },
         { icon: '⚡', label: 'Headspace coverage · 5 tiles', template: 'headspace-coverage' },
         { icon: '⚡', label: 'GP retention curve · 5 tiles', template: 'gp-retention' },
+        { icon: '⚡', label: 'Risk factor profile · 5 tiles', template: 'risk-factor-profile' },
+        { icon: '⚡', label: 'Cancer screening 3-program · 5 tiles', template: 'cancer-screening-3prog' },
+        { icon: '⚡', label: 'Suicide prevention · 5 tiles', template: 'suicide-prevention' },
       ]},
       { section: 'KPI tiles', items: [
         { icon: '#', label: 'Catchment population · 1.64M (+3.1%)',   prompt: 'Add a KPI tile showing the SEMPHN catchment population (1,638,200 in 2024) with the growth-pa delta (+3.1%).' },
@@ -103,6 +106,7 @@
     maps: [
       { section: 'Complete map views · instant', items: [
         { icon: '⚡', label: 'Mental health hotspots',  mapTemplate: 'mh-hotspots' },
+        { icon: '⚡', label: 'Suicide prevention',      mapTemplate: 'suicide-prevention' },
         { icon: '⚡', label: 'Service network',         mapTemplate: 'service-network' },
         { icon: '⚡', label: 'Aged care',               mapTemplate: 'aged-care' },
         { icon: '⚡', label: 'Equity overlay',          mapTemplate: 'equity' },
@@ -110,6 +114,8 @@
         { icon: '⚡', label: 'Homelessness',            mapTemplate: 'homelessness' },
         { icon: '⚡', label: 'Youth services',          mapTemplate: 'youth-services' },
         { icon: '⚡', label: 'School density',          mapTemplate: 'school-density' },
+        { icon: '⚡', label: 'CVD burden',              mapTemplate: 'cvd-burden' },
+        { icon: '⚡', label: 'Risk factors',            mapTemplate: 'risk-factors' },
       ]},
       { section: 'Service points · drop a layer', items: [
         { icon: '⊙', label: '9 headspace centres',      mapPoints: ['headspace'] },
@@ -553,6 +559,125 @@
               {label:'FY24',value:6200000},{label:'FY25',value:6500000},{label:'FY26',value:6800000}]},
     ],
 
+    'risk-factor-profile': [
+      { type:'kpi', title:'Catchment adult smoker',
+        subtitle:'AIHW NHS 2022 · daily smoking', unit:'pct',
+        source_id:'aihw_nhs_2022', delta:'-0.5pp pa',
+        data:[{label:'VIC 10.7% · falling steady', value:10.4}] },
+      { type:'bar', title:'Overweight + obese · by LGA',
+        subtitle:'BMI ≥ 25 · AIHW NHS 2022', unit:'pct',
+        source_id:'aihw_nhs_2022', highlight:'Cardinia',
+        data:[
+          {label:'Cardinia',value:68.4},{label:'Frankston',value:65.2},
+          {label:'Casey',value:64.8},{label:'Greater Dandenong',value:63.1},
+          {label:'Mornington Peninsula',value:62.4},{label:'Kingston (Vic.)',value:58.6},
+          {label:'Glen Eira',value:51.2},{label:'Bayside (Vic.)',value:49.8},
+          {label:'Port Phillip',value:48.4},{label:'Stonnington',value:47.2},
+        ]},
+      { type:'bar', title:'Insufficient physical activity · by LGA',
+        subtitle:'< 150 min/week · AIHW NHS 2022', unit:'pct',
+        source_id:'aihw_nhs_2022', highlight:'Greater Dandenong',
+        data:[
+          {label:'Greater Dandenong',value:58.4},{label:'Casey',value:52.6},
+          {label:'Cardinia',value:51.8},{label:'Frankston',value:49.2},
+          {label:'Mornington Peninsula',value:47.4},{label:'Kingston (Vic.)',value:44.6},
+          {label:'Glen Eira',value:38.4},{label:'Bayside (Vic.)',value:36.2},
+          {label:'Stonnington',value:33.8},{label:'Port Phillip',value:32.4},
+        ]},
+      { type:'donut', title:'Risk factors driving avoidable deaths',
+        subtitle:'AIHW Burden of Disease 2024 · catchment estimate', unit:'pct',
+        source_id:'aihw_bod_2024',
+        data:[
+          {label:'Tobacco use',value:18},{label:'Obesity + diet',value:24},
+          {label:'Risky alcohol',value:12},{label:'Physical inactivity',value:14},
+          {label:'Blood pressure',value:14},{label:'Other',value:18},
+        ]},
+      { type:'bar', title:'Risky alcohol consumption · by LGA',
+        subtitle:'Lifetime risk · AIHW NHS 2022', unit:'pct',
+        source_id:'aihw_nhs_2022', highlight:'Mornington Peninsula',
+        data:[
+          {label:'Mornington Peninsula',value:24.6},{label:'Frankston',value:22.1},
+          {label:'Bayside (Vic.)',value:21.4},{label:'Cardinia',value:19.8},
+          {label:'Port Phillip',value:19.4},{label:'Kingston (Vic.)',value:17.6},
+          {label:'Stonnington',value:17.2},{label:'Casey',value:16.4},
+          {label:'Glen Eira',value:15.8},{label:'Greater Dandenong',value:12.6},
+        ]},
+    ],
+
+    'cancer-screening-3prog': [
+      { type:'kpi', title:'Casey · lowest bowel in Australia',
+        subtitle:'NBCSP FY24', unit:'pct',
+        source_id:'aihw_nbcsp_2024', delta:'-11.1pp vs VIC',
+        data:[{label:'Catchment 44.2% · target 60%', value:35.9}] },
+      { type:'bar', title:'Bowel screening · by LGA',
+        subtitle:'NBCSP FY24 · ranked LOW to high', unit:'pct',
+        source_id:'aihw_nbcsp_2024', highlight:'Casey',
+        data:[
+          {label:'Casey',value:35.9},{label:'Greater Dandenong',value:38.4},
+          {label:'Cardinia',value:41.2},{label:'Mornington Peninsula',value:42.8},
+          {label:'Frankston',value:44.6},{label:'Kingston (Vic.)',value:46.3},
+          {label:'Glen Eira',value:47.8},{label:'Bayside (Vic.)',value:49.1},
+          {label:'Port Phillip',value:50.2},{label:'Stonnington',value:51.4},
+        ]},
+      { type:'bar', title:'Breast screening (50-74) · by LGA',
+        subtitle:'BreastScreen Victoria 2024', unit:'pct',
+        source_id:'breastscreen_vic_2024', highlight:'Greater Dandenong',
+        data:[
+          {label:'Bayside (Vic.)',value:58.4},{label:'Kingston (Vic.)',value:56.2},
+          {label:'Glen Eira',value:55.8},{label:'Mornington Peninsula',value:54.2},
+          {label:'Frankston',value:52.1},{label:'Port Phillip',value:51.4},
+          {label:'Stonnington',value:50.6},{label:'Cardinia',value:49.2},
+          {label:'Casey',value:46.8},{label:'Greater Dandenong',value:43.4},
+        ]},
+      { type:'bar', title:'Cervical screening (25-74) · by LGA',
+        subtitle:'VCCR 2024 · CCST participation', unit:'pct',
+        source_id:'vccr_2024', highlight:'Greater Dandenong',
+        data:[
+          {label:'Stonnington',value:71.2},{label:'Bayside (Vic.)',value:70.4},
+          {label:'Port Phillip',value:69.6},{label:'Glen Eira',value:68.4},
+          {label:'Kingston (Vic.)',value:66.8},{label:'Frankston',value:62.4},
+          {label:'Mornington Peninsula',value:61.8},{label:'Cardinia',value:58.2},
+          {label:'Casey',value:55.4},{label:'Greater Dandenong',value:48.6},
+        ]},
+      { type:'area', title:'Catchment bowel-screening trend',
+        subtitle:'NBCSP FY20-FY24', unit:'pct',
+        source_id:'aihw_phidu_2020_2024',
+        data:[{label:'FY20',value:42.1},{label:'FY21',value:42.8},
+              {label:'FY22',value:43.4},{label:'FY23',value:43.9},{label:'FY24',value:44.2}]},
+    ],
+
+    'suicide-prevention': [
+      { type:'kpi', title:'Catchment suicide rate',
+        subtitle:'5-yr avg · per 100,000 · age-standardised', unit:'per_100k',
+        source_id:'vsr_2024', delta:'M 12.6 · F 4.2',
+        data:[{label:'Frankston 14.2 catchment-highest', value:8.4}] },
+      { type:'bar', title:'Suicide rate · by LGA',
+        subtitle:'Combined rate per 100,000 · 5-yr avg', unit:'per_100k',
+        source_id:'vsr_2024', highlight:'Frankston',
+        data:[
+          {label:'Frankston',value:14.2},{label:'Mornington Peninsula',value:13.6},
+          {label:'Greater Dandenong',value:12.4},{label:'Cardinia',value:11.8},
+          {label:'Casey',value:11.2},{label:'Port Phillip',value:9.6},
+          {label:'Kingston (Vic.)',value:9.4},{label:'Glen Eira',value:8.2},
+          {label:'Bayside (Vic.)',value:7.6},{label:'Stonnington',value:6.8},
+        ]},
+      { type:'kpi', title:'Self-harm ED · 15-24 cohort',
+        subtitle:'AIHW ED data · per 100,000', unit:'per_100k',
+        source_id:'aihw_ed_2024', delta:'+24% 3-yr',
+        data:[{label:'VIC 254 · catchment elevated', value:318}] },
+      { type:'donut', title:'Means of suicide · 5-yr',
+        subtitle:'Victorian Suicide Register 2024', unit:'pct',
+        source_id:'vsr_2024',
+        data:[
+          {label:'Hanging',value:53},{label:'Pharmaceutical',value:18},
+          {label:'Other',value:23},{label:'Firearm',value:6},
+        ]},
+      { type:'kpi', title:'Suicide prevention funding · FY26',
+        subtitle:'Anglicare + StandBy · postvention', unit:'aud',
+        source_id:'semphn_funding_fy26', delta:'+12% vs FY25',
+        data:[{label:'Gap: Mornington Peninsula coverage', value:1480000}] },
+    ],
+
     'gp-retention': [
       { type:'kpi', title:'GP FTE · catchment',
         subtitle:'AHPRA + DoH MABEL 2024', unit:'count',
@@ -915,6 +1040,60 @@
       },
       layers: ['headspace'],
     },
+    'suicide-prevention': {
+      title: 'Suicide prevention',
+      description: 'Suicide rate choropleth + headspace + MH services + AOD — postvention gap analysis',
+      choropleth: {
+        type: 'choropleth',
+        title: 'Suicide rate · per 100,000',
+        unit: 'per_100k', unit_label: 'age-standardised, 5-yr avg',
+        source_id: 'vsr_2024', highlight: 'Frankston',
+        data: [
+          { label: 'Frankston', value: 14.2 }, { label: 'Mornington Peninsula', value: 13.6 },
+          { label: 'Greater Dandenong', value: 12.4 }, { label: 'Cardinia', value: 11.8 },
+          { label: 'Casey', value: 11.2 }, { label: 'Port Phillip', value: 9.6 },
+          { label: 'Kingston (Vic.)', value: 9.4 }, { label: 'Glen Eira', value: 8.2 },
+          { label: 'Bayside (Vic.)', value: 7.6 }, { label: 'Stonnington', value: 6.8 },
+        ],
+      },
+      layers: ['headspace', 'mh', 'aod'],
+    },
+    'risk-factors': {
+      title: 'Risk factors',
+      description: 'Adult overweight + obese % choropleth + headspace + GP — where lifestyle intervention lands',
+      choropleth: {
+        type: 'choropleth',
+        title: 'Adult overweight + obese (BMI ≥ 25)',
+        unit: 'pct', unit_label: '% of adults · AIHW NHS 2022',
+        source_id: 'aihw_nhs_2022', highlight: 'Cardinia',
+        data: [
+          { label: 'Cardinia', value: 68.4 }, { label: 'Frankston', value: 65.2 },
+          { label: 'Casey', value: 64.8 }, { label: 'Greater Dandenong', value: 63.1 },
+          { label: 'Mornington Peninsula', value: 62.4 }, { label: 'Kingston (Vic.)', value: 58.6 },
+          { label: 'Glen Eira', value: 51.2 }, { label: 'Bayside (Vic.)', value: 49.8 },
+          { label: 'Port Phillip', value: 48.4 }, { label: 'Stonnington', value: 47.2 },
+        ],
+      },
+      layers: ['gp', 'headspace'],
+    },
+    'cvd-burden': {
+      title: 'CVD burden',
+      description: 'AMI admission rate choropleth + hospitals — cardiovascular access gradient',
+      choropleth: {
+        type: 'choropleth',
+        title: 'AMI admissions · per 100,000',
+        unit: 'per_100k', unit_label: 'AIHW Admitted Patient Care FY24',
+        source_id: 'aihw_admitted_patient_2024', highlight: 'Greater Dandenong',
+        data: [
+          { label: 'Greater Dandenong', value: 412 }, { label: 'Frankston', value: 376 },
+          { label: 'Mornington Peninsula', value: 358 }, { label: 'Cardinia', value: 322 },
+          { label: 'Casey', value: 304 }, { label: 'Kingston (Vic.)', value: 248 },
+          { label: 'Glen Eira', value: 218 }, { label: 'Port Phillip', value: 202 },
+          { label: 'Bayside (Vic.)', value: 192 }, { label: 'Stonnington', value: 178 },
+        ],
+      },
+      layers: ['hospital', 'gp'],
+    },
   };
 
   /* Click handler · applies the template to the live default map.
@@ -928,13 +1107,63 @@
     api.reset();
     if (tpl.choropleth) api.applyData(JSON.parse(JSON.stringify(tpl.choropleth)));
     if (tpl.layers && tpl.layers.length) {
-      // Defer slightly so choropleth legend settles first
       setTimeout(function () {
         api.applyPoints(tpl.layers, { fit: true });
       }, 60);
     }
     showToast('Loaded · ' + tpl.title, 'success');
+    // Show AI-synthesised narration banner for this map view
+    setTimeout(function () { showMapNarration(tpl); }, 220);
     return true;
+  }
+
+  /* Deterministic AI-style narration of the current map view.
+   * Pulls the choropleth's top value + layer counts to form a sentence the
+   * user can quote in chat or HNA. Renders as a floating bottom-left banner. */
+  function showMapNarration(tpl) {
+    var el = document.getElementById('map-narration');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'map-narration';
+      el.className = 'map-narration';
+      document.body.appendChild(el);
+    }
+    var bits = [];
+    if (tpl.choropleth && tpl.choropleth.data && tpl.choropleth.data.length) {
+      var top = tpl.choropleth.data[0];
+      var unit = tpl.choropleth.unit === 'pct' ? '%'
+                : tpl.choropleth.unit === 'per_1k' ? '/1k'
+                : tpl.choropleth.unit === 'per_10k' ? '/10k'
+                : tpl.choropleth.unit === 'per_100k' ? '/100k' : '';
+      bits.push('<strong>' + escHtml(top.label) + '</strong> leads at <strong>' + escHtml(String(top.value)) + unit + '</strong> on ' + escHtml(tpl.choropleth.title || 'the headline metric') + '.');
+    }
+    if (tpl.layers && tpl.layers.length) {
+      var pl = tpl.layers.map(function (k) {
+        var s = SERVICE_STYLE[k] || { plural: k };
+        return s.plural || k;
+      }).join(' + ');
+      bits.push('Overlaid: ' + escHtml(pl) + '.');
+    }
+    if (tpl.description) bits.push(escHtml(tpl.description));
+    el.innerHTML =
+      '<div class="mn-head"><span class="mn-badge">Map insight</span>' +
+        '<span class="mn-title">' + escHtml(tpl.title || 'Catchment view') + '</span>' +
+        '<button type="button" class="mn-x" aria-label="Dismiss">×</button></div>' +
+      '<p class="mn-body">' + bits.join(' ') + '</p>' +
+      '<button type="button" class="mn-cta">Open HNA reference →</button>';
+    el.classList.add('is-open');
+    el.querySelector('.mn-x').addEventListener('click', function () {
+      el.classList.remove('is-open');
+    });
+    el.querySelector('.mn-cta').addEventListener('click', function () {
+      var prompt = 'Draft a short HNA paragraph framing this map view: ' + (tpl.title || '') + '. Use real SEMPHN figures · cite source_ids · heading reflects the focus.';
+      window.location.href = '/hna/?prompt=' + encodeURIComponent(prompt);
+    });
+    // Auto-hide 18s
+    clearTimeout(window.__mapNarrationTimer);
+    window.__mapNarrationTimer = setTimeout(function () {
+      if (el && el.classList.contains('is-open')) el.classList.remove('is-open');
+    }, 18000);
   }
   window.__loadMapTemplate = loadMapTemplate;
   window.__MAP_TEMPLATES = MAP_TEMPLATES;

@@ -1203,6 +1203,65 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: width 400ms cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 
+/* ───────── Maps · synthesised narration banner (after template load) ───────── */
+.map-narration {
+  position: fixed;
+  bottom: 24px; left: 24px;
+  z-index: 600;
+  width: 360px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  padding: 0.85rem 1rem 1rem;
+  box-shadow: 0 18px 36px -14px rgba(10,10,10,0.2);
+  transform: translateY(120%); opacity: 0;
+  transition: transform 280ms cubic-bezier(0.2, 0.6, 0.2, 1), opacity 220ms;
+  font-family: var(--sans);
+}
+.map-narration.is-open { transform: translateY(0); opacity: 1; }
+.mn-head {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.mn-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--teal, #55BFAF), #4C86FF);
+  color: white;
+  font-family: var(--mono); font-size: 0.6rem; font-weight: 600;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mn-title {
+  font-size: 0.86rem; font-weight: 600; color: var(--ink);
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mn-x {
+  background: none; border: none;
+  width: 24px; height: 24px; border-radius: 50%;
+  color: var(--slate-mute); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1rem; line-height: 1;
+}
+.mn-x:hover { background: var(--rule-soft); color: var(--ink); }
+.mn-body {
+  font-size: 0.84rem; line-height: 1.5;
+  color: var(--ink);
+  margin-bottom: 0.7rem;
+}
+.mn-body strong { font-weight: 600; }
+.mn-cta {
+  background: var(--ink); color: var(--paper);
+  border: none;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--r-sm);
+  font-family: inherit; font-weight: 500; font-size: 0.78rem;
+  cursor: pointer;
+  width: 100%;
+}
+.mn-cta:hover { background: #1F1F1F; }
+
 /* ───────── Dashboards · synthesized commentary banner ───────── */
 .wgt-card.wgt-commentary {
   padding: 1rem 1.2rem 1.1rem;
