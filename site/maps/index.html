@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Maps Â· SEMPHN Workbench</title>
+<title>Maps · SEMPHN Workbench</title>
 <meta name="description" content="Chat-build catchment maps for South Eastern Melbourne PHN. Choropleth + point overlay + heat." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1784200000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1784300000" />
 
-<!-- Leaflet Â· real interactive map for choropleths, points and overlays.
+<!-- Leaflet · real interactive map for choropleths, points and overlays.
      Real OSM tiles + actual SEMPHN LGA polygons from ABS LGA 2016 boundaries
      (bundled as /_assets/semphn-catchment.geojson, ~5.7 KB).
      Plus: Leaflet.markercluster for clustered service-point overlays. -->
@@ -29,7 +29,7 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
 
 <style>
-  /* Maps builder Â· full-bleed map fills the canvas-body. */
+  /* Maps builder · full-bleed map fills the canvas-body. */
 
   /* Override the default canvas-body padding so the map can fill edge-to-edge.
      The map IS the page; chrome lives only in the global nav + canvas-head. */
@@ -39,7 +39,7 @@
     position: relative;
   }
 
-  /* Default state Â· map fills the canvas-body entirely. Using absolute
+  /* Default state · map fills the canvas-body entirely. Using absolute
      positioning so we don't depend on flex propagation through deep nesting. */
   .maps-default {
     position: absolute;
@@ -67,7 +67,7 @@
     background: var(--rule-bg);
   }
 
-  /* Tighter canvas-head pills Â· widget count + clear in the toolbar */
+  /* Tighter canvas-head pills · widget count + clear in the toolbar */
   .canvas-pill {
     display: inline-flex; align-items: center;
     padding: 0.32rem 0.7rem;
@@ -98,13 +98,13 @@
       <a href="/maps/"       class="nav-link" data-page="maps"><span class="dot"></span>Maps</a>
     </nav>
     <button type="button" class="nav-cmdk" aria-label="Open command palette" title="Open command palette">
-      <span>Search</span> <kbd>âŒ˜K</kbd>
+      <span>Search</span> <kbd>⌘K</kbd>
     </button>
     <div class="nav-user" aria-label="Signed-in tenant">
       <span class="av">D</span>
       <span class="meta">
         <span class="who">demo@semphn.org.au</span>
-        <span class="sub">SEMPHN Â· PHN108</span>
+        <span class="sub">SEMPHN · PHN108</span>
       </span>
       <button type="button">Sign out</button>
     </div>
@@ -128,11 +128,11 @@
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h10"/><path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5V5"/><path d="M4.5 5l.5 8a1.5 1.5 0 0 0 1.5 1.4h3a1.5 1.5 0 0 0 1.5-1.4L11.5 5"/></svg>
           <span>Clear</span>
         </button>
-        <button type="button" class="chat-tool chat-collapse" aria-label="Collapse chat panel" title="Collapse chat panel">â€¹</button>
+        <button type="button" class="chat-tool chat-collapse" aria-label="Collapse chat panel" title="Collapse chat panel">‹</button>
       </div>
     </div>
     <div class="chat-feed" id="chat-feed"></div>
-    <!-- Contextual suggested prompts Â· starter chips before first turn,
+    <!-- Contextual suggested prompts · starter chips before first turn,
          follow-up chips after each turn. Driven by renderSuggestStrip(). -->
     <div class="chat-suggest" id="chat-suggest" aria-label="Suggested prompts"></div>
     <footer class="composer">
@@ -155,7 +155,7 @@
     <header class="canvas-head">
       <span class="page-label">
         <span class="dot"></span>Maps
-        <small>Â· catchment choropleth &amp; overlays</small>
+        <small>· catchment choropleth &amp; overlays</small>
       </span>
       <div class="canvas-actions">
         <button type="button" id="map-reset" title="Reset map to clean state">Reset map</button>
@@ -165,16 +165,16 @@
       </div>
     </header>
 
-    <!-- Full-bleed canvas body Â· the map fills the entire viewport. -->
+    <!-- Full-bleed canvas body · the map fills the entire viewport. -->
     <div class="canvas-body canvas-body-flush">
-      <!-- DEFAULT STATE Â· interactive SEMPHN catchment map. No wrapper
+      <!-- DEFAULT STATE · interactive SEMPHN catchment map. No wrapper
            card, no header, no tips. The map IS the page. Hidden when
            any widget lands. -->
       <div id="widget-empty" class="maps-default">
         <div id="maps-default-canvas" class="maps-default-canvas"></div>
       </div>
 
-      <!-- Widget grid Â· only shown when widgets exist. Padded so tiles
+      <!-- Widget grid · only shown when widgets exist. Padded so tiles
            don't go edge-to-edge. -->
       <div id="widget-grid" class="widget-grid-padded"></div>
 
@@ -187,13 +187,13 @@
 
 <footer class="statusbar" role="status">
   <div class="statusbar-left">
-    <span class="statusbar-item live" data-status="ai"> AI Â· ready</span>
+    <span class="statusbar-item live" data-status="ai"> AI · ready</span>
     <span class="statusbar-item hide-mobile" data-status="saved">All changes synced</span>
   </div>
   <div class="statusbar-right">
-    <span class="statusbar-item hide-mobile">SEMPHN Â· PHN108</span>
-    <span class="statusbar-item"><kbd>âŒ˜K</kbd> commands</span>
-    <span class="statusbar-item hide-mobile"><kbd>âŒ˜\</kbd> toggle chat</span>
+    <span class="statusbar-item hide-mobile">SEMPHN · PHN108</span>
+    <span class="statusbar-item"><kbd>⌘K</kbd> commands</span>
+    <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
   </div>
 </footer>
 <script>
@@ -217,7 +217,7 @@
     } catch (_) {}
   });
 
-  /* DEFAULT STATE Â· full-featured Leaflet GIS preview of the SEMPHN catchment.
+  /* DEFAULT STATE · full-featured Leaflet GIS preview of the SEMPHN catchment.
    * Includes: light/satellite/streets layer toggle, Nominatim search,
    * Locate Me, clustered SEMPHN service-point markers, LGA polygons. */
   var defaultMap = null;
@@ -255,6 +255,6 @@
   window.__initMapsDefault = initDefaultMap;
 })();
 </script>
-<script src="/_assets/shell.js?v=1784200000"></script>
+<script src="/_assets/shell.js?v=1784300000"></script>
 </body>
 </html>

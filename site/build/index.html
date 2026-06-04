@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en-AU">
 <head>
 <meta charset="UTF-8" />
@@ -59,7 +59,7 @@
     outline: 2px solid var(--teal); outline-offset: 2px;
   }
 
-  /* ─────────────────── TOP NAV ─────────────────── */
+  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ TOP NAV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .nav {
     background: var(--paper);
     border-bottom: 1px solid var(--rule);
@@ -124,7 +124,7 @@
     .nav-user .meta { display: none; }
   }
 
-  /* ─────────────────── SPLIT ─────────────────── */
+  /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ SPLIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .split {
     flex: 1; min-height: 0;
     display: grid;
@@ -134,11 +134,11 @@
     .split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
   }
 
-  /* ═══════════════════════════════════════════════════════════════════
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    * CHAT PANEL — FIGMA MAKE STYLE
    * Pinned user prompt → Reasoning → response text → Worked-with files
    * → summary → Version card → feedback → warnings → composer
-   * ═══════════════════════════════════════════════════════════════════ */
+   * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   .chat {
     background: var(--paper);
     border-right: 1px solid var(--rule);
@@ -304,7 +304,7 @@
     display: inline-flex; align-items: center; gap: 0.45rem;
   }
   .turn-warnings .label::before {
-    content: "⚠"; font-size: 0.9rem;
+    content: "âš "; font-size: 0.9rem;
   }
   .turn-warnings .right { display: inline-flex; align-items: center; gap: 0.5rem; }
   .turn-warnings .fix {
@@ -415,16 +415,16 @@
 
   /* Streaming dots inside turn-body */
   .turn-body.streaming::after {
-    content: "▍";
+    content: "â–";
     color: var(--teal);
     animation: blink 0.8s infinite;
     margin-left: 0.2rem;
   }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* ═══════════════════════════════════════════════════════════════════
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    * CANVAS (RIGHT) — TABS + RENDERED ARTIFACT
-   * ═══════════════════════════════════════════════════════════════════ */
+   * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   .canvas { background: var(--blue-grey); display: flex; flex-direction: column; min-height: 0; }
   .canvas-head {
     padding: 0 var(--gutter);
@@ -478,13 +478,13 @@
   .canvas-body::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 999px; }
   .canvas-pane { padding: clamp(1.5rem, 3vw, 2.5rem); max-width: 1280px; margin: 0 auto; }
 
-  /* ═══════════════════════════════════════════════════════════════════
+  /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    * DASHBOARD ARTIFACT (the rendered output)
    * Matches the Figma Make screenshot pattern:
    *   H1 + subtitle → 4 KPI cards (icon, label, value, % delta)
    *   → 2 charts row (bar + line, SVG)
    *   → recent items table
-   * ═══════════════════════════════════════════════════════════════════ */
+   * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   .dash-head { margin-bottom: 1.8rem; }
   .dash-head h1 {
     font-size: clamp(1.8rem, 3vw, 2.4rem);
@@ -533,9 +533,9 @@
   .kpi-delta.down { color: var(--accent-rose); }
   .kpi-delta::before {
     font-size: 0.78rem;
-    content: "↗";
+    content: "â†—";
   }
-  .kpi-delta.down::before { content: "↘"; }
+  .kpi-delta.down::before { content: "â†˜"; }
   .kpi-label {
     color: var(--slate);
     font-size: 0.88rem;
@@ -732,9 +732,9 @@
 
 <div class="split">
 
-  <!-- ═══════════════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        CHAT PANEL (LEFT) — FIGMA MAKE STYLE
-       ═══════════════════════════════════════════════════════════════════ -->
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="chat" aria-label="Workbench chat">
     <div class="chat-feed" id="chat-feed">
       <!-- Per-turn blocks rendered by JS -->
@@ -747,13 +747,13 @@
         <div class="composer-foot">
           <div class="composer-foot-left">
             <button type="button" class="icon" title="Add attachment">+</button>
-            <button type="button" class="icon" title="More options">⋯</button>
+            <button type="button" class="icon" title="More options">â‹¯</button>
           </div>
           <div class="composer-foot-right">
             <button type="button" class="mode">Default <span class="caret">▾</span></button>
-            <button type="button" class="icon" title="Voice input">🎤</button>
+            <button type="button" class="icon" title="Voice input">ðŸŽ¤</button>
             <button type="button" class="send" id="chat-send" disabled>
-              Send <span class="arr">↑</span>
+              Send <span class="arr">â†‘</span>
             </button>
           </div>
         </div>
@@ -761,9 +761,9 @@
     </footer>
   </section>
 
-  <!-- ═══════════════════════════════════════════════════════════════════
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        CANVAS (RIGHT)
-       ═══════════════════════════════════════════════════════════════════ -->
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <section class="canvas" aria-label="Workbench canvas">
     <header class="canvas-head">
       <div class="canvas-tabs" role="tablist">
@@ -785,7 +785,7 @@
 
     <div class="canvas-body" id="canvas-body">
 
-      <!-- ──────── DASHBOARDS PANE (default) ──────── -->
+      <!-- â”€â”€â”€â”€â”€â”€â”€â”€ DASHBOARDS PANE (default) â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="canvas-pane" data-pane="dashboards">
         <div class="dash-head">
           <h1>Catchment Dashboard</h1>
@@ -962,7 +962,7 @@
         </div>
       </div>
 
-      <!-- ──────── HNA PANE ──────── -->
+      <!-- â”€â”€â”€â”€â”€â”€â”€â”€ HNA PANE â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="canvas-pane" data-pane="hna" hidden>
         <article class="hna-doc">
           <div class="doc-kicker">2025–28 HNA · v1.2 draft · 28 May 2026</div>
@@ -990,7 +990,7 @@
         </article>
       </div>
 
-      <!-- ──────── MAPS PANE ──────── -->
+      <!-- â”€â”€â”€â”€â”€â”€â”€â”€ MAPS PANE â”€â”€â”€â”€â”€â”€â”€â”€ -->
       <div class="canvas-pane" data-pane="maps" hidden>
         <div class="dash-head">
           <h1>Catchment Map</h1>
@@ -1263,7 +1263,7 @@
       var h = document.createElement('div'); h.className = 'h'; h.textContent = turn.version.title;
       var vt = document.createElement('div'); vt.className = 'v'; vt.textContent = turn.version.tag;
       m.appendChild(h); m.appendChild(vt);
-      var kb = document.createElement('button'); kb.className = 'kebab'; kb.textContent = '⋯'; kb.setAttribute('aria-label', 'More');
+      var kb = document.createElement('button'); kb.className = 'kebab'; kb.textContent = 'â‹¯'; kb.setAttribute('aria-label', 'More');
       v.appendChild(m); v.appendChild(kb);
       wrap.appendChild(v);
     }
@@ -1271,7 +1271,7 @@
     // Feedback chips
     if (turn.summary) {
       var fb = document.createElement('div'); fb.className = 'turn-feedback';
-      ['👍', '👎', '↻'].forEach(function (sym) {
+      ['ðŸ‘', 'ðŸ‘Ž', 'â†»'].forEach(function (sym) {
         var b = document.createElement('button');
         b.type = 'button';
         b.textContent = sym;

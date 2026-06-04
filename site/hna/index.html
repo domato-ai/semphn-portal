@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>HNA Â· SEMPHN Workbench</title>
+<title>HNA · SEMPHN Workbench</title>
 <meta name="description" content="Chat-build SEMPHN's Health Needs Assessment chapters. The document on the right updates as you go." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1784200000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1784300000" />
 
 <style>
   /* HNA-specific artifact styles */
@@ -37,11 +37,22 @@
   }
   .hna-doc h1 {
     font-family: var(--display); font-weight: 400;
-    font-size: clamp(2rem, 3.6vw, 2.8rem);
-    line-height: 1.05; letter-spacing: -0.014em;
+    font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+    line-height: 1.1; letter-spacing: -0.014em;
     color: var(--navy); margin-bottom: 1.1rem;
+    /* Keep all words on one or two clean lines */
+    word-spacing: normal;
+    hyphens: none;
   }
-  .hna-doc h1 em { font-style: italic; color: var(--navy-mid); }
+  .hna-doc h1 em {
+    font-style: italic;
+    color: var(--navy-mid);
+    /* Don't isolate the em onto its own line awkwardly */
+    white-space: nowrap;
+  }
+  @media (max-width: 720px) {
+    .hna-doc h1 em { white-space: normal; }
+  }
   .hna-doc h2 {
     font-weight: 600; font-size: 1.15rem;
     color: var(--navy); margin: 1.9rem 0 0.6rem;
@@ -72,36 +83,8 @@
     letter-spacing: 0.04em;
   }
 
-  /* Chapter switcher chips above doc */
-  .chapter-rail {
-    max-width: 820px; margin: 0 auto 1.4rem;
-    display: flex; align-items: center; gap: 0.4rem;
-    flex-wrap: wrap;
-  }
-  .chapter-chip {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    color: var(--slate);
-    padding: 0.35rem 0.65rem 0.35rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.74rem;
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-  }
-  .chapter-chip:hover { color: var(--navy); border-color: var(--navy); }
-  .chapter-chip.is-on {
-    background: var(--navy); color: white; border-color: var(--navy);
-  }
-  .chapter-chip .n {
-    background: var(--teal); color: var(--navy);
-    width: 18px; height: 18px;
-    border-radius: 3px;
-    display: grid; place-items: center;
-    font-family: var(--mono); font-weight: 700; font-size: 0.62rem;
-  }
-  .chapter-chip.is-on .n { background: var(--teal-mint); }
+  /* Chapter rail styles live in shell.css now — kept here for back-compat
+     of page-only overrides if any future need arises. */
 </style>
 </head>
 <body data-page="hna" data-context="SEMPHN HNA 2025-28 annual update. Chapter being drafted: Ch 4 First Nations people. Catchment ~7,500 First Nations residents, largest in Casey (23.4%), Frankston (18.4%), Mornington Peninsula (17.5%). Median age 25. IRSEO 25 vs Vic 14. MH prevalence above Vic average (18.3%) in Port Phillip 23.3%, Frankston 22.0%, Greater Dandenong 21.4%. Housing strain highest in Greater Dandenong (18.0%), Casey (13.8%), Cardinia (12.1%) of First Nations rental households needing extra bedrooms. 2 ACCHS in catchment. DDACL is one. Lodgement: PPERS, 15 Nov 2026.">
@@ -121,13 +104,13 @@
       <a href="/maps/"       class="nav-link" data-page="maps"><span class="dot"></span>Maps</a>
     </nav>
     <button type="button" class="nav-cmdk" aria-label="Open command palette" title="Open command palette">
-      <span>Search</span> <kbd>âŒ˜K</kbd>
+      <span>Search</span> <kbd>⌘K</kbd>
     </button>
     <div class="nav-user" aria-label="Signed-in tenant">
       <span class="av">D</span>
       <span class="meta">
         <span class="who">demo@semphn.org.au</span>
-        <span class="sub">SEMPHN Â· PHN108</span>
+        <span class="sub">SEMPHN · PHN108</span>
       </span>
       <button type="button">Sign out</button>
     </div>
@@ -151,7 +134,7 @@
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h10"/><path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5V5"/><path d="M4.5 5l.5 8a1.5 1.5 0 0 0 1.5 1.4h3a1.5 1.5 0 0 0 1.5-1.4L11.5 5"/></svg>
           <span>Clear</span>
         </button>
-        <button type="button" class="chat-tool chat-collapse" aria-label="Collapse chat panel" title="Collapse chat panel">â€¹</button>
+        <button type="button" class="chat-tool chat-collapse" aria-label="Collapse chat panel" title="Collapse chat panel">‹</button>
       </div>
     </div>
     <div class="chat-feed" id="chat-feed"></div>
@@ -176,26 +159,26 @@
     <header class="canvas-head">
       <span class="page-label">
         <span class="dot"></span>HNA
-        <small>Â· 2025â€“28 annual update Â· v1.2 draft</small>
+        <small>· 2025–28 annual update · v1.2 draft</small>
       </span>
       <div class="canvas-actions">
         <button type="button" id="hna-preflight-btn" title="Run DoH rubric pre-flight across all 12 chapters">Pre-flight</button>
         <div class="hna-export-menu" id="hna-export-wrap">
           <button type="button" id="hna-export-btn" aria-haspopup="menu" aria-expanded="false" title="Export options">
-            Export <span class="caret">â–¾</span>
+            Export <span class="caret">▾</span>
           </button>
           <div class="hna-export-pop" id="hna-export-pop" role="menu" hidden>
             <button type="button" role="menuitem" data-export="md">
-              <span class="lab">This chapter Â· Markdown</span>
-              <span class="sub">.md Â· version-control friendly</span>
+              <span class="lab">This chapter · Markdown</span>
+              <span class="sub">.md · version-control friendly</span>
             </button>
             <button type="button" role="menuitem" data-export="doc">
-              <span class="lab">This chapter Â· Word</span>
-              <span class="sub">.doc Â· opens in MS Word / Pages</span>
+              <span class="lab">This chapter · Word</span>
+              <span class="sub">.doc · opens in MS Word / Pages</span>
             </button>
             <button type="button" role="menuitem" data-export="full">
-              <span class="lab">Full HNA Â· all 12 chapters</span>
-              <span class="sub">.md Â· cover + TOC + every chapter</span>
+              <span class="lab">Full HNA · all 12 chapters</span>
+              <span class="sub">.md · cover + TOC + every chapter</span>
             </button>
           </div>
         </div>
@@ -209,19 +192,19 @@
         <!-- Doc status bar · word count vs target + lodgement countdown + DoH rubric -->
         <div class="doc-status" id="hna-doc-status" aria-label="Document status">
           <div class="doc-status-item">
-            <span class="v" id="hna-words">â€”</span>
+            <span class="v" id="hna-words">—</span>
             <span class="l" id="hna-words-l">words</span>
           </div>
           <div class="doc-status-item">
-            <span class="v" id="hna-deadline">â€”</span>
-            <span class="l">to PPERS Â· 15 Nov 2026</span>
+            <span class="v" id="hna-deadline">—</span>
+            <span class="l">to PPERS · 15 Nov 2026</span>
           </div>
           <div class="doc-status-item">
-            <span class="v" id="hna-rubric">â€”</span>
+            <span class="v" id="hna-rubric">—</span>
             <span class="l">DoH rubric checks</span>
           </div>
           <div class="doc-status-item doc-status-progress">
-            <span class="v" id="hna-pct">â€”</span>
+            <span class="v" id="hna-pct">—</span>
             <span class="l">10-chapter progress</span>
             <div class="doc-status-bar"><span id="hna-progress-fill"></span></div>
           </div>
@@ -241,14 +224,14 @@
 
         <article class="hna-doc" id="hna-doc">
           <div class="doc-meta" id="hna-doc-meta">
-            <span>â€”</span>
-            <span class="right">â€”</span>
+            <span>—</span>
+            <span class="right">—</span>
           </div>
-          <h1 id="hna-doc-title">â€”</h1>
+          <h1 id="hna-doc-title">—</h1>
           <div id="hna-doc-body" class="hna-doc-body"></div>
           <div id="hna-doc-sources" class="hna-doc-sources" hidden></div>
           <div class="footnote" id="hna-doc-footnote">
-            Sources Â· last ingest 21 May 2026 Â· figures dated to source
+            Sources · last ingest 21 May 2026 · figures dated to source
           </div>
           <!-- Mark-complete CTA · appears when chapter is 80%+ complete -->
           <div class="hna-mark-complete" id="hna-mark-complete" hidden>
@@ -256,7 +239,7 @@
               <div class="hna-mc-h">This chapter looks ready</div>
               <div class="hna-mc-s">All DoH rubric checks pass and word target met. Lock it in?</div>
             </div>
-            <button type="button" class="hna-mc-btn" id="hna-mc-btn">âœ“ Mark complete</button>
+            <button type="button" class="hna-mc-btn" id="hna-mc-btn">✓ Mark complete</button>
           </div>
         </article>
 
@@ -272,15 +255,15 @@
   <div class="hna-preflight-card">
     <div class="hna-preflight-head">
       <div>
-        <div class="hna-preflight-eyebrow">DoH performance rubric Â· pre-flight check</div>
-        <h2 id="hna-preflight-title">Reviewing all 12 chaptersâ€¦</h2>
+        <div class="hna-preflight-eyebrow">DoH performance rubric · pre-flight check</div>
+        <h2 id="hna-preflight-title">Reviewing all 12 chapters…</h2>
       </div>
-      <button type="button" class="hna-preflight-x" id="hna-preflight-x" aria-label="Close pre-flight">Ã—</button>
+      <button type="button" class="hna-preflight-x" id="hna-preflight-x" aria-label="Close pre-flight">×</button>
     </div>
     <div class="hna-preflight-summary" id="hna-preflight-summary"></div>
     <div class="hna-preflight-list" id="hna-preflight-list"></div>
     <div class="hna-preflight-foot">
-      <span class="hna-preflight-tip">Clicking a chapter jumps you to it Â· clicking a Fix button auto-fires a draft prompt</span>
+      <span class="hna-preflight-tip">Clicking a chapter jumps you to it · clicking a Fix button auto-fires a draft prompt</span>
       <button type="button" class="hna-preflight-close" id="hna-preflight-close-2">Close</button>
     </div>
   </div>
@@ -301,15 +284,15 @@
 
 <footer class="statusbar" role="status">
   <div class="statusbar-left">
-    <span class="statusbar-item live" data-status="ai"> AI Â· ready</span>
+    <span class="statusbar-item live" data-status="ai"> AI · ready</span>
     <span class="statusbar-item hide-mobile" data-status="saved">All changes synced</span>
   </div>
   <div class="statusbar-right">
-    <span class="statusbar-item hide-mobile">SEMPHN Â· PHN108</span>
-    <span class="statusbar-item"><kbd>âŒ˜K</kbd> commands</span>
-    <span class="statusbar-item hide-mobile"><kbd>âŒ˜\</kbd> toggle chat</span>
+    <span class="statusbar-item hide-mobile">SEMPHN · PHN108</span>
+    <span class="statusbar-item"><kbd>⌘K</kbd> commands</span>
+    <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1784200000"></script>
+<script src="/_assets/shell.js?v=1784300000"></script>
 </body>
 </html>

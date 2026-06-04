@@ -942,48 +942,49 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ───────── HNA · doc-status bar (above the article) ───────── */
+/* ───────── HNA · compact horizontal status strip ───────── */
 .doc-status {
   max-width: 820px;
-  margin: 0 auto 1rem;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.7rem;
-}
-.doc-status-item {
+  margin: 0 auto 0.9rem;
+  padding: 0.55rem 0.95rem;
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--r);
-  padding: 0.6rem 0.85rem 0.55rem;
-  display: flex; flex-direction: column;
-  gap: 0.1rem;
-  position: relative;
-  transition: border-color var(--motion-fast);
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+}
+.doc-status-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex: none;
 }
 .doc-status-item .v {
   font-family: var(--mono);
-  font-size: 1rem; font-weight: 600;
+  font-size: 0.92rem; font-weight: 600;
   color: var(--ink);
   letter-spacing: -0.005em;
   font-variant-numeric: tabular-nums;
 }
 .doc-status-item .l {
-  font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase;
+  font-size: 0.7rem;
   color: var(--slate-soft); font-weight: 500;
 }
-.doc-status-item.is-pass { border-color: var(--positive, #10B981); }
 .doc-status-item.is-pass .v { color: var(--positive, #10B981); }
-.doc-status-item.is-warn { border-color: var(--warn, #F5B100); }
-.doc-status-item.is-warn .v { color: var(--warn, #F5B100); }
-
-.doc-status-progress { grid-column: span 1; }
+.doc-status-item.is-warn .v { color: #C58700; }
+.doc-status-progress {
+  flex: 1; min-width: 100px;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.doc-status-progress .l { white-space: nowrap; }
 .doc-status-bar {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
+  flex: 1;
+  height: 4px;
   background: var(--rule-soft);
-  border-radius: 0 0 var(--r) var(--r);
+  border-radius: 999px;
   overflow: hidden;
+  min-width: 50px;
 }
 .doc-status-bar span {
   display: block;
@@ -991,6 +992,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   width: 0%;
   background: linear-gradient(90deg, var(--teal, #55BFAF), #4C86FF);
   transition: width 600ms cubic-bezier(0.2, 0.6, 0.2, 1);
+  border-radius: 999px;
+}
+@media (max-width: 720px) {
+  .doc-status { flex-wrap: wrap; gap: 0.7rem 1rem; }
+  .doc-status-progress { flex-basis: 100%; }
 }
 
 /* ───────── HNA · stub chapter empty state ───────── */
@@ -1076,8 +1082,46 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .chapter-chip.is-stub .n { background: var(--rule); color: var(--slate); }
 .chapter-chip.is-stub:hover .n { background: var(--teal); color: var(--navy); }
 
-/* Chapter rail · completion progress fill at the bottom of each chip */
-.chapter-chip { position: relative; overflow: hidden; }
+/* Tighter chapter rail (overrides per-page block) */
+.chapter-rail {
+  max-width: 820px;
+  margin: 0 auto 1.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+.chapter-chip {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--slate);
+  padding: 0.32rem 0.65rem 0.32rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative; overflow: hidden;
+  min-height: 26px;
+  transition: all 120ms;
+}
+.chapter-chip:hover { border-color: var(--slate-mute); color: var(--ink); }
+.chapter-chip.is-on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chapter-chip .n {
+  background: var(--rule-soft);
+  color: var(--slate);
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--mono); font-weight: 700; font-size: 0.62rem;
+  flex: none;
+}
+.chapter-chip.is-on .n { background: var(--paper); color: var(--ink); }
+.chapter-chip .lab {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 110px;
+}
 .chapter-chip .prog {
   position: absolute;
   bottom: 0; left: 0;
@@ -1708,9 +1752,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .hna-toc { display: none; }
 }
 
-/* Canvas-pane layout to host the TOC alongside the article */
-.canvas-pane { display: flex; align-items: flex-start; justify-content: center; }
-.canvas-pane > .hna-doc { flex: 0 1 820px; min-width: 0; }
+/* Canvas-pane keeps default block flow · the in-chapter TOC floats fixed
+ * on the right edge instead of competing for grid space. */
+.hna-toc {
+  position: fixed;
+  right: 22px;
+  top: 132px;
+  width: 200px;
+  z-index: 40;
+}
+@media (max-width: 1280px) {
+  .hna-toc { display: none; }
+}
 
 /* Export dropdown menu (canvas-actions) */
 .hna-export-menu { position: relative; display: inline-block; }
@@ -1757,18 +1810,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .hna-next {
   max-width: 820px;
   margin: 0 auto 1.4rem;
-  padding: 0.95rem 1.1rem 1rem;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(85,191,175,0.08), transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(76,134,255,0.06), transparent 60%),
-    var(--paper);
+  padding: 0.85rem 1rem 0.95rem;
+  background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--r);
   position: relative;
+  /* Left teal accent stripe so it reads as guidance, not chrome */
+  border-left: 3px solid var(--teal, #55BFAF);
 }
 .hna-next-head {
-  display: flex; align-items: baseline; gap: 0.6rem;
-  margin-bottom: 0.7rem;
+  display: flex; align-items: center; gap: 0.55rem;
+  margin-bottom: 0.65rem;
 }
 .hna-next-stage {
   display: inline-block;
@@ -1792,7 +1844,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .hna-next-chip {
   display: grid;
-  grid-template-columns: 28px 1fr 14px;
+  grid-template-columns: 26px 1fr 16px;
   align-items: center;
   gap: 0.6rem;
   background: var(--paper);
@@ -1804,6 +1856,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-family: inherit;
   cursor: pointer;
   transition: all var(--motion-fast);
+  min-width: 0;
 }
 .hna-next-chip:hover {
   background: var(--rule-soft);
