@@ -2990,7 +2990,8 @@
   }
 
   /* Safe HTML for paragraph text · strip tags except <strong>/<em>.
-   * Defense in depth — paragraph text comes from the model. */
+   * Defense in depth — paragraph text comes from the model.
+   * Inline (source_id) tokens become clickable links to the sources list. */
   function sanitiseParagraphHtml(html) {
     if (!html) return '';
     // Allowlist <strong> and <em>; escape everything else.
@@ -3000,6 +3001,50 @@
     return escaped
       .replace(/&lt;(strong|em|b|i)&gt;/gi, function (_, t) { return '<' + t.toLowerCase() + '>'; })
       .replace(/&lt;\/(strong|em|b|i)&gt;/gi, function (_, t) { return '</' + t.toLowerCase() + '>'; });
+  }
+
+  /* Linkify inline (source_id) citations in a rendered paragraph.
+   * Pattern: (lowercase_snake_case) where snake_case matches SOURCE_LABELS.
+   * Replaces with a clickable .hna-cite that scrolls to the sources list and
+   * highlights the matching row. */
+  function linkifyCitations(rootEl) {
+    if (!rootEl) return;
+    var rx = /\(([a-z][a-z0-9_]{3,})\)/g;
+    var nodes = [];
+    var walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, null);
+    var n; while ((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(function (tn) {
+      var s = tn.nodeValue;
+      if (!rx.test(s)) return;
+      rx.lastIndex = 0;
+      var frag = document.createDocumentFragment();
+      var last = 0, m;
+      while ((m = rx.exec(s))) {
+        var id = m[1];
+        if (!SOURCE_LABELS[id]) continue;
+        if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index)));
+        var a = document.createElement('a');
+        a.className = 'hna-cite';
+        a.href = '#src-' + id;
+        a.textContent = '(' + id + ')';
+        a.title = SOURCE_LABELS[id];
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          var target = document.querySelector('[data-src-id="' + id + '"]');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.classList.add('is-highlight');
+            setTimeout(function () { target.classList.remove('is-highlight'); }, 1800);
+          }
+        });
+        frag.appendChild(a);
+        last = m.index + m[0].length;
+      }
+      if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+      if (frag.childNodes.length > 0 && tn.parentNode) {
+        tn.parentNode.replaceChild(frag, tn);
+      }
+    });
   }
 
   function buildHnaEditNode(edit, index) {
@@ -3061,6 +3106,36 @@
       if (opts && opts.subtle) b.className = (b.className || '') + ' subtle';
       b.addEventListener('click', handler);
       bar.appendChild(b);
+    }
+    // Reorder up/down · only meaningful when there are multiple edits in
+    // this chapter
+    var slug = currentChapterSlug();
+    var allEdits = readHnaEdits();
+    var sameChapterIndices = allEdits
+      .map(function (e, i) { return { e: e, i: i }; })
+      .filter(function (x) { return (x.e.chapter || DEFAULT_HNA_CHAPTER) === slug; });
+    var posInChapter = sameChapterIndices.findIndex(function (x) { return x.i === index; });
+    if (sameChapterIndices.length > 1) {
+      if (posInChapter > 0) {
+        btn('↑', { subtle: true }, function () {
+          var arr = readHnaEdits();
+          var swapIdx = sameChapterIndices[posInChapter - 1].i;
+          var tmp = arr[swapIdx]; arr[swapIdx] = arr[index]; arr[index] = tmp;
+          writeHnaEdits(arr);
+          renderHnaEdits();
+        });
+        bar.lastChild.title = 'Move up';
+      }
+      if (posInChapter < sameChapterIndices.length - 1) {
+        btn('↓', { subtle: true }, function () {
+          var arr = readHnaEdits();
+          var swapIdx = sameChapterIndices[posInChapter + 1].i;
+          var tmp = arr[swapIdx]; arr[swapIdx] = arr[index]; arr[index] = tmp;
+          writeHnaEdits(arr);
+          renderHnaEdits();
+        });
+        bar.lastChild.title = 'Move down';
+      }
     }
     btn('Keep', {}, function () {
       var p = wrap.querySelector('.hna-ai-edit');
@@ -3164,14 +3239,19 @@
     },
     '03-cald': {
       num: '03', title: 'CALD <em>communities</em>', subtitle: 'Priority population',
-      stub: true,
       target_words: 1400,
       sources: ['abs_census_2021_lote', 'dss_scv_2025', 'tis_2024'],
       rubric: ['LOTE', 'humanitarian', 'interpreter'],
-      starter_prompts: [
-        'Draft a deck paragraph on CALD population concentration. Heading: "CALD · the catchment\'s defining feature".',
-        'Draft a paragraph on humanitarian-arrival settlement in Greater Dandenong + Casey. Heading: "Humanitarian arrivals".',
-        'Draft a paragraph on interpreter demand by language (TIS National FY24 figures). Heading: "Interpreter demand".',
+      deck: 'CALD is the catchment\'s defining feature: <strong>38.4% of residents speak a language other than English at home</strong> — a +4.6pp rise since 2016. The concentration is east, with <span class="chip">Greater Dandenong 64.2%</span> the highest LOTE rate in Victoria. By 2030 the catchment\'s CALD share is projected to exceed 45% (abs_census_2021_lote).',
+      sections: [
+        { heading: 'Multilingual hub · Greater Dandenong',
+          body: 'Greater Dandenong\'s top 6 ancestries (Indian 18% · Vietnamese 14% · Afghan 9% · Sri Lankan 8% · Cambodian 6% · Chinese 6%) shape primary-care demand, vaccination uptake, and bowel-screening barriers. <strong>Casey 42.8%</strong> follows as the second-most-multilingual LGA, driven by recent humanitarian arrivals and the growth corridor (abs_census_2021).' },
+        { heading: 'Humanitarian arrivals · 3,840 in 3 years',
+          body: '<strong>3,840 humanitarian visa holders</strong> settled in the catchment 2022-2025, <strong>72% to Greater Dandenong + Casey</strong>. This is the largest humanitarian footprint of any Victorian PHN. Settlement health needs concentrate in the first 18 months: TB screening, dental, hearing, mental health post-trauma, immunisation catch-up (dss_scv_2025).' },
+        { heading: 'Interpreter demand · top 6 languages',
+          body: 'TIS National FY24 interpreter requests at SEMPHN-funded services were dominated by <span class="chip">Dari 4,820</span>, <span class="chip">Vietnamese 3,960</span>, <span class="chip">Arabic 3,280</span>, Mandarin 2,640, Tamil 1,920, Khmer 1,480 (tis_2024). Phone-interpreting carries 71% of demand; in-person is rationed by clinic geography.' },
+        { heading: 'Cultural competence · gap, not absence',
+          body: 'Mainstream general practice in Greater Dandenong + Casey is staffed disproportionately by clinicians who themselves migrated, partly offsetting the cultural-fit gap. The intervention lever is workflow not training: bilingual reception, predictable interpreter access, post-arrival enrolment pathways from refugee settlement providers.' },
       ],
     },
     '04-first-nations': {
@@ -3193,26 +3273,36 @@
     },
     '05-older-people': {
       num: '05', title: 'Older <em>people</em>', subtitle: 'Priority population',
-      stub: true,
       target_words: 1300,
       sources: ['abs_census_2021_age', 'abs_projections_2024', 'gen_aged_care_data'],
       rubric: ['65+', 'RACF', 'dementia'],
-      starter_prompts: [
-        'Draft a deck paragraph on the 65+ population in SEMPHN. Heading: "Older people · the ageing curve".',
-        'Draft a paragraph on RACF capacity vs projected demand. Heading: "RACF capacity".',
-        'Draft a paragraph on Mornington Peninsula as the oldest LGA. Heading: "Mornington Peninsula · 27.6% over 65".',
+      deck: 'The catchment\'s <strong>65+ population is 314,600</strong> — <strong>19.2% of residents</strong>, growing <strong>+2.8% pa</strong>. Projected to reach <strong>372,100 by 2030</strong>, a <strong>+18% absolute increase</strong> in six years. The ageing-curve hits unevenly: <span class="chip">Mornington Peninsula 27.6%</span> is the oldest LGA in Victoria; <span class="chip">Casey 11.8%</span> the youngest in the catchment (abs_census_2021_age).',
+      sections: [
+        { heading: 'Mornington Peninsula · the oldest LGA in Vic',
+          body: 'Mornington Peninsula is the demographic bellwether: <strong>27.6% over 65</strong>, retirement migration sustained for 15+ years, geographic isolation from tertiary care. Peninsula Health\'s Rosebud + The Bays carry the load; specialist outreach from Frankston Hospital is the access lever, not on-site capacity expansion (gen_aged_care_data).' },
+        { heading: 'RACF capacity · 155 facilities, 12,400 beds',
+          body: '<strong>155 residential aged-care facilities</strong> operate across the catchment with <strong>12,400 beds</strong>. Bed-per-1,000-residents-65+ runs 39.4 — slightly below the Victorian average of 41.2. Bupa, Mecwacare, Estia, Arcare, Regis, and Calvary collectively hold ~62% of stock. Independent and not-for-profit operators concentrate in Bayside, Glen Eira, Stonnington (gen_aged_care_data).' },
+        { heading: 'Dementia · the cost driver for primary care',
+          body: 'Dementia is the leading cause of death for women in the catchment and the third leading cause for men. Primary-care contact intensity for dementia-affected residents runs <strong>3.4× the all-cause average</strong>. The intervention lever is early diagnosis: <strong>SEMPHN-funded Care Finders + Dementia Australia partnership</strong> ($3.1M FY26) targets pre-diagnosis screening at GP practices in the high-incidence corridor of Mornington Pen + Bayside.' },
+        { heading: 'Care-finder coverage · 6 of 10 LGAs covered',
+          body: 'SEMPHN\'s Care Finders program ($5.2M FY26) operates in <strong>6 of 10 LGAs</strong>. Coverage gaps in Cardinia, Stonnington, and parts of Greater Dandenong are the active commissioning question for FY27. Aged-care funding is the catchment\'s second-largest stream at <strong>$18.4M</strong>, behind only mental health.' },
       ],
     },
     '06-homelessness': {
       num: '06', title: 'Homelessness <em>+ housing strain</em>', subtitle: 'Priority population',
-      stub: true,
       target_words: 1200,
       sources: ['abs_census_2021_homeless', 'aihw_shs_2024', 'launch_housing_2024'],
       rubric: ['rough sleeper', 'SHS', 'DV/FV'],
-      starter_prompts: [
-        'Draft a deck paragraph on homelessness across the SEMPHN catchment. Heading: "Homelessness · the housing-MH frontline".',
-        'Draft a paragraph on Greater Dandenong as the catchment\'s highest homelessness rate. Heading: "Greater Dandenong · 149.5/10k".',
-        'Draft a paragraph on DV/FV as the leading driver of SHS presentations. Heading: "DV/FV · the leading driver".',
+      deck: 'The catchment counts <strong>2,460 residents homeless or marginally housed</strong> — <strong>+18% since 2016</strong>. The catchment-wide rate of <strong>64.3 per 10,000</strong> conceals a 3.5× spread between LGAs. Homelessness is increasingly a <strong>mental-health frontline</strong>: 14% of SHS clients in the catchment cite mental health as the primary reason for presenting (abs_census_2021_homeless / aihw_shs_2024).',
+      sections: [
+        { heading: 'Greater Dandenong · 149.5 per 10,000',
+          body: '<span class="chip">Greater Dandenong 149.5/10k</span> is the catchment\'s highest homelessness rate — <strong>2.3× the catchment median</strong>. Frankston 124.8, Port Phillip 118.2 follow. The Greater Dandenong cluster combines SEIFA decile 2 disadvantage, humanitarian-arrival concentration, and the inner south-eastern social-housing footprint. Wayss and Launch Housing dominate the local SHS delivery (abs_census_2021_homeless).' },
+        { heading: 'DV/FV · the leading driver',
+          body: 'Specialist Homelessness Services data for FY24 shows <strong>domestic + family violence drives 38% of all SHS presentations</strong> in the catchment — well above the Victorian average of 32%. Housing affordability is the second cause at 23%, mental health third at 14%. The DV/FV concentration means homelessness commissioning must <strong>integrate with safety, not just shelter</strong> (aihw_shs_2024).' },
+        { heading: 'Rough sleepers · 6.9 per 10,000',
+          body: 'StreetCount 2024 counted catchment rough sleepers at <strong>6.9 per 10,000 residents</strong> — below Greater Melbourne (8.2) but above the Australian average (5.6). Visible rough sleeping clusters in Frankston CBD, Dandenong CBD, and Carlton Gardens fringe of Port Phillip. The bulk of catchment homelessness is hidden — couch-surfing, severely crowded dwellings, transitional housing (launch_housing_2024).' },
+        { heading: 'SHS volume · 11,240 clients FY24',
+          body: 'SHS clients in the catchment rose from <strong>8,420 in FY20 to 11,240 in FY24</strong> — a <strong>+33% five-year increase</strong>. SEMPHN\'s <strong>Psychosocial Support stream ($4.9M FY26)</strong> co-commissions HeadtoHelp + Wellways + Stride to provide MH wrap-around for SHS clients in Frankston, Dandenong, Bentleigh. The expansion target is a warm-handover rate ≥ 60% by FY27.' },
       ],
     },
     '07-mental-health': {
@@ -3385,7 +3475,7 @@
     box.removeAttribute('hidden');
     box.innerHTML = '<div class="srcs-hdr">Sources</div>' + ids.map(function (id) {
       var label = SOURCE_LABELS[id] || id;
-      return '<div class="srcs-row"><span class="srcs-id">' + escHtml(id) + '</span><span class="srcs-lab">' + escHtml(label) + '</span></div>';
+      return '<div class="srcs-row" data-src-id="' + escHtml(id) + '" id="src-' + escHtml(id) + '"><span class="srcs-id">' + escHtml(id) + '</span><span class="srcs-lab">' + escHtml(label) + '</span></div>';
     }).join('');
   }
 
@@ -3453,6 +3543,14 @@
     renderMarkComplete();
     renderToc();
     renderActivity();
+    // Linkify (source_id) tokens in the seed content + AI edits → clickable
+    // citations that scroll the sources list into view
+    var docBody = document.getElementById('hna-doc-body');
+    if (docBody) {
+      Array.prototype.forEach.call(docBody.querySelectorAll('p, figcaption'), function (p) {
+        linkifyCitations(p);
+      });
+    }
   }
 
   /* ============================================================
@@ -3672,11 +3770,89 @@
       btn.textContent = '✓ Mark complete';
     }
     btn.onclick = function () {
-      setChapterComplete(slug, !complete);
+      var willBeComplete = !complete;
+      setChapterComplete(slug, willBeComplete);
       renderMarkComplete();
       renderChapterRail();
-      showToast(complete ? 'Re-opened for editing' : '✓ Chapter marked complete', 'success');
+      if (willBeComplete) {
+        showToast('✓ Chapter marked complete', 'success');
+        suggestNextChapter(slug);
+      } else {
+        showToast('Re-opened for editing', 'success');
+      }
     };
+  }
+
+  /* After marking a chapter complete, surface the next least-complete
+   * non-stub chapter as a suggestion so the user has a clear next focus. */
+  function suggestNextChapter(currentSlug) {
+    var slugs = Object.keys(HNA_CHAPTERS);
+    var doneMap = readChapterComplete();
+    var candidates = slugs
+      .filter(function (s) { return s !== currentSlug && !doneMap[s]; })
+      .map(function (s) {
+        return { slug: s, ch: HNA_CHAPTERS[s], pct: computeChapterCompletion(s) };
+      })
+      .filter(function (c) { return !c.ch.stub; })
+      .sort(function (a, b) { return a.pct - b.pct; });
+    if (!candidates.length) {
+      // All non-stub chapters done — celebrate
+      showLodgementReadyBanner();
+      return;
+    }
+    var next = candidates[0];
+    var nextName = next.ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '').trim();
+    var banner = document.createElement('div');
+    banner.className = 'hna-next-chapter-banner';
+    banner.innerHTML =
+      '<div class="hna-ncb-l">' +
+        '<div class="hna-ncb-eyebrow">Now focus on</div>' +
+        '<div class="hna-ncb-title">Ch ' + escHtml(next.ch.num) + ' · ' + escHtml(nextName) + '</div>' +
+        '<div class="hna-ncb-meta">' + next.pct + '% drafted · next least-complete chapter</div>' +
+      '</div>' +
+      '<button type="button" class="hna-ncb-go" data-slug="' + escHtml(next.slug) + '">Open chapter →</button>' +
+      '<button type="button" class="hna-ncb-x" aria-label="Dismiss">×</button>';
+    document.body.appendChild(banner);
+    setTimeout(function () { banner.classList.add('is-open'); }, 30);
+    banner.querySelector('.hna-ncb-go').addEventListener('click', function () {
+      window.location.hash = '#' + next.slug;
+      banner.classList.remove('is-open');
+      setTimeout(function () { banner.remove(); }, 300);
+    });
+    banner.querySelector('.hna-ncb-x').addEventListener('click', function () {
+      banner.classList.remove('is-open');
+      setTimeout(function () { banner.remove(); }, 300);
+    });
+    // Auto-hide after 12s
+    setTimeout(function () {
+      if (banner.parentNode) {
+        banner.classList.remove('is-open');
+        setTimeout(function () { try { banner.remove(); } catch (_) {} }, 300);
+      }
+    }, 12000);
+  }
+  function showLodgementReadyBanner() {
+    var banner = document.createElement('div');
+    banner.className = 'hna-next-chapter-banner is-celebrate';
+    banner.innerHTML =
+      '<div class="hna-ncb-l">' +
+        '<div class="hna-ncb-eyebrow">🎉 All chapters complete</div>' +
+        '<div class="hna-ncb-title">HNA ready for pre-flight</div>' +
+        '<div class="hna-ncb-meta">Run the DoH rubric review, then lodge to PPERS</div>' +
+      '</div>' +
+      '<button type="button" class="hna-ncb-go" id="hna-ncb-preflight">Run pre-flight →</button>' +
+      '<button type="button" class="hna-ncb-x" aria-label="Dismiss">×</button>';
+    document.body.appendChild(banner);
+    setTimeout(function () { banner.classList.add('is-open'); }, 30);
+    banner.querySelector('#hna-ncb-preflight').addEventListener('click', function () {
+      banner.classList.remove('is-open');
+      setTimeout(function () { banner.remove(); }, 300);
+      if (typeof window.__openPreflight === 'function') window.__openPreflight();
+    });
+    banner.querySelector('.hna-ncb-x').addEventListener('click', function () {
+      banner.classList.remove('is-open');
+      setTimeout(function () { banner.remove(); }, 300);
+    });
   }
 
   /* ============================================================

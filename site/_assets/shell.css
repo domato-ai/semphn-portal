@@ -1159,6 +1159,95 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: width 400ms cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 
+/* ───────── HNA · clickable inline citations ───────── */
+.hna-cite {
+  font-family: var(--mono);
+  font-size: 0.78em;
+  color: var(--slate);
+  text-decoration: none;
+  background: var(--rule-soft);
+  padding: 0.05em 0.35em;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  transition: all var(--motion-fast);
+}
+.hna-cite:hover {
+  color: var(--ink);
+  border-color: var(--slate-mute);
+  background: var(--paper);
+}
+.hna-doc-sources .srcs-row.is-highlight {
+  background: rgba(85,191,175,0.18);
+  border-radius: var(--r-xs);
+  transition: background 600ms ease-out;
+  animation: cite-pulse 1.8s ease-out;
+}
+@keyframes cite-pulse {
+  0% { background: rgba(85,191,175,0); }
+  20% { background: rgba(85,191,175,0.35); }
+  100% { background: rgba(85,191,175,0); }
+}
+
+/* ───────── HNA · Next-chapter banner (after mark-complete) ───────── */
+.hna-next-chapter-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 700;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r);
+  padding: 0.9rem 1rem 0.9rem 1.1rem;
+  display: flex; align-items: center; gap: 1rem;
+  box-shadow: 0 20px 48px -16px rgba(10,10,10,0.28);
+  max-width: 540px;
+  min-width: 380px;
+  transform: translate(-50%, 80px);
+  opacity: 0;
+  transition: transform 320ms cubic-bezier(0.2, 0.6, 0.2, 1), opacity 240ms;
+}
+.hna-next-chapter-banner.is-open { transform: translate(-50%, 0); opacity: 1; }
+.hna-next-chapter-banner.is-celebrate {
+  background: linear-gradient(135deg, rgba(85,191,175,0.12), rgba(16,185,129,0.06)), var(--paper);
+  border-color: var(--positive, #10B981);
+}
+.hna-ncb-l { flex: 1; min-width: 0; }
+.hna-ncb-eyebrow {
+  font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--slate-mute); font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.hna-ncb-title {
+  font-size: 0.96rem; font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.15rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hna-ncb-meta { font-size: 0.72rem; color: var(--slate); }
+.hna-ncb-go {
+  background: var(--ink); color: var(--paper);
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--r-sm);
+  font-family: inherit; font-weight: 500; font-size: 0.84rem;
+  cursor: pointer;
+  flex: none;
+}
+.hna-ncb-go:hover { background: #1F1F1F; }
+.hna-next-chapter-banner.is-celebrate .hna-ncb-go {
+  background: var(--positive, #10B981);
+}
+.hna-next-chapter-banner.is-celebrate .hna-ncb-go:hover { background: #0F9F6E; }
+.hna-ncb-x {
+  background: none; border: none;
+  width: 26px; height: 26px; border-radius: 50%;
+  color: var(--slate-mute);
+  cursor: pointer; font-size: 1.1rem; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none;
+}
+.hna-ncb-x:hover { background: var(--rule-soft); color: var(--ink); }
+
 /* ───────── HNA · Mark-complete CTA at chapter bottom ───────── */
 .hna-mark-complete {
   margin-top: 2rem;
