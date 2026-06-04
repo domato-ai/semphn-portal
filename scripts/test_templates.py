@@ -7,7 +7,10 @@ the data arrays match the 10 SEMPHN LGA names where applicable.
 Run: python scripts/test_templates.py
 """
 from __future__ import annotations
-import json, re, sys, urllib.request
+import io, json, re, sys, urllib.request
+# Windows console defaults to cp1252 · force stdout to UTF-8 so we can print
+# the unicode chars we're testing for (≥ × · etc.)
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)
 
 PORTAL = "https://ambitious-cliff-02027e900.7.azurestaticapps.net"
 SEMPHN_LGAS = {
@@ -76,10 +79,12 @@ def main():
         print(f"  {marker} contains: {needle!r}")
         if not ok: failed += 1
 
+    # Use \u escapes for non-ASCII so this script is encoding-agnostic.
+    # Match the raw title string · the JS source uses single quotes.
     for needle in [
-        '"Suicide rate · per 100,000"',
-        '"Adult overweight + obese (BMI ≥ 25)"',
-        '"AMI admissions · per 100,000"',
+        "Suicide rate · per 100,000",
+        "Adult overweight + obese (BMI ≥ 25)",
+        "AMI admissions · per 100,000",
     ]:
         ok = needle in js
         marker = "PASS" if ok else "FAIL"
