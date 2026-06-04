@@ -153,6 +153,80 @@ HOMELESSNESS (abs_census_2021_homeless / aihw_shs_2024)
   • SHS clients FY24: 11,240 · primary cause DV/FV 38%, housing affordability 23%, MH 14%
   • Rough sleepers: catchment 6.9/10k vs Gr Melbourne 8.2 vs Australia 5.6 (launch_housing_2024)
 
+BURDEN OF DISEASE + LIFE EXPECTANCY (aihw_bod_2024 / abs_le_2024)
+  • Life expectancy at birth: Bayside 86.8 (F) / 83.1 (M) — highest in catchment
+    Frankston 84.2 / 79.6 — lowest in catchment · 4-year gap east-to-west
+  • Healthy life expectancy: ~71 years catchment avg · -8.2 vs life expectancy
+  • Leading causes of death (women): dementia + Alzheimer's, CHD, stroke, lung cancer, COPD
+  • Leading causes of death (men): CHD, dementia + Alzheimer's, lung cancer, stroke, suicide
+  • Avoidable mortality age-standardised per 100k by LGA:
+    Gr Dandenong 218 · Frankston 198 · Mornington Pen 184 · Casey 176 · Cardinia 168 ·
+    Kingston 142 · Port Phillip 138 · Glen Eira 126 · Bayside 114 · Stonnington 108 (aihw_2024)
+  • Burden of disease top 5 by DALY contribution (catchment): MH conditions 17%, CHD 12%,
+    cancers 11%, musculoskeletal 9%, dementia 8%
+
+RISK FACTORS (aihw_nhs_2022 / aihw_phidu_2024)
+  • Adult daily smoker % by LGA:
+    Gr Dandenong 14.8 · Frankston 14.1 · Cardinia 13.2 · Casey 11.8 · Mornington Pen 11.4 ·
+    Kingston 10.2 · Glen Eira 8.4 · Bayside 7.2 · Port Phillip 8.9 · Stonnington 6.8
+  • Catchment adult smoker 10.4% · VIC 10.7% · falling -0.5pp pa
+  • Adult overweight + obese % by LGA (BMI ≥ 25):
+    Cardinia 68.4 · Frankston 65.2 · Casey 64.8 · Gr Dandenong 63.1 · Mornington Pen 62.4 ·
+    Kingston 58.6 · Glen Eira 51.2 · Bayside 49.8 · Port Phillip 48.4 · Stonnington 47.2
+  • Risky alcohol consumption (lifetime risk) % by LGA:
+    Mornington Pen 24.6 · Frankston 22.1 · Bayside 21.4 · Cardinia 19.8 · Kingston 17.6 ·
+    Casey 16.4 · Glen Eira 15.8 · Stonnington 17.2 · Port Phillip 19.4 · Gr Dandenong 12.6
+  • Insufficient physical activity % by LGA (≥ 18, < 150 min/week):
+    Gr Dandenong 58.4 · Casey 52.6 · Cardinia 51.8 · Frankston 49.2 · Mornington Pen 47.4 ·
+    Kingston 44.6 · Glen Eira 38.4 · Bayside 36.2 · Stonnington 33.8 · Port Phillip 32.4
+  • Daily 2+ serves fruit AND daily 5+ serves veg, catchment 4.8% · VIC 5.2% (aihw_nhs_2022)
+
+CANCER SCREENING (aihw_nbcsp_2024 / breastscreen_vic_2024 / vccr_2024)
+  • Bowel cancer screening (NBCSP) % participation by LGA ranked DESC:
+    Stonnington 51.4 · Port Phillip 50.2 · Bayside 49.1 · Glen Eira 47.8 · Kingston 46.3 ·
+    Frankston 44.6 · Mornington Pen 42.8 · Cardinia 41.2 · Gr Dandenong 38.4 · Casey 35.9
+  • Breast screening (BreastScreen) % participation 50-74 by LGA:
+    Bayside 58.4 · Kingston 56.2 · Glen Eira 55.8 · Mornington Pen 54.2 · Frankston 52.1 ·
+    Port Phillip 51.4 · Stonnington 50.6 · Cardinia 49.2 · Casey 46.8 · Gr Dandenong 43.4
+  • Cervical screening (CCST) % participation 25-74 by LGA:
+    Stonnington 71.2 · Bayside 70.4 · Port Phillip 69.6 · Glen Eira 68.4 · Kingston 66.8 ·
+    Frankston 62.4 · Mornington Pen 61.8 · Cardinia 58.2 · Casey 55.4 · Gr Dandenong 48.6
+  • Catchment all-3-screening combined Greater Dandenong + Casey are equity priority
+  • Casey 35.9% is lowest LGA in Australia for bowel screening (aihw_nbcsp_2024)
+
+SUICIDE + SELF-HARM (vsr_2024 / aihw_suicide_2024)
+  • Catchment suicide rate per 100k: 12.6 (M) / 4.2 (F) · 5-yr avg
+  • Suicide rate per 100k ranked DESC (combined, 5-yr avg, age-standardised):
+    Frankston 14.2 · Mornington Pen 13.6 · Gr Dandenong 12.4 · Cardinia 11.8 · Casey 11.2 ·
+    Kingston 9.4 · Glen Eira 8.2 · Bayside 7.6 · Port Phillip 9.6 · Stonnington 6.8
+  • Self-harm ED presentations 15-24 catchment: 318 per 100k · VIC 254 · 3-yr +24%
+  • Highest-risk cohort: men aged 25-44 in Frankston + Mornington Pen
+  • Means of suicide: hanging 53% · pharmaceutical 18% · firearm 6% · other 23% (vsr_2024)
+  • SEMPHN-funded suicide-prevention $1.48M FY26 · Anglicare After Suicide Bereavement +
+    StandBy after-care · gaps in Mornington Peninsula coverage
+
+DISABILITY + NDIS (abs_disability_2018 / ndia_2024)
+  • Adults with profound or severe core activity limitation %:
+    Frankston 7.4 · Cardinia 6.8 · Mornington Pen 6.4 · Casey 5.8 · Gr Dandenong 5.4 ·
+    Kingston 4.8 · Glen Eira 4.2 · Bayside 3.8 · Stonnington 3.4 · Port Phillip 3.6
+  • NDIS participants by LGA (ranked DESC, 31 Dec 2024):
+    Casey 8,420 · Greater Dandenong 5,180 · Frankston 4,640 · Mornington Pen 4,120 ·
+    Cardinia 3,840 · Kingston 3,210 · Glen Eira 2,860 · Bayside 1,940 · Port Phillip 2,140 ·
+    Stonnington 1,720 · catchment total 38,070 · 2.3% of all residents
+  • Disability ↔ primary-care integration: only 38% of NDIS participants have a MyMedicare
+    enrolment vs 52% catchment average (ndia_2024)
+
+CARDIOVASCULAR DISEASE (aihw_phidu_2024 / aihw_admitted_patient_2024)
+  • Coronary heart disease prevalence % adults ≥ 25 by LGA:
+    Gr Dandenong 9.2 · Frankston 8.6 · Mornington Pen 8.4 · Cardinia 7.8 · Casey 7.4 ·
+    Kingston 6.8 · Glen Eira 5.6 · Bayside 4.8 · Port Phillip 5.2 · Stonnington 4.6
+  • AMI admission rate per 100k by LGA (FY24):
+    Gr Dandenong 412 · Frankston 376 · Mornington Pen 358 · Cardinia 322 · Casey 304 ·
+    Kingston 248 · Glen Eira 218 · Bayside 192 · Stonnington 178 · Port Phillip 202
+  • Stroke prevalence: catchment 1.8% · VIC 1.6%
+  • Hypertension prevalence catchment: 24.6% · uncontrolled BP estimated at 38% of those
+    diagnosed (aihw_phidu_2024)
+
 CHRONIC DISEASE (aihw_phidu_diabetes_2024 / polar_chronic_2024 / aihw_acsc_2024)
   • Adults 45+ with 2+ chronic conditions 31.4% (~286,000 people)
   • Type 2 diabetes prevalence ranked DESC: Gr Dandenong 8.9% · Casey 7.1% ·
@@ -231,14 +305,32 @@ Each follows: FINDING → ACTION → COMMISSIONING LEVER → MEASURABLE INDICATO
      Cardinia + Casey ≥ +24 by FY28.
 
 MEASURABLE INDICATORS the PHN already tracks (PIP-QI + SEMPHN KPIs)
-  • MH: ED presentations per 10k, MBS MH-item utilisation, headspace wait days
-  • First Nations: 715 health-assessment rate, cultural-safety attestation %
-  • Older: 75+ care-plan rate, residential post-discharge GP visit within 7 days
-  • Homelessness: SHS warm-handover-to-MH %, rough-sleeper outreach contacts
-  • Chronic disease: PIP-QI 10 measures, diabetes HbA1c-checked %, BP-checked %
-  • AOD: median wait days to non-residential treatment (target ≤14)
-  • Workforce: GP FTE per 100k, allied health FTE per 10k, GP retention 5-yr
-  • Screening: bowel NBCSP %, breast BreastScreen %, cervical CCST %
+  • MH: ED presentations per 10k, MBS MH-item utilisation, headspace wait days,
+    K10 high-distress % screened in GP, severe + complex MH on care plan %
+  • Suicide: rate per 100k by LGA, self-harm ED 15-24 per 100k, after-suicide
+    bereavement service contacts, postvention referral lag days
+  • First Nations: 715 health-assessment rate, cultural-safety attestation %,
+    ACCHS pathway enrolment %
+  • Older: 75+ care-plan rate, residential post-discharge GP visit within 7 days,
+    care-finder coverage %
+  • Homelessness: SHS warm-handover-to-MH %, rough-sleeper outreach contacts,
+    DV/FV-pathway-to-MH service utilisation
+  • Chronic disease + CVD: PIP-QI 10 measures (HbA1c · BP · smoking · CV risk
+    assessment), AMI admission rate per 100k, diabetes HbA1c-checked %,
+    hypertension uncontrolled %
+  • Risk factors: smoking cessation MBS items billed, weight-loss program
+    enrolments, AUDIT-C completed at GP visit %, MoveMore-Cardinia step
+    counts
+  • AOD: median wait days to non-residential treatment (target ≤14), opioid-
+    agonist therapy retention 6m %
+  • Workforce: GP FTE per 100k, allied health FTE per 10k, GP retention 5-yr,
+    registrar uptake in growth corridor
+  • Screening: bowel NBCSP %, breast BreastScreen %, cervical CCST %,
+    catch-up screening conversion at GP visit
+  • Disability + NDIS: NDIS-participant MyMedicare enrolment %, GP MBS
+    items with disability indicator, allied health gap-coverage %
+  • Burden of disease: avoidable mortality per 100k by LGA, life-expectancy
+    gap east-vs-west, DALYs averted
 
 PRIORITY-AREA → COMMISSIONING-STREAM mapping
   • Mental health         → Primary MH ($9.12M) + Headspace ($6.80M)

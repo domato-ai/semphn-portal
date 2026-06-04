@@ -1052,6 +1052,24 @@
   };
   window.__SEMPHN_LGA_FACTS = SEMPHN_LGA_FACTS;
 
+  /* Risk-factor + screening + suicide layer · per LGA. Drives the
+   * "Risk + screening" panel in the LGA drawer + the new dashboard
+   * templates. Sourced from aihw_nhs_2022 / aihw_phidu_2024 / vsr_2024
+   * / aihw_nbcsp_2024 / breastscreen_vic_2024 / vccr_2024. */
+  var SEMPHN_LGA_RISK = {
+    'Bayside':              { smoking_pct:  7.2, obesity_pct: 49.8, risky_alcohol_pct: 21.4, inactive_pct: 36.2, suicide_per_100k:  7.6, breast_pct: 58.4, cervical_pct: 70.4, chd_pct:  4.8, ami_per_100k: 192, ndis_count: 1940 },
+    'Cardinia':             { smoking_pct: 13.2, obesity_pct: 68.4, risky_alcohol_pct: 19.8, inactive_pct: 51.8, suicide_per_100k: 11.8, breast_pct: 49.2, cervical_pct: 58.2, chd_pct:  7.8, ami_per_100k: 322, ndis_count: 3840 },
+    'Casey':                { smoking_pct: 11.8, obesity_pct: 64.8, risky_alcohol_pct: 16.4, inactive_pct: 52.6, suicide_per_100k: 11.2, breast_pct: 46.8, cervical_pct: 55.4, chd_pct:  7.4, ami_per_100k: 304, ndis_count: 8420 },
+    'Frankston':            { smoking_pct: 14.1, obesity_pct: 65.2, risky_alcohol_pct: 22.1, inactive_pct: 49.2, suicide_per_100k: 14.2, breast_pct: 52.1, cervical_pct: 62.4, chd_pct:  8.6, ami_per_100k: 376, ndis_count: 4640 },
+    'Glen Eira':            { smoking_pct:  8.4, obesity_pct: 51.2, risky_alcohol_pct: 15.8, inactive_pct: 38.4, suicide_per_100k:  8.2, breast_pct: 55.8, cervical_pct: 68.4, chd_pct:  5.6, ami_per_100k: 218, ndis_count: 2860 },
+    'Greater Dandenong':    { smoking_pct: 14.8, obesity_pct: 63.1, risky_alcohol_pct: 12.6, inactive_pct: 58.4, suicide_per_100k: 12.4, breast_pct: 43.4, cervical_pct: 48.6, chd_pct:  9.2, ami_per_100k: 412, ndis_count: 5180 },
+    'Kingston (Vic.)':      { smoking_pct: 10.2, obesity_pct: 58.6, risky_alcohol_pct: 17.6, inactive_pct: 44.6, suicide_per_100k:  9.4, breast_pct: 56.2, cervical_pct: 66.8, chd_pct:  6.8, ami_per_100k: 248, ndis_count: 3210 },
+    'Mornington Peninsula': { smoking_pct: 11.4, obesity_pct: 62.4, risky_alcohol_pct: 24.6, inactive_pct: 47.4, suicide_per_100k: 13.6, breast_pct: 54.2, cervical_pct: 61.8, chd_pct:  8.4, ami_per_100k: 358, ndis_count: 4120 },
+    'Port Phillip':         { smoking_pct:  8.9, obesity_pct: 48.4, risky_alcohol_pct: 19.4, inactive_pct: 32.4, suicide_per_100k:  9.6, breast_pct: 51.4, cervical_pct: 69.6, chd_pct:  5.2, ami_per_100k: 202, ndis_count: 2140 },
+    'Stonnington':          { smoking_pct:  6.8, obesity_pct: 47.2, risky_alcohol_pct: 17.2, inactive_pct: 33.8, suicide_per_100k:  6.8, breast_pct: 50.6, cervical_pct: 71.2, chd_pct:  4.6, ami_per_100k: 178, ndis_count: 1720 },
+  };
+  window.__SEMPHN_LGA_RISK = SEMPHN_LGA_RISK;
+
   /* ============================================================
    * Point-in-polygon (ray casting) · cheap + dependency-free.
    * Used to count which services fall inside each LGA polygon for
@@ -1181,6 +1199,24 @@
           metricRow('LOTE at home', m.lote_pct, 'pct') +
           metricRow('First Nations IRSEO', m.irseo_fn, 'count') +
         '</div>' +
+
+        (function () {
+          var r = SEMPHN_LGA_RISK[lgaName];
+          if (!r) return '';
+          return '<div class="lgadr-section-h">Risk + screening + suicide</div>' +
+            '<div class="lgadr-metrics">' +
+              metricRow('Daily smoker',      r.smoking_pct, 'pct') +
+              metricRow('Overweight + obese', r.obesity_pct, 'pct') +
+              metricRow('Risky alcohol',     r.risky_alcohol_pct, 'pct') +
+              metricRow('Insufficient activity', r.inactive_pct, 'pct') +
+              metricRow('Suicide rate',      r.suicide_per_100k, 'per_100k') +
+              metricRow('Breast screening',  r.breast_pct, 'pct') +
+              metricRow('Cervical screening', r.cervical_pct, 'pct') +
+              metricRow('CHD prevalence',    r.chd_pct, 'pct') +
+              metricRow('AMI admissions',    r.ami_per_100k, 'per_100k') +
+              metricRow('NDIS participants', r.ndis_count, 'count') +
+            '</div>';
+        })() +
 
         (facts.strongest ? '<div class="lgadr-section-h">Strongest</div><p class="lgadr-prose">' + escHtml(facts.strongest) + '</p>' : '') +
         (facts.weakest   ? '<div class="lgadr-section-h">Weakest</div><p class="lgadr-prose">'   + escHtml(facts.weakest)   + '</p>' : '') +
@@ -3551,8 +3587,9 @@
     '07-mental-health': {
       num: '07', title: 'Mental <em>health</em>', subtitle: 'Priority population',
       target_words: 1700,
-      sources: ['polar_2024', 'aihw_phidu_mh_2024', 'aihw_ed_2024', 'semphn_funding_fy26'],
-      rubric: ['headspace', 'ED presentation', 'Frankston'],
+      sources: ['polar_2024', 'aihw_phidu_mh_2024', 'aihw_ed_2024', 'semphn_funding_fy26',
+                'vsr_2024', 'aihw_suicide_2024'],
+      rubric: ['headspace', 'ED presentation', 'Frankston', 'suicide', 'self-harm'],
       deck: 'Mental health remains the catchment\'s single largest commissioning category — <strong>$25.6M of $76.6M FY26 funding</strong>. Adult prevalence is <strong>18.3%</strong> and has risen <strong>+1.3 percentage points</strong> over five years. The catchment supports <strong>9 headspace centres</strong> serving an estimated <strong>358,000 residents aged 0-17</strong>.',
       sections: [
         { heading: 'Frankston · the standout LGA',
@@ -3561,6 +3598,8 @@
           body: '<span class="chip">Mornington Peninsula 102.6/1k</span> and <span class="chip">Greater Dandenong 97.4/1k</span> follow Frankston. The peninsula gradient is partly age-driven — older populations report more MH conditions per 1k — but Greater Dandenong\'s rate is age-standardised and reflects refugee/humanitarian arrival trauma load.' },
         { heading: 'Headspace coverage',
           body: 'The 9 headspace centres (Bentleigh, Frankston, Dandenong, Cranbourne, Narre Warren, Rosebud, South Melbourne, Elsternwick, Hastings) provide good geographic spread but capacity in the growth corridor lags youth-population growth. Cranbourne + Narre Warren serve a catchment growing at 3-4% pa.' },
+        { heading: 'Suicide + self-harm · the catchment\'s most-confronting metric',
+          body: 'Catchment suicide rate runs <strong>12.6 per 100k for men · 4.2 for women</strong> (5-yr average). The highest LGA rates concentrate in <span class="chip">Frankston 14.2</span> · <span class="chip">Mornington Peninsula 13.6</span> · <span class="chip">Greater Dandenong 12.4</span>. Self-harm ED presentations among 15-24-year-olds run <strong>318 per 100k catchment-wide</strong> — <strong>+24% over three years</strong>. SEMPHN\'s suicide-prevention commissioning ($1.48M FY26) supports Anglicare After Suicide Bereavement + StandBy; the geographic gap is Mornington Peninsula postvention coverage (vsr_2024 / aihw_suicide_2024).' },
       ],
     },
     '08-aod': {
@@ -3577,14 +3616,22 @@
     },
     '09-chronic-disease': {
       num: '09', title: 'Chronic <em>disease</em>', subtitle: 'Population health',
-      stub: true,
-      target_words: 1400,
-      sources: ['aihw_phidu_diabetes_2024', 'polar_chronic_2024', 'aihw_acsc_2024'],
-      rubric: ['diabetes', 'avoidable', 'multi-chronic'],
-      starter_prompts: [
-        'Draft a deck paragraph on the chronic disease load in the SEMPHN catchment. Heading: "Chronic disease · the productivity tax".',
-        'Draft a paragraph on Gr Dandenong as the catchment\'s diabetes hotspot. Heading: "Gr Dandenong · 8.9% type 2 diabetes".',
-        'Draft a paragraph on avoidable hospital admissions as a primary-care performance signal. Heading: "Avoidable admissions".',
+      target_words: 1500,
+      sources: ['aihw_phidu_diabetes_2024', 'polar_chronic_2024', 'aihw_acsc_2024',
+                'aihw_bod_2024', 'aihw_phidu_2024', 'aihw_admitted_patient_2024'],
+      rubric: ['diabetes', 'avoidable', 'CHD', 'risk factor', 'screening'],
+      deck: 'Chronic disease accounts for <strong>~62% of the catchment\'s burden of disease</strong>, with <strong>286,000 adults aged 45+ living with 2 or more chronic conditions</strong> (31.4%). The east-west gradient is sharp: avoidable mortality runs <strong>218 per 100k in Greater Dandenong</strong> against <strong>108 in Stonnington</strong> — a 2× spread on a single hour\'s drive (aihw_bod_2024 / aihw_phidu_2024).',
+      sections: [
+        { heading: 'Greater Dandenong · the diabetes hotspot',
+          body: 'Type 2 diabetes prevalence in Greater Dandenong runs <strong>8.9%</strong> of adults — <strong>1.6× the Victorian average of 5.4%</strong>. The pattern compounds with low cancer-screening participation (<strong>38.4% bowel</strong>, <strong>43.4% breast</strong>, <strong>48.6% cervical</strong>) and CHD prevalence of <strong>9.2%</strong>. Type 2 diabetes incidence is also rising fastest in Casey + Cardinia growth corridors (polar_chronic_2024).' },
+        { heading: 'Cardiovascular disease · the leading killer for men',
+          body: 'Coronary heart disease is the <strong>leading cause of death for men</strong> across the catchment and the <strong>second leading cause for women</strong>. AMI admission rates per 100k follow the disadvantage gradient: <span class="chip">Gr Dandenong 412</span> · <span class="chip">Frankston 376</span> · <span class="chip">Mornington Pen 358</span> versus <span class="chip">Stonnington 178</span>. Hypertension is prevalent in <strong>24.6%</strong> of adults; <strong>~38% of those diagnosed have uncontrolled BP</strong> (aihw_phidu_2024 / aihw_admitted_patient_2024).' },
+        { heading: 'Risk factors · the modifiable layer',
+          body: 'Adult overweight + obese: <strong>Cardinia 68.4%</strong>, <strong>Frankston 65.2%</strong>, <strong>Casey 64.8%</strong>. Insufficient physical activity: <strong>Greater Dandenong 58.4%</strong>, <strong>Casey 52.6%</strong>. Daily smoking concentrates in Gr Dandenong (14.8%) + Frankston (14.1%). Risky alcohol consumption follows the coastal/affluent pattern: Mornington Peninsula 24.6%, Bayside 21.4%. These four risk factors map directly to ~40% of the avoidable-mortality burden (aihw_nhs_2022).' },
+        { heading: 'Avoidable hospitalisations · the primary-care signal',
+          body: 'Ambulatory-Care Sensitive Conditions per 100,000 (FY24): <span class="chip">Gr Dandenong 3,460</span> · <span class="chip">Frankston 3,120</span> · <span class="chip">Mornington Pen 2,840</span>. These are the conditions where good primary care prevents admission — diabetes complications, asthma, COPD, hypertension. The PIP-QI uplift program ($2.4M FY26) targets practices in these top-3 LGAs.' },
+        { heading: 'Cancer screening · prevention beyond chronic-disease management',
+          body: 'Three-program screening (bowel + breast + cervical) lags catchment-wide and disadvantage-driven. <strong>Casey 35.9% bowel screening is Australia\'s lowest LGA</strong>. The equity gap is sharpest in cervical screening, where Gr Dandenong (48.6%) sits 22.6 percentage points below Stonnington (71.2%) — a structural CALD + multi-language access problem, not a clinical one (aihw_nbcsp_2024 / vccr_2024).' },
       ],
     },
     '10-workforce': {
@@ -3667,6 +3714,17 @@
     doh_rubric_2024:        'DoH PHN Performance Rubric 2024',
     det_vic_2024:           'DET Vic schools register 2024',
     acara_2024:             'ACARA MySchool 2024',
+    aihw_bod_2024:          'AIHW Burden of Disease Study 2024',
+    abs_le_2024:            'ABS Life Expectancy 2024',
+    aihw_nhs_2022:          'AIHW National Health Survey 2022',
+    aihw_nbcsp_2024:        'AIHW National Bowel Cancer Screening Program 2024',
+    breastscreen_vic_2024:  'BreastScreen Victoria 2024',
+    vccr_2024:              'Victorian Cervical Cytology Registry 2024',
+    vsr_2024:               'Victorian Suicide Register 2024',
+    aihw_suicide_2024:      'AIHW Suicide & Self-harm Monitoring 2024',
+    abs_disability_2018:    'ABS Survey of Disability, Ageing & Carers 2018',
+    ndia_2024:              'NDIA Quarterly Reports 2024',
+    aihw_admitted_patient_2024: 'AIHW Admitted Patient Care 2024',
   };
 
   function renderHnaEdits() {
