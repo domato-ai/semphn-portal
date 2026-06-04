@@ -79,6 +79,9 @@
         { icon: '⚡', label: 'GP + allied workforce · 5 tiles', template: 'workforce' },
         { icon: '⚡', label: 'Alcohol & other drugs · 5 tiles', template: 'aod' },
         { icon: '⚡', label: 'CALD + multicultural · 5 tiles', template: 'cald' },
+        { icon: '⚡', label: 'Bowel screening focus · 5 tiles', template: 'bowel-screening' },
+        { icon: '⚡', label: 'Headspace coverage · 5 tiles', template: 'headspace-coverage' },
+        { icon: '⚡', label: 'GP retention curve · 5 tiles', template: 'gp-retention' },
       ]},
       { section: 'KPI tiles', items: [
         { icon: '#', label: 'Catchment population · 1.64M (+3.1%)',   prompt: 'Add a KPI tile showing the SEMPHN catchment population (1,638,200 in 2024) with the growth-pa delta (+3.1%).' },
@@ -479,6 +482,111 @@
               {label:'FY22',value:12780},{label:'FY23',value:13390},{label:'FY24',value:14620}]},
     ],
 
+    'bowel-screening': [
+      { type:'kpi', title:'Bowel screening · catchment',
+        subtitle:'NBCSP participation FY24', unit:'pct',
+        source_id:'aihw_phidu_2024', delta:'-2.8pp vs VIC',
+        data:[{label:'VIC 47.0% · AU 44.5% · catchment lags', value:44.2}] },
+      { type:'bar', title:'Bowel screening % · by LGA',
+        subtitle:'AIHW PHIDU · lowest first', unit:'pct',
+        source_id:'aihw_phidu_2024', highlight:'Casey',
+        data:[
+          {label:'Casey',value:35.9},{label:'Greater Dandenong',value:38.4},
+          {label:'Cardinia',value:41.2},{label:'Mornington Peninsula',value:42.8},
+          {label:'Frankston',value:44.6},{label:'Kingston (Vic.)',value:46.3},
+          {label:'Glen Eira',value:47.8},{label:'Bayside (Vic.)',value:49.1},
+          {label:'Port Phillip',value:50.2},{label:'Stonnington',value:51.4},
+        ]},
+      { type:'kpi', title:'Casey · lowest in Australia',
+        subtitle:'NBCSP FY24', unit:'pct',
+        source_id:'aihw_phidu_2024', delta:'-11.1pp vs VIC',
+        data:[{label:'393K residents · 60% over-65 NOT screened', value:35.9}] },
+      { type:'bar', title:'Catchment vs benchmarks',
+        subtitle:'NBCSP participation', unit:'pct',
+        source_id:'aihw_phidu_2024',
+        data:[
+          {label:'Top 10% LGAs nationally',value:62.0},
+          {label:'Victoria avg',value:47.0},
+          {label:'Australia avg',value:44.5},
+          {label:'SEMPHN catchment',value:44.2},
+        ]},
+      { type:'area', title:'Catchment screening trend · 5-yr',
+        subtitle:'NBCSP participation pa', unit:'pct',
+        source_id:'aihw_phidu_2020_2024',
+        data:[{label:'FY20',value:42.1},{label:'FY21',value:42.8},
+              {label:'FY22',value:43.4},{label:'FY23',value:43.9},{label:'FY24',value:44.2}]},
+    ],
+
+    'headspace-coverage': [
+      { type:'kpi', title:'Catchment 0-17 population',
+        subtitle:'ABS Census 2021', unit:'count',
+        source_id:'abs_census_2021', delta:'+1.9% pa',
+        data:[{label:'9 headspace centres serve them', value:358300}] },
+      { type:'donut', title:'Headspace centres · by LGA',
+        subtitle:'SEMPHN service locator 2024', unit:'count',
+        source_id:'semphn_locator_2024',
+        data:[
+          {label:'Frankston',value:1},{label:'Dandenong',value:1},
+          {label:'Cranbourne',value:1},{label:'Narre Warren',value:1},
+          {label:'Rosebud',value:1},{label:'Hastings',value:1},
+          {label:'Bentleigh',value:1},{label:'Elsternwick',value:1},
+          {label:'South Melbourne',value:1},
+        ]},
+      { type:'bar', title:'% aged 5-17 · by LGA',
+        subtitle:'ABS Census 2021', unit:'pct',
+        source_id:'abs_census_2021_age', highlight:'Casey',
+        data:[
+          {label:'Casey',value:18.1},{label:'Cardinia',value:17.4},
+          {label:'Greater Dandenong',value:14.2},{label:'Frankston',value:12.4},
+          {label:'Bayside (Vic.)',value:12.0},{label:'Glen Eira',value:11.8},
+          {label:'Kingston (Vic.)',value:11.6},{label:'Mornington Peninsula',value:11.2},
+          {label:'Stonnington',value:8.9},{label:'Port Phillip',value:8.4},
+        ]},
+      { type:'kpi', title:'1 headspace per ~40K young people',
+        subtitle:'catchment coverage ratio', unit:'count',
+        source_id:'semphn_locator_2024', delta:'VIC avg 1 per 31K',
+        data:[{label:'Casey + Cardinia growth corridor lags', value:39811}] },
+      { type:'area', title:'FY26 youth MH funding · 5-yr',
+        subtitle:'Headspace + Primary MH youth-attributed', unit:'aud',
+        source_id:'semphn_funding_fy22_fy26',
+        data:[{label:'FY22',value:5400000},{label:'FY23',value:5800000},
+              {label:'FY24',value:6200000},{label:'FY25',value:6500000},{label:'FY26',value:6800000}]},
+    ],
+
+    'gp-retention': [
+      { type:'kpi', title:'GP FTE · catchment',
+        subtitle:'AHPRA + DoH MABEL 2024', unit:'count',
+        source_id:'ahpra_mabel_2024', delta:'-4.8% since 2020',
+        data:[{label:'108/100k · VIC 124 · -16 gap', value:1681}] },
+      { type:'donut', title:'GP age distribution · catchment',
+        subtitle:'AHPRA 2024 · 40% over 55', unit:'pct',
+        source_id:'ahpra_age_2024',
+        data:[
+          {label:'Under 35',value:14},{label:'35-44',value:24},
+          {label:'45-54',value:22},{label:'55-64',value:24},
+          {label:'65+',value:16},
+        ]},
+      { type:'kpi', title:'GPs over 55',
+        subtitle:'retirement-risk cohort', unit:'pct',
+        source_id:'ahpra_age_2024', delta:'673 FTE · projected to exit by 2030',
+        data:[{label:'Net pipeline negative without registrar uplift', value:40} ] },
+      { type:'bar', title:'GP practices · by LGA',
+        subtitle:'31 Jul 2024 · open + accepting', unit:'count',
+        source_id:'semphn_locator_2024', highlight:'Casey',
+        data:[
+          {label:'Casey',value:84},{label:'Greater Dandenong',value:72},
+          {label:'Glen Eira',value:64},{label:'Kingston (Vic.)',value:58},
+          {label:'Frankston',value:54},{label:'Mornington Peninsula',value:51},
+          {label:'Stonnington',value:42},{label:'Cardinia',value:38},
+          {label:'Bayside (Vic.)',value:34},{label:'Port Phillip',value:31},
+        ]},
+      { type:'area', title:'GP FTE trend · 5-yr decline',
+        subtitle:'AHPRA + DoH', unit:'count',
+        source_id:'ahpra_mabel_2020_2024',
+        data:[{label:'2020',value:1842},{label:'2021',value:1790},
+              {label:'2022',value:1748},{label:'2023',value:1716},{label:'2024',value:1681}]},
+    ],
+
     'cald': [
       { type:'kpi', title:'CALD population · catchment',
         subtitle:'ABS Census 2021 · born overseas + LOTE', unit:'pct',
@@ -534,6 +642,65 @@
     return added;
   }
   window.__loadDashboardTemplate = loadDashboardTemplate;
+  window.__DASHBOARD_TEMPLATES = DASHBOARD_TEMPLATES;
+
+  /* Tooltip · richer hover preview for dashboard + map templates */
+  function showTemplatePreview(anchor, tiles, name) {
+    hideTemplatePreview();
+    var pop = document.createElement('div');
+    pop.id = 'tpl-preview';
+    pop.className = 'tpl-preview';
+    var head = '<div class="tplp-head">' + escHtml(name) + ' · ' + tiles.length + ' tiles</div>';
+    var rows = tiles.slice(0, 6).map(function (w) {
+      var typeIcon = w.type === 'kpi' ? '#' :
+                     w.type === 'bar' ? '▮' :
+                     w.type === 'donut' ? '◐' :
+                     w.type === 'area' || w.type === 'line' ? '↗' :
+                     w.type === 'table' ? '▤' : '·';
+      return '<div class="tplp-row"><span class="tplp-icon">' + typeIcon + '</span>' +
+        '<div class="tplp-body"><span class="tplp-title">' + escHtml(w.title || '') + '</span>' +
+        '<span class="tplp-sub">' + escHtml(w.subtitle || '') + '</span></div></div>';
+    }).join('');
+    pop.innerHTML = head + rows;
+    document.body.appendChild(pop);
+    var r = anchor.getBoundingClientRect();
+    pop.style.left = (r.right + 10) + 'px';
+    pop.style.top  = Math.max(20, r.top) + 'px';
+    // Flip to left if it would overflow viewport right edge
+    var pw = pop.getBoundingClientRect().width;
+    if (r.right + 10 + pw > window.innerWidth) {
+      pop.style.left = (r.left - pw - 10) + 'px';
+    }
+  }
+  function showMapTemplatePreview(anchor, mt, name) {
+    hideTemplatePreview();
+    var pop = document.createElement('div');
+    pop.id = 'tpl-preview'; pop.className = 'tpl-preview';
+    var head = '<div class="tplp-head">' + escHtml(name) + '</div>';
+    var rows = '';
+    if (mt.choropleth) {
+      rows += '<div class="tplp-row"><span class="tplp-icon">▤</span>' +
+        '<div class="tplp-body"><span class="tplp-title">' + escHtml(mt.choropleth.title || 'Choropleth') + '</span>' +
+        '<span class="tplp-sub">' + escHtml(mt.choropleth.unit_label || mt.choropleth.unit || '') + '</span></div></div>';
+    }
+    (mt.layers || []).forEach(function (k) {
+      var st = SERVICE_STYLE[k] || { plural: k, color: '#666' };
+      rows += '<div class="tplp-row"><span class="tplp-icon" style="background:' + st.color + ';color:#fff;">⊙</span>' +
+        '<div class="tplp-body"><span class="tplp-title">' + escHtml(st.plural || k) + '</span>' +
+        '<span class="tplp-sub">point overlay</span></div></div>';
+    });
+    pop.innerHTML = head + rows;
+    document.body.appendChild(pop);
+    var r = anchor.getBoundingClientRect();
+    pop.style.left = (r.right + 10) + 'px';
+    pop.style.top  = Math.max(20, r.top) + 'px';
+    var pw = pop.getBoundingClientRect().width;
+    if (r.right + 10 + pw > window.innerWidth) pop.style.left = (r.left - pw - 10) + 'px';
+  }
+  function hideTemplatePreview() {
+    var p = document.getElementById('tpl-preview');
+    if (p && p.parentNode) p.parentNode.removeChild(p);
+  }
 
   /* ============================================================
    * SEMPHN Map templates · instant-load map views
@@ -2763,6 +2930,22 @@
         .then(function () { showToast('Widget JSON copied', 'success'); })
         .catch(function () { showToast('Clipboard blocked — try again', 'error'); });
     });
+    // Add-to-HNA bridge · sends the widget into a chosen chapter as an inline
+    // figure. Only meaningful on the Dashboards page (Maps' charts also benefit).
+    if (window.__HNA_CHAPTERS) {
+      var sepHna = document.createElement('div'); sepHna.className = 'wgt-menu-sep'; menu.appendChild(sepHna);
+      var label = document.createElement('div');
+      label.className = 'wgt-menu-label';
+      label.textContent = 'Add to HNA chapter';
+      menu.appendChild(label);
+      Object.keys(window.__HNA_CHAPTERS).forEach(function (key) {
+        var ch = window.__HNA_CHAPTERS[key];
+        var titleClean = ch.title.replace(/<\/?em>/g, '').replace(/<[^>]+>/g, '');
+        item('Ch ' + ch.num + ' · ' + titleClean, function () {
+          addWidgetToHnaChapter(widget, key);
+        });
+      });
+    }
     var sep = document.createElement('div'); sep.className = 'wgt-menu-sep'; menu.appendChild(sep);
     if (callbacks.onDuplicate) item('Duplicate', callbacks.onDuplicate);
     if (callbacks.onDelete)    item('Delete',    callbacks.onDelete, { danger: true });
@@ -2912,6 +3095,11 @@
     if (empty) empty.hidden = widgets.length > 0;
     var countEl = document.getElementById('widget-count');
     if (countEl) countEl.textContent = widgets.length + (widgets.length === 1 ? ' widget' : ' widgets');
+    // Insert AI commentary banner on Dashboards when ≥3 widgets present
+    if (page === 'dashboards' && widgets.length >= 3) {
+      var banner = buildDashboardCommentary(widgets);
+      if (banner) grid.appendChild(banner);
+    }
     widgets.forEach(function (w, idx) {
       try {
         var card = buildWidgetCard(w, {
@@ -2947,6 +3135,61 @@
       }
     });
   }
+  /* Build a synthesized commentary banner for the current dashboard.
+   * Inspects the widget set + their highlighted values to produce a
+   * one-paragraph "what this dashboard says" summary. Deterministic
+   * (no AI call) so it loads instantly. */
+  function buildDashboardCommentary(widgets) {
+    if (!widgets || widgets.length < 3) return null;
+    // Detect topic from titles
+    var titles = widgets.map(function (w) { return (w.title || '') + ' ' + (w.subtitle || ''); }).join(' · ').toLowerCase();
+    var topic;
+    if (titles.match(/mental|mh|headspace|polar.*mh/)) topic = 'mental health';
+    else if (titles.match(/first nations|irseo|achs|sewb/)) topic = 'First Nations';
+    else if (titles.match(/aged|65\+|racf|dementia/)) topic = 'older people';
+    else if (titles.match(/homeless|shs|housing/)) topic = 'homelessness';
+    else if (titles.match(/diabet|chronic|acsc/)) topic = 'chronic disease';
+    else if (titles.match(/gp|workforce|allied|ahpra/)) topic = 'workforce';
+    else if (titles.match(/aod|alcohol|methamph|drug/)) topic = 'AOD';
+    else if (titles.match(/cald|lote|humanitarian|interpreter/)) topic = 'CALD communities';
+    else if (titles.match(/bowel|screen|nbcsp/)) topic = 'screening';
+    else if (titles.match(/youth|0-17|5-17|school/)) topic = 'youth services';
+    else topic = 'this catchment';
+
+    // Pick the most striking bar-chart highlight as the headline finding
+    var bar = widgets.find(function (w) { return w.type === 'bar' && w.highlight && w.data && w.data.length; });
+    var headline = '';
+    if (bar) {
+      var hi = bar.data.find(function (d) { return d.label === bar.highlight; }) || bar.data[0];
+      if (hi) {
+        var unit = bar.unit === 'pct' ? '%' :
+                   bar.unit === 'per_1k' ? '/1k' :
+                   bar.unit === 'per_10k' ? '/10k' :
+                   bar.unit === 'per_100k' ? '/100k' : '';
+        headline = '<strong>' + escHtml(hi.label) + '</strong> stands out at <strong>' + hi.value + unit + '</strong> on ' + escHtml(bar.title || 'the headline metric') + '. ';
+      }
+    }
+    // Pick the most striking KPI
+    var kpi = widgets.find(function (w) { return w.type === 'kpi' && w.data && w.data.length; });
+    var kpiText = '';
+    if (kpi) {
+      kpiText = 'The headline catchment number is <strong>' + escHtml(String(kpi.data[0].value)) + '</strong> for ' + escHtml(kpi.title || 'the catchment KPI') + (kpi.delta ? ' (' + escHtml(kpi.delta) + ')' : '') + '. ';
+    }
+    var counts = widgets.reduce(function (m, w) { m[w.type] = (m[w.type] || 0) + 1; return m; }, {});
+    var mix = Object.keys(counts).map(function (k) { return counts[k] + ' ' + k; }).join(', ');
+
+    var wrap = document.createElement('div');
+    wrap.className = 'wgt-card wgt-commentary';
+    wrap.setAttribute('data-size', 'lg');
+    wrap.innerHTML =
+      '<div class="wgt-com-head">' +
+        '<span class="wgt-com-badge">Dashboard summary</span>' +
+        '<span class="wgt-com-meta">' + escHtml(mix) + ' · auto-synthesised</span>' +
+      '</div>' +
+      '<p class="wgt-com-body">This ' + escHtml(String(widgets.length)) + '-tile dashboard frames the SEMPHN catchment view of <strong>' + escHtml(topic) + '</strong>. ' + headline + kpiText + 'Use the kebab on any tile → <em>Add to HNA chapter</em> to pull a tile into your narrative.</p>';
+    return wrap;
+  }
+
   function addWidget(widget) {
     console.log('[widget] addWidget called with', widget);
     if (!widget) { console.warn('[widget] addWidget called with null/undefined'); return; }
@@ -4248,6 +4491,49 @@
   }
   window.__applyHnaWidget = applyHnaWidget;
 
+  /* Cross-page bridge · sends a dashboard/maps widget into an HNA chapter as
+   * an inline figure. Writes directly to the HNA edits store + offers a CTA
+   * to jump to the chapter. */
+  function addWidgetToHnaChapter(widget, chapterSlug) {
+    if (!widget || !chapterSlug || !window.__HNA_CHAPTERS) {
+      showToast('Bridge not available', 'warn'); return false;
+    }
+    var ch = window.__HNA_CHAPTERS[chapterSlug];
+    if (!ch) { showToast('Chapter not found', 'warn'); return false; }
+    var edit = {
+      heading: widget.title || '',
+      text:    widget.subtitle || '',
+      widget:  JSON.parse(JSON.stringify(widget)),  // clone
+      chapter: chapterSlug,
+      ts:      Date.now(),
+      accepted: false,
+    };
+    var arr = readHnaEdits();
+    arr.push(edit);
+    writeHnaEdits(arr);
+    var chapterName = ch.title.replace(/<[^>]+>/g, '');
+    showToast('Added to HNA · Ch ' + ch.num + ' ' + chapterName, 'success');
+    // Show a floating "Open chapter" CTA so the user can jump immediately
+    var cta = document.createElement('div');
+    cta.className = 'hna-bridge-cta';
+    cta.innerHTML =
+      '<span class="hbc-l">Widget sent to <strong>Ch ' + escHtml(ch.num) + ' · ' + escHtml(chapterName) + '</strong></span>' +
+      '<button type="button" class="hbc-go">Open chapter →</button>' +
+      '<button type="button" class="hbc-x" aria-label="Dismiss">×</button>';
+    document.body.appendChild(cta);
+    setTimeout(function () { cta.classList.add('is-open'); }, 20);
+    cta.querySelector('.hbc-go').addEventListener('click', function () { window.location.href = '/hna/#' + chapterSlug; });
+    cta.querySelector('.hbc-x').addEventListener('click', function () {
+      cta.classList.remove('is-open');
+      setTimeout(function () { try { cta.remove(); } catch (_) {} }, 300);
+    });
+    setTimeout(function () {
+      if (cta.parentNode) { cta.classList.remove('is-open'); setTimeout(function () { try { cta.remove(); } catch (_) {} }, 300); }
+    }, 8000);
+    return true;
+  }
+  window.__addWidgetToHnaChapter = addWidgetToHnaChapter;
+
   /* Export current chapter as Markdown */
   function exportHnaChapterMd() {
     var slug = currentChapterSlug();
@@ -5153,6 +5439,32 @@
         var ic = document.createElement('span'); ic.className = 'ico'; ic.textContent = s.icon || '·';
         var lab = document.createElement('span'); lab.className = 'label'; lab.textContent = s.label;
         btn.appendChild(ic); btn.appendChild(lab);
+        // Template hover preview · for dashboard templates, show the tile
+        // titles before the user commits. Same idea applies to map templates.
+        if (s.template && window.__DASHBOARD_TEMPLATES) {
+          var tpl = window.__DASHBOARD_TEMPLATES[s.template];
+          if (tpl && tpl.length) {
+            btn.classList.add('has-preview');
+            btn.title = tpl.map(function (w) { return '• ' + (w.title || ''); }).join('\n');
+            // Build a richer custom tooltip
+            btn.addEventListener('mouseenter', function () { showTemplatePreview(btn, tpl, s.label); });
+            btn.addEventListener('mouseleave', hideTemplatePreview);
+          }
+        }
+        if (s.mapTemplate && window.__MAP_TEMPLATES) {
+          var mt = window.__MAP_TEMPLATES[s.mapTemplate];
+          if (mt) {
+            btn.classList.add('has-preview');
+            var items = [];
+            if (mt.choropleth) items.push('• ' + (mt.choropleth.title || 'Choropleth'));
+            (mt.layers || []).forEach(function (k) {
+              var st = SERVICE_STYLE[k]; items.push('• ' + (st && st.plural || k) + ' overlay');
+            });
+            btn.title = items.join('\n');
+            btn.addEventListener('mouseenter', function () { showMapTemplatePreview(btn, mt, s.label); });
+            btn.addEventListener('mouseleave', hideTemplatePreview);
+          }
+        }
         btn.addEventListener('click', function () {
           // Three flavours of chips:
           //   template       → dashboard preset (loadDashboardTemplate)
