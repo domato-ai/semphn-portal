@@ -2,11 +2,18 @@
 
 South Eastern Melbourne Primary Health Network — Health Needs Assessment workbench. A 13-step linear workflow that walks SEMPHN staff from sign-in through PPERS lodgement of their annual HNA update.
 
-**Live deployment**: `https://semphn.domato.ai`
+**Live deployment**: `https://app.semphn.domato.ai`
 **Azure SWA hostname**: `https://ambitious-cliff-02027e900.7.azurestaticapps.net` (kept active as fallback)
 
-The custom domain is wired to the Azure Static Web App via a CNAME on the
-domato.ai zone (Wix DNS). To verify everything is healthy:
+The canonical hostname is `app.semphn.domato.ai`, wired to the Azure Static
+Web App via a CNAME on the `semphn.domato.ai` subdomain in Wix DNS. (The
+bare `semphn.domato.ai` was originally attempted but Azure's first add
+attempt failed with an "unknown error" and left the binding stuck in
+`Deleting` state — `app.` was added as a clean replacement. The bare
+binding will eventually time out on Azure's side; until then it shows up
+in `az staticwebapp hostname list` but is harmless.)
+
+To verify everything is healthy:
 
 ```bash
 python scripts/check_custom_domain.py

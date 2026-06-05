@@ -18,7 +18,7 @@ import socket
 import ssl
 import urllib.request
 
-CUSTOM = "https://semphn.domato.ai"
+CUSTOM = "https://app.semphn.domato.ai"
 SWA    = "https://ambitious-cliff-02027e900.7.azurestaticapps.net"
 
 

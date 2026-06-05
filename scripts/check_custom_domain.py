@@ -1,11 +1,11 @@
-"""Probe the live custom-domain configuration for semphn.domato.ai.
+"""Probe the live custom-domain configuration for app.semphn.domato.ai.
 
 Run:  python scripts/check_custom_domain.py
 
 Checks (each prints PASS / FAIL):
-  1. DNS · semphn.domato.ai resolves through the Azure SWA CNAME chain
+  1. DNS · app.semphn.domato.ai resolves through the Azure SWA CNAME chain
   2. HTTPS · cert is valid (trusts the system roots, no -k needed)
-  3. Cert SAN covers semphn.domato.ai
+  3. Cert SAN covers app.semphn.domato.ai
   4. /            serves HTML 200
   5. /signin/     serves HTML 200
   6. /hna/        serves HTML 200
@@ -18,7 +18,7 @@ import io, json, socket, ssl, sys, urllib.request
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)
 
-HOST = "semphn.domato.ai"
+HOST = "app.semphn.domato.ai"
 ROOT = f"https://{HOST}"
 
 
