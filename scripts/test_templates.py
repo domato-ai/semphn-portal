@@ -8,11 +8,16 @@ Run: python scripts/test_templates.py
 """
 from __future__ import annotations
 import io, json, re, sys, urllib.request
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _portal_host import portal_host  # noqa: E402
+
 # Windows console defaults to cp1252 · force stdout to UTF-8 so we can print
 # the unicode chars we're testing for (≥ × · etc.)
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)
 
-PORTAL = "https://ambitious-cliff-02027e900.7.azurestaticapps.net"
+PORTAL = portal_host()
 SEMPHN_LGAS = {
     "Bayside (Vic.)", "Cardinia", "Casey", "Frankston", "Glen Eira",
     "Greater Dandenong", "Kingston (Vic.)", "Mornington Peninsula",

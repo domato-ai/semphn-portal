@@ -8,7 +8,8 @@ Hits the live SWA endpoint with N representative prompts and checks:
   • At least one citation pattern (source_id-style suffix or LGA name)
 
 Run:    python scripts/test_chat_prompts.py
-Env:    PORTAL_HOST defaults to https://ambitious-cliff-02027e900.7.azurestaticapps.net
+Env:    PORTAL_HOST overrides host auto-detection (defaults to semphn.domato.ai
+        with SWA fallback while the cert is still validating).
 """
 from __future__ import annotations
 
@@ -19,8 +20,12 @@ import sys
 import time
 import urllib.request
 import urllib.error
+from pathlib import Path
 
-HOST = os.environ.get("PORTAL_HOST", "https://ambitious-cliff-02027e900.7.azurestaticapps.net").rstrip("/")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _portal_host import portal_host  # noqa: E402
+
+HOST = portal_host().rstrip("/")
 ENDPOINT = HOST + "/api/chat"
 
 # Each test = (label, step_slug, step_name, user_prompt, expects_widget, expected_substrings_any)

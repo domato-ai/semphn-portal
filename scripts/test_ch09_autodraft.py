@@ -3,8 +3,12 @@ for the user all now produce a `paragraph` widget.
 """
 from __future__ import annotations
 import json, os, re, sys, urllib.request, urllib.error
+from pathlib import Path
 
-HOST = os.environ.get("PORTAL_HOST", "https://ambitious-cliff-02027e900.7.azurestaticapps.net").rstrip("/")
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _portal_host import portal_host  # noqa: E402
+
+HOST = portal_host().rstrip("/")
 ENDPOINT = HOST + "/api/chat"
 
 TESTS = [

@@ -10,10 +10,14 @@ Run:  python scripts/test_hna_chapters.py
 """
 from __future__ import annotations
 import io, re, sys, urllib.request
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _portal_host import portal_host  # noqa: E402
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_buffering=True)
 
-PORTAL = "https://ambitious-cliff-02027e900.7.azurestaticapps.net"
+PORTAL = portal_host()
 
 EXPECTED_CHAPTERS = [
     "01-introduction", "02-region", "03-cald", "04-first-nations",

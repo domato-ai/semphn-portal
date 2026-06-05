@@ -2,8 +2,19 @@
 
 South Eastern Melbourne Primary Health Network — Health Needs Assessment workbench. A 13-step linear workflow that walks SEMPHN staff from sign-in through PPERS lodgement of their annual HNA update.
 
-**Live deployment**: `<SWA hostname goes here after first deploy>`
-**Custom domain**: configured by SEMPHN via DNS CNAME
+**Live deployment**: `https://semphn.domato.ai`
+**Azure SWA hostname**: `https://ambitious-cliff-02027e900.7.azurestaticapps.net` (kept active as fallback)
+
+The custom domain is wired to the Azure Static Web App via a CNAME on the
+domato.ai zone (Wix DNS). To verify everything is healthy:
+
+```bash
+python scripts/check_custom_domain.py
+```
+
+Test scripts auto-pick the host (see `scripts/_portal_host.py`): they
+prefer the custom domain when its TLS cert verifies, otherwise fall back
+to the SWA hostname. Override with `PORTAL_HOST=https://...` if needed.
 
 ## What this is
 

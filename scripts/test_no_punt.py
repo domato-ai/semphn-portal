@@ -20,10 +20,11 @@ import sys
 import urllib.request
 import urllib.error
 
-HOST = os.environ.get(
-    "PORTAL_HOST",
-    "https://ambitious-cliff-02027e900.7.azurestaticapps.net",
-).rstrip("/")
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _portal_host import portal_host  # noqa: E402
+
+HOST = portal_host().rstrip("/")
 ENDPOINT = HOST + "/api/chat"
 
 TESTS = [
