@@ -3488,6 +3488,17 @@
   window.__renderWidgets = renderWidgets;
   window.__extractWidget  = extractWidget;
   window.__extractWidgets = extractWidgets;
+  // Per-page helpers exposed for inline scripts on /dashboards/ + /maps/.
+  // These hide the per-user-namespaced WIDGET_KEY so page-level Clear,
+  // count, and Export handlers don't drift out of sync with the shell.
+  window.__widgetsForPage = function (page) { return readWidgets(page); };
+  window.__widgetCountForPage = function (page) { return readWidgets(page).length; };
+  window.__clearWidgetsForPage = function (page) {
+    var before = readWidgets(page).length;
+    writeWidgets(page, []);
+    if (typeof renderWidgets === 'function') renderWidgets();
+    return before;
+  };
   // For HNA to render in-doc charts using the dashboard renderer
   window.__buildWidgetNode = function (widget) {
     return buildWidgetCard(widget, {});

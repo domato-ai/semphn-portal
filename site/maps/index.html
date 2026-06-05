@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1784720000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1784730000" />
 
 <!-- Leaflet · real interactive map for choropleths, points and overlays.
      Real OSM tiles + actual SEMPHN LGA polygons from ABS LGA 2016 boundaries
@@ -205,16 +205,11 @@
       window.__defaultMapApi.reset();
       if (typeof window.showToast === 'function') window.showToast('Map reset', 'success');
     }
-    // Also clear any widget tiles that may have been added
-    try {
-      var raw = localStorage.getItem('semphn.workbench.widgets.v1');
-      var s = raw ? JSON.parse(raw) : {};
-      if (s.maps && s.maps.length) {
-        s.maps = [];
-        localStorage.setItem('semphn.workbench.widgets.v1', JSON.stringify(s));
-        if (typeof window.__renderWidgets === 'function') window.__renderWidgets();
-      }
-    } catch (_) {}
+    // Also clear any widget tiles that may have been added — go through
+    // shell.js's per-user-namespaced helper, not localStorage directly.
+    if (typeof window.__clearWidgetsForPage === 'function') {
+      window.__clearWidgetsForPage('maps');
+    }
   });
 
   /* DEFAULT STATE · full-featured Leaflet GIS preview of the SEMPHN catchment.
@@ -255,6 +250,6 @@
   window.__initMapsDefault = initDefaultMap;
 })();
 </script>
-<script src="/_assets/shell.js?v=1784720000"></script>
+<script src="/_assets/shell.js?v=1784730000"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1784720000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1784730000" />
 
 <!-- Apache ECharts · widget rendering for the dashboard builder.
      Why ECharts: enterprise-grade defaults, single CDN, themeable. -->
@@ -260,14 +260,19 @@
 
 <script>
 (function () {
+  // Use shell.js's per-user-namespaced widget helpers · NEVER touch
+  // localStorage('semphn.workbench.widgets.v1') directly here, because
+  // it doesn't reflect the user's namespaced key (e.g. ...u-<email-slug>).
+  function widgetCount() {
+    if (typeof window.__widgetCountForPage === 'function') {
+      return window.__widgetCountForPage('dashboards');
+    }
+    return 0;
+  }
   function refresh() {
-    try {
-      var raw = localStorage.getItem('semphn.workbench.widgets.v1');
-      var s = raw ? JSON.parse(raw) : {};
-      var arr = Array.isArray(s.dashboards) ? s.dashboards : [];
-      var c = document.getElementById('widget-count');
-      if (c) c.textContent = arr.length + (arr.length === 1 ? ' widget' : ' widgets');
-    } catch (e) {}
+    var n = widgetCount();
+    var c = document.getElementById('widget-count');
+    if (c) c.textContent = n + (n === 1 ? ' widget' : ' widgets');
   }
   var test = document.getElementById('widget-test');
   if (test) test.addEventListener('click', function () {
@@ -296,16 +301,21 @@
   });
   var btn = document.getElementById('widget-clear');
   if (btn) btn.addEventListener('click', function () {
-    if (!confirm('Remove all widgets from this dashboard?')) return;
-    try {
-      var raw = localStorage.getItem('semphn.workbench.widgets.v1');
-      var s = raw ? JSON.parse(raw) : {};
-      s.dashboards = [];
-      localStorage.setItem('semphn.workbench.widgets.v1', JSON.stringify(s));
-      if (typeof window.__renderWidgets === 'function') window.__renderWidgets();
-      if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('All widgets cleared', 'success');
-      refresh();
-    } catch (e) {}
+    if (typeof window.__clearWidgetsForPage !== 'function') {
+      if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Clear unavailable — try refreshing', 'error');
+      return;
+    }
+    var n = widgetCount();
+    if (n === 0) {
+      if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Already empty', 'success');
+      return;
+    }
+    if (!confirm('Remove all ' + n + ' widget' + (n === 1 ? '' : 's') + ' from this dashboard?')) return;
+    var cleared = window.__clearWidgetsForPage('dashboards');
+    if (window.SEMPHN && window.SEMPHN.toast) {
+      window.SEMPHN.toast('Cleared ' + cleared + ' widget' + (cleared === 1 ? '' : 's'), 'success');
+    }
+    refresh();
   });
   // Watch storage to keep the count in sync after widget add/delete
   setInterval(refresh, 800);
@@ -315,10 +325,7 @@
   // shell.css hide chat/nav/toolbar and show widget-grid full-width.
   var exportBtn = document.getElementById('dash-export');
   if (exportBtn) exportBtn.addEventListener('click', function () {
-    var raw = localStorage.getItem('semphn.workbench.widgets.v1');
-    var s = raw ? JSON.parse(raw) : {};
-    var arr = Array.isArray(s.dashboards) ? s.dashboards : [];
-    if (!arr.length) {
+    if (widgetCount() === 0) {
       if (window.SEMPHN && window.SEMPHN.toast) window.SEMPHN.toast('Add a widget first — nothing to export', 'warn');
       return;
     }
@@ -335,6 +342,6 @@
   });
 })();
 </script>
-<script src="/_assets/shell.js?v=1784720000"></script>
+<script src="/_assets/shell.js?v=1784730000"></script>
 </body>
 </html>
