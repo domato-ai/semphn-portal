@@ -9,7 +9,25 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/_assets/shell.css?v=1784700000" />
+<link rel="stylesheet" href="/_assets/shell.css?v=1784710000" />
+
+<!-- Apache ECharts · inline figures dropped via per-section toolbar or the
+     dashboards/maps Add-to-HNA bridge render with ECharts, same as on the
+     Dashboards page. Without this the figure shows "Chart library not loaded." -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" defer></script>
+
+<!-- Leaflet + markercluster · choropleth widgets pushed into the HNA doc
+     render as compact LGA maps; matches the libs the Maps + Dashboards pages
+     already load. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin="" defer></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
 
 <style>
   /* HNA-specific artifact styles */
@@ -293,6 +311,6 @@
     <span class="statusbar-item hide-mobile"><kbd>⌘\</kbd> toggle chat</span>
   </div>
 </footer>
-<script src="/_assets/shell.js?v=1784700000"></script>
+<script src="/_assets/shell.js?v=1784710000"></script>
 </body>
 </html>
