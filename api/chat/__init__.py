@@ -486,7 +486,54 @@ def _system_prompt(step_slug: str, step_name: str, context_summary: str) -> str:
             "```\n\n"
             "=== END EXAMPLE — every paragraph-draft request must follow this "
             "exact shape: one sentence of prose then a ```widget block. Never one "
-            "without the other. ==="
+            "without the other. ===\n\n"
+            "=== HNA · INLINE CHARTS + MAPS (per-section toolbar) ===\n"
+            "The HNA page ALSO accepts non-paragraph widgets — they render as "
+            "inline figures under the relevant section. When the user clicks an "
+            "'Add to this section' chip OR otherwise asks for a chart / map / "
+            "KPI / table on the HNA page, emit the matching widget type. Same "
+            "hard rule: NO WIDGET = NO ANSWER. NEVER refuse with phrases like "
+            "'the data slice does not provide…', 'closest proxy I can map is… "
+            "— want me to?', or 'For authoritative data, see…'. The SEMPHN "
+            "ground-truth block above already has the figures — USE THEM.\n\n"
+            "Allowed inline-figure types on HNA: bar, line, area, donut, kpi, "
+            "table, choropleth. Schemas:\n"
+            "```widget\n"
+            "{\n"
+            '  "type": "bar" | "line" | "area",\n'
+            '  "title": "<short title>",\n'
+            '  "unit": "pct" | "per_1k" | "per_10k" | "per_100k" | "count" | "aud",\n'
+            '  "unit_label": "<friendly axis, e.g. \\"per 100,000 residents\\">",\n'
+            '  "source_id": "<source_id e.g. polar_2024 / aihw_acsc_2024>",\n'
+            '  "highlight": "<optional label to outline>",\n'
+            '  "data": [{"label": "Frankston", "value": 116.1}, ...]\n'
+            "}\n"
+            "```\n"
+            "```widget\n"
+            '{ "type": "donut", "title": "...", "source_id": "...",\n'
+            '  "data": [{"label": "Hanging", "value": 53}, ...] }\n'
+            "```\n"
+            "```widget\n"
+            '{ "type": "kpi", "title": "...", "value": "$18.4M",\n'
+            '  "subtitle": "SEMPHN aged-care FY26", "source_id": "..." }\n'
+            "```\n"
+            "```widget\n"
+            '{ "type": "table", "title": "ACCHS in SEMPHN catchment",\n'
+            '  "columns": ["Service", "Suburb", "Type", "Staff"],\n'
+            '  "rows": [["...", "...", "ACCHS", 24], ...],\n'
+            '  "source_id": "..." }\n'
+            "```\n"
+            "```widget\n"
+            '{ "type": "choropleth", "title": "MH conditions · per 1,000",\n'
+            '  "unit": "per_1k", "unit_label": "per 1,000 residents",\n'
+            '  "source_id": "polar_2024", "highlight": "Frankston",\n'
+            '  "data": [{"label": "Frankston", "value": 116.1}, ...] }\n'
+            "```\n\n"
+            "Bar/choropleth label set MUST be the 10 SEMPHN LGAs exactly: "
+            "Bayside, Cardinia, Casey, Frankston, Glen Eira, Greater Dandenong, "
+            "Kingston, Mornington Peninsula, Port Phillip, Stonnington. ONE "
+            "short prose sentence then the widget block. Never both a paragraph "
+            "widget AND a chart widget unless the user explicitly asked for both."
         )
 
     # ---- Maps page · LIVE MAP OVERLAY mode (different from Dashboards) ----
