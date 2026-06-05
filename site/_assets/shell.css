@@ -3276,3 +3276,156 @@ svg.wgt-choro { width: 100%; height: auto; max-height: 380px; display: block; }
   .hna-sa-label { font-size: 0.68rem; }
   .hna-sa-chip { font-size: 0.74rem; padding: 6px 10px; }
 }
+
+/* ── HNA · seed-paragraph wrappers with Keep/Edit/Discard controls ─── */
+.hna-seed-deck,
+.hna-seed-section {
+  position: relative;
+  padding: 6px 8px 8px;
+  margin: 0 -8px 4px;
+  border-radius: 8px;
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+.hna-seed-deck:hover,
+.hna-seed-section:hover {
+  background: rgba(85, 191, 175, 0.04);
+}
+.hna-seed-deck.is-kept,
+.hna-seed-section.is-kept {
+  background: rgba(85, 191, 175, 0.06);
+  border-left: 2px solid var(--teal);
+  padding-left: 10px;
+  margin-left: -10px;
+}
+.hna-seed-deck.is-dirty,
+.hna-seed-section.is-dirty {
+  background: rgba(76, 134, 255, 0.05);
+}
+.hna-seed-deck.is-dirty::before,
+.hna-seed-section.is-dirty::before {
+  content: 'edited';
+  position: absolute;
+  top: 6px; right: 8px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--navy-mid);
+  background: var(--paper);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #DCE6F4;
+}
+.hna-seed-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 10px;
+  font-family: var(--sans);
+}
+.hna-seed-actions button {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--slate);
+  padding: 4px 9px;
+  border-radius: var(--r-xs);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--motion-fast);
+}
+.hna-seed-actions button:hover {
+  color: var(--ink);
+  border-color: var(--slate-mute);
+  background: var(--rule-soft);
+}
+.hna-seed-actions button.primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.hna-seed-actions button.primary:hover { background: #1F1F1F; }
+.hna-seed-actions button.subtle { color: var(--slate-soft); }
+.hna-seed-actions button.is-kept {
+  background: rgba(85, 191, 175, 0.12);
+  border-color: var(--teal);
+  color: var(--navy);
+}
+.hna-seed-actions button.danger:hover {
+  color: var(--negative);
+  border-color: var(--negative);
+}
+.hna-edit-heading-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.hna-edit-heading-row label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slate-soft);
+}
+.hna-edit-heading {
+  width: 100%;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1.05rem;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--navy);
+}
+.hna-edit-heading:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(85, 191, 175, 0.18);
+}
+
+/* Discarded-paragraph restore strip · sits at chapter top */
+.hna-discarded-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  margin-bottom: 14px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+.hna-discarded-label {
+  font-weight: 600;
+  color: #8A5A06;
+  margin-right: 6px;
+}
+.hna-discarded-chip {
+  appearance: none;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  background: var(--paper);
+  color: var(--ink-2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.74rem;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+.hna-discarded-chip:hover {
+  border-color: #B7791F;
+  background: #FFF6E5;
+}
+.hna-discarded-chip.is-danger {
+  border-color: var(--rule);
+  color: var(--slate);
+  margin-left: auto;
+}
+.hna-discarded-chip.is-danger:hover {
+  border-color: var(--negative);
+  color: var(--negative);
+  background: #FEF2F2;
+}

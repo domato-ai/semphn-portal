@@ -3741,6 +3741,226 @@
   }
 
   /* ============================================================
+   * Seed-paragraph override store · per-user
+   *
+   * Every chapter ships with predefined deck + section paragraphs.
+   * The user can Keep / Edit / Discard / Restore each one. Overrides
+   * persist per user via the same uKey() namespace as everything else.
+   *
+   * Schema:
+   *   { "<chapter-slug>": { "deck": <override|null>, "0": <override|null>, "1": ... } }
+   *   <override> = { heading?, body?, discarded?, accepted? }
+   *
+   * Index 'deck' is the chapter deck paragraph. Section indices are
+   * 0..N matching ch.sections[].
+   * ============================================================ */
+  var HNA_SEED_OVERRIDES_KEY_BASE = 'semphn.hna.seedoverrides.v2';
+  function HNA_SEED_OVERRIDES_KEY() { return uKey(HNA_SEED_OVERRIDES_KEY_BASE); }
+  function readSeedOverrides() {
+    try { return JSON.parse(localStorage.getItem(HNA_SEED_OVERRIDES_KEY()) || '{}'); }
+    catch (_) { return {}; }
+  }
+  function writeSeedOverrides(obj) {
+    try { localStorage.setItem(HNA_SEED_OVERRIDES_KEY(), JSON.stringify(obj)); }
+    catch (_) {}
+  }
+  function getSeedOverride(chapter, idx) {
+    var all = readSeedOverrides();
+    return (all[chapter] && all[chapter][String(idx)]) || null;
+  }
+  function setSeedOverride(chapter, idx, patch) {
+    var all = readSeedOverrides();
+    if (!all[chapter]) all[chapter] = {};
+    var key = String(idx);
+    all[chapter][key] = Object.assign({}, all[chapter][key] || {}, patch);
+    writeSeedOverrides(all);
+  }
+  function clearSeedOverride(chapter, idx) {
+    var all = readSeedOverrides();
+    if (all[chapter]) { delete all[chapter][String(idx)]; writeSeedOverrides(all); }
+  }
+  function clearChapterSeedOverrides(chapter) {
+    var all = readSeedOverrides();
+    if (all[chapter]) { delete all[chapter]; writeSeedOverrides(all); }
+  }
+  // Expose so the test harness + outside callers can probe state
+  window.__hnaSeedOverrides = {
+    read: readSeedOverrides,
+    get: getSeedOverride,
+    set: setSeedOverride,
+    clearOne: clearSeedOverride,
+    clearChapter: clearChapterSeedOverrides,
+  };
+
+  /* Build the Keep/Edit/Discard/Rewrite/Restore controls bar that
+   * hangs off every seed paragraph (deck or section). `wrap` is the
+   * .hna-seed-section / .hna-seed-deck container. */
+  function buildSeedControls(chapter, idx, wrap, opts) {
+    opts = opts || {};
+    var isDeck    = opts.isDeck === true;
+    var original  = opts.original || {};   // { heading, body }
+    var override  = getSeedOverride(chapter, idx) || {};
+    var bar = document.createElement('div');
+    bar.className = 'hna-seed-actions';
+    function btn(label, cls, title, handler) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      if (cls) b.className = cls;
+      if (title) b.title = title;
+      b.addEventListener('click', handler);
+      bar.appendChild(b);
+      return b;
+    }
+    var accepted = override.accepted === true;
+    if (!accepted) {
+      btn('Keep', '', 'Mark this paragraph as accepted (removes the draft cue)', function () {
+        setSeedOverride(chapter, idx, { accepted: true });
+        renderHnaChapter();
+        showToast('Kept · marked as accepted', 'success');
+      });
+    } else {
+      btn('Kept ✓', 'subtle is-kept', 'Already accepted — click to un-accept',
+        function () {
+          var cur = getSeedOverride(chapter, idx) || {};
+          delete cur.accepted;
+          if (Object.keys(cur).length === 0) clearSeedOverride(chapter, idx);
+          else setSeedOverride(chapter, idx, cur);
+          renderHnaChapter();
+        });
+    }
+    btn('Edit', 'subtle', 'Edit the paragraph inline', function () {
+      var p = wrap.querySelector('p.hna-seed-body, p.deck');
+      if (!p) return;
+      var ta = document.createElement('textarea');
+      ta.className = 'hna-edit-textarea';
+      ta.value = p.textContent || '';
+      ta.rows = Math.min(10, Math.max(4, Math.ceil(ta.value.length / 100)));
+      // Heading editor for sections (deck has no heading)
+      var headingTa = null;
+      if (!isDeck) {
+        var currentHeading = (override.heading != null ? override.heading : original.heading) || '';
+        var headWrap = document.createElement('div');
+        headWrap.className = 'hna-edit-heading-row';
+        var hl = document.createElement('label');
+        hl.textContent = 'Heading';
+        headingTa = document.createElement('input');
+        headingTa.type = 'text';
+        headingTa.value = currentHeading;
+        headingTa.className = 'hna-edit-heading';
+        headWrap.appendChild(hl);
+        headWrap.appendChild(headingTa);
+        wrap.querySelector('h2')?.replaceWith(headWrap);
+      }
+      p.replaceWith(ta);
+      bar.innerHTML = '';
+      var save = document.createElement('button');
+      save.type = 'button'; save.textContent = 'Save'; save.className = 'primary';
+      save.addEventListener('click', function () {
+        var patch = { body: ta.value.trim() };
+        if (headingTa) patch.heading = headingTa.value.trim();
+        // Drop empty patch fields if they match original (keep storage clean)
+        if (patch.body === original.body) delete patch.body;
+        if (patch.heading === original.heading) delete patch.heading;
+        if (Object.keys(patch).length === 0) {
+          // No-op edit — just re-render
+          renderHnaChapter();
+          showToast('No changes', 'success');
+          return;
+        }
+        setSeedOverride(chapter, idx, patch);
+        renderHnaChapter();
+        showToast('Paragraph updated', 'success');
+      });
+      var cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = 'Cancel'; cancel.className = 'subtle';
+      cancel.addEventListener('click', function () { renderHnaChapter(); });
+      bar.appendChild(save); bar.appendChild(cancel);
+      ta.focus();
+      ta.selectionStart = 0; ta.selectionEnd = ta.value.length;
+    });
+    btn('Rewrite via AI', 'subtle',
+      'Drop a rewrite prompt into the chat using this paragraph',
+      function () {
+        var input = document.getElementById('chat-input');
+        var send  = document.getElementById('chat-send');
+        if (!input) return;
+        var bodyText = wrap.querySelector('p')?.textContent || original.body || '';
+        var label = isDeck ? 'deck paragraph' : 'paragraph under "' + (original.heading || '') + '"';
+        input.value = 'Rewrite this ' + label + ' in a tighter, more agency-centred voice — same figures, same length: "' +
+          bodyText.replace(/"/g, '\\"') + '". New paragraph, no widget.';
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+      });
+    btn('Discard', 'danger', 'Hide this paragraph from the chapter', function () {
+      var label = isDeck ? 'deck paragraph' : 'paragraph "' + (original.heading || '') + '"';
+      if (!confirm('Discard the ' + label + '? It can be restored from the chapter Restore button.')) return;
+      setSeedOverride(chapter, idx, { discarded: true });
+      renderHnaChapter();
+      showToast('Discarded — restorable from chapter toolbar', 'success');
+    });
+    var dirty = override.body != null || override.heading != null;
+    if (dirty) {
+      btn('Restore original', 'subtle', 'Revert to the predefined wording', function () {
+        var cur = getSeedOverride(chapter, idx) || {};
+        delete cur.body; delete cur.heading;
+        if (Object.keys(cur).length === 0) clearSeedOverride(chapter, idx);
+        else setSeedOverride(chapter, idx, cur);
+        renderHnaChapter();
+        showToast('Restored original wording', 'success');
+      });
+    }
+    return bar;
+  }
+
+  /* Discarded-section restore strip · shown at the chapter top when at
+   * least one section (or the deck) has been Discarded. Each chip
+   * restores one paragraph in place. */
+  function buildDiscardedStrip(chapter, ch) {
+    var all = readSeedOverrides();
+    var ov = all[chapter] || {};
+    var discarded = Object.keys(ov).filter(function (k) { return ov[k] && ov[k].discarded; });
+    if (!discarded.length) return null;
+    var strip = document.createElement('div');
+    strip.className = 'hna-discarded-strip';
+    var lbl = document.createElement('span');
+    lbl.className = 'hna-discarded-label';
+    lbl.textContent = discarded.length + ' discarded · restore: ';
+    strip.appendChild(lbl);
+    discarded.forEach(function (k) {
+      var orig = (k === 'deck')
+        ? { heading: 'Deck paragraph' }
+        : { heading: (ch.sections[Number(k)] && ch.sections[Number(k)].heading) || 'Section ' + (Number(k) + 1) };
+      var c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'hna-discarded-chip';
+      c.textContent = orig.heading;
+      c.title = 'Restore: ' + orig.heading;
+      c.addEventListener('click', function () {
+        var cur = getSeedOverride(chapter, k) || {};
+        delete cur.discarded;
+        if (Object.keys(cur).length === 0) clearSeedOverride(chapter, k);
+        else setSeedOverride(chapter, k, cur);
+        renderHnaChapter();
+        showToast('Restored · ' + orig.heading, 'success');
+      });
+      strip.appendChild(c);
+    });
+    var clr = document.createElement('button');
+    clr.type = 'button';
+    clr.className = 'hna-discarded-chip is-danger';
+    clr.textContent = 'Restore all + clear overrides';
+    clr.addEventListener('click', function () {
+      if (!confirm('Restore all discarded paragraphs AND clear every edit in this chapter?')) return;
+      clearChapterSeedOverrides(chapter);
+      renderHnaChapter();
+      showToast('All overrides cleared', 'success');
+    });
+    strip.appendChild(clr);
+    return strip;
+  }
+
+  /* ============================================================
    * HNA chapters · 12 chapters (5 fleshed + 7 stubs)
    *
    * Each chapter is keyed by slug, with a deck (intro), one or more
@@ -4104,23 +4324,67 @@
       });
       body.appendChild(stub);
     } else {
-      // Seed content: deck + sections
+      // Discarded-paragraph restore strip · appears at chapter top when
+      // anything has been Discarded by the user
+      var discardStrip = buildDiscardedStrip(slug, ch);
+      if (discardStrip) body.appendChild(discardStrip);
+
+      // Seed content: deck + sections, each wrapped with Keep/Edit/Discard
+      // controls and overrideable by the user (persisted per-tenant).
       if (ch.deck) {
-        var deck = document.createElement('p');
-        deck.className = 'deck';
-        deck.innerHTML = ch.deck;
-        body.appendChild(deck);
+        var deckOv = getSeedOverride(slug, 'deck') || {};
+        if (!deckOv.discarded) {
+          var deckWrap = document.createElement('div');
+          deckWrap.className = 'hna-seed-deck' + (deckOv.accepted ? ' is-kept' : '');
+          if (deckOv.body != null || deckOv.heading != null) deckWrap.classList.add('is-dirty');
+          var deck = document.createElement('p');
+          deck.className = 'deck';
+          // Edited overrides are stored as plain text; render escaped to
+          // prevent script injection from an over-trusting paste. The
+          // original deck ships as trusted HTML.
+          if (deckOv.body != null) {
+            deck.textContent = deckOv.body;
+          } else {
+            deck.innerHTML = ch.deck;
+          }
+          deckWrap.appendChild(deck);
+          deckWrap.appendChild(buildSeedControls(slug, 'deck', deckWrap, {
+            isDeck: true,
+            original: { body: ch.deck },
+          }));
+          body.appendChild(deckWrap);
+        }
       }
       (ch.sections || []).forEach(function (s, idx) {
+        var ov = getSeedOverride(slug, idx) || {};
+        if (ov.discarded) return; // hide discarded sections; restore via strip
+
+        var sectionWrap = document.createElement('div');
+        sectionWrap.className = 'hna-seed-section' + (ov.accepted ? ' is-kept' : '');
+        if (ov.body != null || ov.heading != null) sectionWrap.classList.add('is-dirty');
+
         var h = document.createElement('h2');
-        h.textContent = s.heading;
-        body.appendChild(h);
+        h.textContent = (ov.heading != null ? ov.heading : s.heading);
+        sectionWrap.appendChild(h);
+
         var p = document.createElement('p');
-        p.innerHTML = s.body;
-        body.appendChild(p);
+        p.className = 'hna-seed-body';
+        if (ov.body != null) {
+          p.textContent = ov.body;
+        } else {
+          p.innerHTML = s.body;
+        }
+        sectionWrap.appendChild(p);
+
+        sectionWrap.appendChild(buildSeedControls(slug, idx, sectionWrap, {
+          original: { heading: s.heading, body: s.body },
+        }));
+
         // Per-section "Add chart / Add map" toolbar with contextual suggestions
         var toolbar = buildSectionAddToolbar(s, ch, idx);
-        if (toolbar) body.appendChild(toolbar);
+        if (toolbar) sectionWrap.appendChild(toolbar);
+
+        body.appendChild(sectionWrap);
       });
     }
     renderChapterRail();
