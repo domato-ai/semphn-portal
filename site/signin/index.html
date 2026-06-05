@@ -481,8 +481,34 @@
     </form>
 
     <script>
-      // Sign-in / sign-up toggle + mock auth submit (frontend-only).
+      // Sign-in / sign-up toggle + whitelist auth (frontend-only).
+      // Real users get individual passwords + codes; per-user data
+      // namespacing happens automatically in shell.js (uses email slug).
       (function () {
+        // Whitelisted users for SEMPHN tenant — each gets their own
+        // password + 6-digit code. Anything else is rejected.
+        var USERS = {
+          'galina.daraganova@domato.ai': {
+            name: 'Galina Daraganova',
+            password: 'Galina-SEMPHN-2026',
+            code: '924617',
+            avatar: 'G',
+          },
+          'penny.rudolph@domato.ai': {
+            name: 'Penny Rudolph',
+            password: 'Penny-SEMPHN-2026',
+            code: '581309',
+            avatar: 'P',
+          },
+          // Demo fallback so existing demo flows keep working
+          'demo@semphn.org.au': {
+            name: 'Demo user',
+            password: 'Demo-SEMPHN-2026',
+            code: '000000',
+            avatar: 'D',
+          },
+        };
+
         var card = document.querySelector('.card');
         if (!card) return;
 
@@ -499,17 +525,76 @@
         tabs.forEach(function (t) { t.addEventListener('click', function () { apply(t.dataset.mode); }); });
         apply('signin');
 
-        // Mock auth: on submit set localStorage + redirect to /build/ (the new workbench).
-        // Real backend auth (email-OTP delivery + JWT) is the Phase 1.5 follow-up.
+        function flash(msg, kind) {
+          var ex = card.querySelector('.signin-flash');
+          if (ex) ex.remove();
+          var d = document.createElement('div');
+          d.className = 'signin-flash' + (kind === 'error' ? ' is-error' : '');
+          d.textContent = msg;
+          d.style.cssText = 'background:' + (kind === 'error' ? '#FEE2E2' : '#E5F4F0') +
+            ';border:1px solid ' + (kind === 'error' ? '#DC2626' : '#55BFAF') +
+            ';color:' + (kind === 'error' ? '#7F1D1D' : '#04264E') +
+            ';padding:0.7rem 0.9rem;border-radius:4px;margin-bottom:1rem;' +
+            'font-size:0.85rem;line-height:1.4;';
+          var head = card.querySelector('h2.card-title:not([hidden])') || card.firstElementChild;
+          head.parentNode.insertBefore(d, head);
+          if (kind !== 'error') setTimeout(function () { try { d.remove(); } catch (_) {} }, 6000);
+        }
+
+        // Send-code button · prefills the user's 6-digit code (demo only;
+        // production would email it). Toast tells them it's been "sent".
+        var sendBtn = card.querySelector('.send-code');
+        if (sendBtn) sendBtn.addEventListener('click', function () {
+          var emailInput = card.querySelector('input[type=email]');
+          var codeInput = card.querySelector('.code-field input');
+          var email = (emailInput && emailInput.value || '').trim().toLowerCase();
+          if (!email) { emailInput.focus(); flash('Enter your email first', 'error'); return; }
+          var u = USERS[email];
+          if (!u) {
+            flash('Email not recognised. Contact support@domato.ai for access.', 'error');
+            return;
+          }
+          codeInput.value = u.code;
+          flash('Code ' + u.code + ' sent to ' + email + ' (demo: prefilled).', 'success');
+        });
+
         var form = card.tagName === 'FORM' ? card : card.querySelector('form');
         var submit = function (e) {
           e.preventDefault();
           var emailInput = card.querySelector('input[type=email]');
-          var email = emailInput && emailInput.value.trim().toLowerCase();
-          if (!email) { if (emailInput) emailInput.focus(); return; }
+          var pwdInput   = card.querySelector('input[type=password]');
+          var codeInput  = card.querySelector('.code-field input');
+          var email = (emailInput && emailInput.value || '').trim().toLowerCase();
+          var pwd   = (pwdInput && pwdInput.value || '').trim();
+          var code  = (codeInput && codeInput.value || '').trim();
+
+          if (!email) { emailInput.focus(); flash('Enter your email', 'error'); return; }
+          var u = USERS[email];
+          if (!u) {
+            emailInput.focus();
+            flash('Email not recognised. Contact support@domato.ai for access.', 'error');
+            return;
+          }
+          if (pwd !== u.password) {
+            pwdInput.focus();
+            flash('Password incorrect for that account.', 'error');
+            return;
+          }
+          if (code && code !== u.code) {
+            codeInput.focus();
+            flash('Code incorrect. Click Send code if you don\'t have it.', 'error');
+            return;
+          }
+          // Code is optional on first sign-in — but if blank, prefill so the
+          // user gets a green tick experience without a separate send step
+          if (!code) {
+            codeInput.value = u.code;
+          }
           try {
             localStorage.setItem('domato.semphn.session', JSON.stringify({
               email: email,
+              name: u.name,
+              avatar: u.avatar,
               tenant: 'semphn',
               tenantName: 'SEMPHN',
               tenantCode: 'PHN108',
@@ -517,7 +602,6 @@
             }));
           } catch (_) {}
 
-          // Honour ?next= if present, otherwise land on the Dashboards workbench
           var nextParam = new URLSearchParams(location.search).get('next');
           var safeNext = nextParam && nextParam.indexOf('/') === 0 ? nextParam : '/dashboards/';
           window.location.href = safeNext;

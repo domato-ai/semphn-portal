@@ -19,10 +19,27 @@
 (function () {
   'use strict';
 
-  var AUTH_KEY  = 'domato.semphn.session';
-  var STORE_KEY = 'semphn.workbench.turns.v3';
-  var UI_KEY    = 'semphn.workbench.ui.v2';
+  var AUTH_KEY  = 'domato.semphn.session';   // session is GLOBAL (single per browser)
+  var STORE_KEY_BASE = 'semphn.workbench.turns.v3';
+  var UI_KEY_BASE    = 'semphn.workbench.ui.v2';
   var SIGNIN    = '/signin/';
+
+  /* Per-user namespace · keeps each signed-in user's chat history,
+   * widgets, HNA edits and chapter-complete flags separate on the
+   * same browser. Falls back to 'anon' if no session.
+   * uKey('semphn.workbench.widgets.v1') → 'semphn.workbench.widgets.v1.u-galina_daraganova_at_domato_ai' */
+  function userSlug() {
+    try {
+      var raw = localStorage.getItem(AUTH_KEY);
+      var s = raw ? JSON.parse(raw) : null;
+      if (s && s.email) return s.email.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    } catch (_) {}
+    return 'anon';
+  }
+  function uKey(base) { return base + '.u-' + userSlug(); }
+  window.__uKey = uKey;
+  var STORE_KEY = function () { return uKey(STORE_KEY_BASE); };
+  var UI_KEY    = function () { return uKey(UI_KEY_BASE); };
 
   /* ============================================================
    * Per-page metadata + seed turns
@@ -1632,7 +1649,8 @@
     ],
   };
 
-  var WIDGET_KEY = 'semphn.workbench.widgets.v1';
+  var WIDGET_KEY_BASE = 'semphn.workbench.widgets.v1';
+  function WIDGET_KEY() { return uKey(WIDGET_KEY_BASE); }
   // Match ANY fenced code block (```widget, ```json, ```js, or bare ```)
   // — global flag so we extract every block, not just the first.
   // Validity is checked downstream: content must JSON-parse + have a
@@ -1643,17 +1661,17 @@
 
   function readWidgets(page) {
     try {
-      var raw = localStorage.getItem(WIDGET_KEY);
+      var raw = localStorage.getItem(WIDGET_KEY());
       var s = raw ? JSON.parse(raw) : {};
       return Array.isArray(s[page]) ? s[page] : [];
     } catch (_) { return []; }
   }
   function writeWidgets(page, widgets) {
     try {
-      var raw = localStorage.getItem(WIDGET_KEY);
+      var raw = localStorage.getItem(WIDGET_KEY());
       var s = raw ? JSON.parse(raw) : {};
       s[page] = widgets;
-      localStorage.setItem(WIDGET_KEY, JSON.stringify(s));
+      localStorage.setItem(WIDGET_KEY(), JSON.stringify(s));
     } catch (_) {}
   }
   /* Smart widget defaults · fill in fields the model often omits.
@@ -3487,13 +3505,14 @@
    *     text: "<paragraph text · plain or with <strong>>",
    *     position: "end" }
    * ============================================================ */
-  var HNA_EDITS_KEY = 'semphn.hna.edits.v1';
+  var HNA_EDITS_KEY_BASE = 'semphn.hna.edits.v1';
+  function HNA_EDITS_KEY() { return uKey(HNA_EDITS_KEY_BASE); }
   function readHnaEdits() {
-    try { return JSON.parse(localStorage.getItem(HNA_EDITS_KEY) || '[]'); }
+    try { return JSON.parse(localStorage.getItem(HNA_EDITS_KEY()) || '[]'); }
     catch (_) { return []; }
   }
   function writeHnaEdits(arr) {
-    try { localStorage.setItem(HNA_EDITS_KEY, JSON.stringify(arr)); }
+    try { localStorage.setItem(HNA_EDITS_KEY(), JSON.stringify(arr)); }
     catch (_) {}
   }
 
@@ -4258,13 +4277,14 @@
   /* ============================================================
    * HNA Mark Complete · per-chapter completion flag
    * ============================================================ */
-  var HNA_COMPLETE_KEY = 'semphn.workbench.hna_complete.v1';
+  var HNA_COMPLETE_KEY_BASE = 'semphn.workbench.hna_complete.v1';
+  function HNA_COMPLETE_KEY() { return uKey(HNA_COMPLETE_KEY_BASE); }
   function readChapterComplete() {
-    try { return JSON.parse(localStorage.getItem(HNA_COMPLETE_KEY) || '{}'); }
+    try { return JSON.parse(localStorage.getItem(HNA_COMPLETE_KEY()) || '{}'); }
     catch (_) { return {}; }
   }
   function writeChapterComplete(map) {
-    try { localStorage.setItem(HNA_COMPLETE_KEY, JSON.stringify(map)); }
+    try { localStorage.setItem(HNA_COMPLETE_KEY(), JSON.stringify(map)); }
     catch (_) {}
   }
   function isChapterComplete(slug) {
@@ -5020,19 +5040,19 @@
   function clearSession() { try { localStorage.removeItem(AUTH_KEY); } catch (_) {} }
   function readState() {
     try {
-      var raw = localStorage.getItem(STORE_KEY);
+      var raw = localStorage.getItem(STORE_KEY());
       var s = raw ? JSON.parse(raw) : null;
       return (s && s.byPage) ? s : { byPage: {} };
     } catch (_) { return { byPage: {} }; }
   }
-  function writeState(s) { try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (_) {} }
+  function writeState(s) { try { localStorage.setItem(STORE_KEY(), JSON.stringify(s)); } catch (_) {} }
   function readUI() {
     try {
-      var raw = localStorage.getItem(UI_KEY);
+      var raw = localStorage.getItem(UI_KEY());
       return raw ? JSON.parse(raw) : {};
     } catch (_) { return {}; }
   }
-  function writeUI(u) { try { localStorage.setItem(UI_KEY, JSON.stringify(u)); } catch (_) {} }
+  function writeUI(u) { try { localStorage.setItem(UI_KEY(), JSON.stringify(u)); } catch (_) {} }
 
   function pageId() { return document.body.getAttribute('data-page') || 'dashboards'; }
 
@@ -5054,9 +5074,10 @@
     var av  = pill.querySelector('.av');
     var who = pill.querySelector('.meta .who');
     var sub = pill.querySelector('.meta .sub');
-    if (av  && session.email) av.textContent = session.email.charAt(0).toUpperCase();
-    if (who && session.email) who.textContent = session.email;
-    if (sub) sub.textContent = (session.tenantName || 'SEMPHN') + ' · ' + (session.tenantCode || 'PHN108');
+    if (av) av.textContent = session.avatar || (session.email ? session.email.charAt(0).toUpperCase() : '?');
+    if (who) who.textContent = session.name || session.email || 'Signed in';
+    if (sub) sub.textContent = (session.tenantName || 'SEMPHN') + ' · ' + (session.tenantCode || 'PHN108') +
+                                 (session.name && session.email ? ' · ' + session.email : '');
     var out = pill.querySelector('button');
     if (out && !out.dataset.bound) {
       out.dataset.bound = '1';
