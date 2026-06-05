@@ -60,6 +60,39 @@ CASES = [
         "bar",
         "Greater Dandenong",
     ),
+    # ---- Round 9 · newly-fleshed chapters ----
+    (
+        "AOD · primary drug donut",
+        "08-aod",
+        "Alcohol + other drugs",
+        "Add a donut chart of AOD primary drug of concern (methamphetamine 31%, alcohol 28%, cannabis 18%, heroin 9%, pharmaceuticals 8%, other 6%).",
+        "donut",
+        "methamphetamine",
+    ),
+    (
+        "AOD · Frankston episodes bar",
+        "08-aod",
+        "Alcohol + other drugs",
+        "Add a bar chart of AOD treatment episodes per 10,000 residents by SEMPHN LGA — ranked highest to lowest. Highlight Frankston (128).",
+        "bar",
+        "Frankston",
+    ),
+    (
+        "Rec · Casey bowel screening KPI",
+        "11-recommendations",
+        "Recommendations",
+        "Add a KPI tile showing Casey NBCSP bowel-cancer screening % (current 35.9%, target ≥42% by EOFY27).",
+        "kpi",
+        "Casey",
+    ),
+    (
+        "Pre-flight · Performance Rubric bar",
+        "12-preflight",
+        "Pre-flight checks",
+        "Add a bar chart of the 5 DoH Performance Rubric domain self-scores (Pop. health 4, Service need 3, Stakeholder 3, Equity 4, Recs 4).",
+        "bar",
+        "rubric",
+    ),
 ]
 
 WIDGET_BLOCK = re.compile(r"```widget\s*\n(.+?)\n```", re.S)
