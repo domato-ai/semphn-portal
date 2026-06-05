@@ -3193,3 +3193,86 @@ svg.wgt-choro { width: 100%; height: auto; max-height: 380px; display: block; }
 @keyframes toast-out {
   to { opacity: 0; transform: translateY(8px); }
 }
+
+/* ── HNA · per-section Add toolbar ────────────────────────────────────
+   Renders directly under each section paragraph in the HNA chapter view.
+   Lets the user inject a chart or map widget specific to the topic of
+   that section without having to type a prompt. */
+.hna-section-add {
+  margin: 10px 0 22px;
+  padding: 10px 12px;
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #FBFCFD 0%, #F5F8FA 100%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+.hna-section-add:hover {
+  border-color: var(--teal);
+  background: linear-gradient(180deg, #F6FBFA 0%, #ECF6F3 100%);
+}
+.hna-sa-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--slate);
+  flex: none;
+}
+.hna-sa-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1 1 auto;
+}
+.hna-sa-chip {
+  appearance: none;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 7px 11px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease,
+              background 140ms ease, transform 100ms ease,
+              box-shadow 140ms ease;
+}
+.hna-sa-chip:hover {
+  border-color: var(--navy-mid);
+  color: var(--navy);
+  background: #F4F8FC;
+  box-shadow: 0 1px 2px rgba(4, 38, 78, 0.08);
+}
+.hna-sa-chip:active { transform: translateY(1px); }
+.hna-sa-chip .ico {
+  font-size: 0.92rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+.hna-sa-chip.is-chart .ico { color: var(--navy-mid); }
+.hna-sa-chip.is-chart:hover .ico { color: var(--navy); opacity: 1; }
+.hna-sa-chip.is-map {
+  border-color: #DCEEEB;
+  background: #F6FBFA;
+}
+.hna-sa-chip.is-map .ico { color: var(--teal); }
+.hna-sa-chip.is-map:hover {
+  border-color: var(--teal);
+  color: var(--navy);
+  background: var(--teal-pale);
+}
+.hna-sa-chip.is-map:hover .ico { color: #2FA792; opacity: 1; }
+@media (max-width: 720px) {
+  .hna-section-add { padding: 9px 10px; gap: 10px; }
+  .hna-sa-label { font-size: 0.68rem; }
+  .hna-sa-chip { font-size: 0.74rem; padding: 6px 10px; }
+}

@@ -4077,13 +4077,16 @@
         deck.innerHTML = ch.deck;
         body.appendChild(deck);
       }
-      (ch.sections || []).forEach(function (s) {
+      (ch.sections || []).forEach(function (s, idx) {
         var h = document.createElement('h2');
         h.textContent = s.heading;
         body.appendChild(h);
         var p = document.createElement('p');
         p.innerHTML = s.body;
         body.appendChild(p);
+        // Per-section "Add chart / Add map" toolbar with contextual suggestions
+        var toolbar = buildSectionAddToolbar(s, ch, idx);
+        if (toolbar) body.appendChild(toolbar);
       });
     }
     renderChapterRail();
@@ -4656,6 +4659,258 @@
     var aiBoost = ch.stub ? Math.min(50, edits.length * 20) : 0;
     var raw = seedPct + aiBoost + 0.35 * rubricPct + 0.35 * wordPct;
     return Math.max(0, Math.min(100, Math.round(raw)));
+  }
+
+  /* ============================================================
+   * Per-section Add-chart / Add-map suggestions
+   *
+   * Each section gets a small toolbar with 2-4 chart prompts + 2-3 map
+   * prompts tailored to the section's topic (inferred from heading
+   * keywords + chapter context). Click → either fires the AI prompt
+   * (chart) or loads a prebuilt map template (map).
+   * ============================================================ */
+  function suggestionsForSection(section, chapter) {
+    var heading = (section.heading || '').toLowerCase();
+    var chapterTitle = (chapter.title || '').replace(/<[^>]+>/g, '').toLowerCase();
+    var charts = [];
+    var maps = [];
+
+    function pushChart(label, prompt) { charts.push({ label: label, prompt: prompt }); }
+    function pushMap(label, mapTemplate, prompt) {
+      maps.push({ label: label, mapTemplate: mapTemplate, prompt: prompt });
+    }
+
+    // ---- MH / suicide ----
+    if (heading.includes('frankston') && chapterTitle.includes('mental')) {
+      pushChart('Bar · MH conditions by LGA',
+        'Add a bar chart of MH conditions per 1,000 residents by SEMPHN LGA — ranked highest to lowest. Highlight Frankston (116.1).');
+      pushChart('Area · 5-year MH ED trend',
+        'Add an area chart of MH ED presentations per 100k for the catchment over the last 5 financial years.');
+      pushMap('Map · MH hotspots', 'mh-hotspots',
+        'Add a choropleth widget mapping MH conditions per 1,000 residents by LGA. Highlight Frankston.');
+    }
+    if (heading.includes('suicide')) {
+      pushChart('Bar · suicide rate by LGA',
+        'Add a bar chart of suicide rate per 100,000 by SEMPHN LGA — ranked highest to lowest. Highlight Frankston.');
+      pushChart('Donut · means of suicide',
+        'Add a donut chart of means of suicide (hanging 53% · pharmaceutical 18% · other 23% · firearm 6%).');
+      pushMap('Map · suicide prevention', 'suicide-prevention',
+        'Add a choropleth widget mapping suicide rate per 100,000 by SEMPHN LGA. Highlight Frankston.');
+    }
+    if (heading.includes('coastal') || heading.includes('mornington')) {
+      pushChart('Bar · MH ED presentations by LGA',
+        'Add a bar chart of MH ED presentations per 10,000 by SEMPHN LGA. Highlight Frankston.');
+      pushMap('Map · MH hotspots', 'mh-hotspots', null);
+    }
+    if (heading.includes('headspace')) {
+      pushChart('Donut · headspace centres by LGA',
+        'Add a donut chart of the 9 SEMPHN headspace centres by LGA share.');
+      pushMap('Map · headspace coverage', 'youth-services',
+        'Add a choropleth widget mapping % aged 5-17 by SEMPHN LGA. Highlight Casey.');
+    }
+
+    // ---- First Nations ----
+    if (heading.includes('socioeconomic') || heading.includes('irseo')) {
+      pushChart('Bar · First Nations IRSEO by LGA',
+        'Add a bar chart of First Nations IRSEO by SEMPHN LGA — higher = more disadvantaged. Highlight Greater Dandenong.');
+      pushMap('Map · First Nations services', 'first-nations',
+        'Add a choropleth widget mapping First Nations IRSEO by SEMPHN LGA.');
+    }
+    if (heading.includes('mental health') && chapterTitle.includes('first nations')) {
+      pushChart('Bar · First Nations MH prevalence',
+        'Add a bar chart of First Nations MH prevalence by SEMPHN LGA. Highlight Port Phillip 23.3%.');
+    }
+    if (heading.includes('housing') && chapterTitle.includes('first nations')) {
+      pushChart('Donut · First Nations housing strain',
+        'Add a donut chart of First Nations household-bedroom-need share (Gr Dandenong 18.0%, Casey 13.8%, Cardinia 12.1%, other 56.1%).');
+    }
+    if (heading.includes('workforce') && chapterTitle.includes('first nations')) {
+      pushChart('Table · 2 ACCHS in catchment',
+        'Add a table widget with columns Service, Suburb, Type, Staff for the 2 SEMPHN ACCHS.');
+    }
+
+    // ---- CALD ----
+    if (heading.includes('multilingual') || heading.includes('lote')) {
+      pushChart('Bar · % LOTE by LGA',
+        'Add a bar chart of % LOTE-at-home by SEMPHN LGA. Highlight Greater Dandenong 64.2%.');
+      pushMap('Map · CALD density', 'cald-density', null);
+    }
+    if (heading.includes('humanitarian')) {
+      pushChart('Donut · humanitarian arrivals by LGA share',
+        'Add a donut chart of humanitarian-arrival settlement share by SEMPHN LGA (Gr Dandenong + Casey 72%, other 28%).');
+    }
+    if (heading.includes('interpreter')) {
+      pushChart('Bar · interpreter requests by language',
+        'Add a bar chart of TIS interpreter requests FY24 by top 6 languages. Highlight Dari (4,820).');
+    }
+
+    // ---- Older people ----
+    if (heading.includes('mornington') && chapterTitle.includes('older')) {
+      pushChart('Bar · % 65+ by LGA',
+        'Add a bar chart of % aged 65+ by SEMPHN LGA. Highlight Mornington Peninsula 27.6%.');
+      pushMap('Map · aged care', 'aged-care', null);
+    }
+    if (heading.includes('racf')) {
+      pushChart('Area · projected 65+ growth',
+        'Add an area chart of projected 65+ population in the catchment 2024-2030.');
+    }
+    if (heading.includes('dementia')) {
+      pushChart('Donut · aged-care funding by category',
+        'Add a donut chart of FY26 aged-care funding by SEMPHN program category.');
+    }
+    if (heading.includes('care-finder') || heading.includes('care finder')) {
+      pushChart('KPI · aged-care FY26 funding',
+        'Add a KPI tile for SEMPHN aged-care commissioning total FY26 ($18.4M).');
+    }
+
+    // ---- Homelessness ----
+    if (heading.includes('greater dandenong') && chapterTitle.includes('homeless')) {
+      pushChart('Bar · homelessness rate by LGA',
+        'Add a bar chart of homeless + marginal housing rate per 10,000 by SEMPHN LGA. Highlight Greater Dandenong.');
+      pushMap('Map · homelessness', 'homelessness', null);
+    }
+    if (heading.includes('dv/fv') || heading.includes('domestic')) {
+      pushChart('Donut · SHS primary reasons',
+        'Add a donut chart of primary SHS presentation reasons (DV/FV 38%, housing 23%, MH 14%, family 11%, substance 8%, other 6%).');
+    }
+    if (heading.includes('rough sleeper')) {
+      pushChart('Bar · rough sleepers vs benchmarks',
+        'Add a bar chart of rough sleepers per 10,000 — catchment vs Greater Melbourne vs Australia.');
+    }
+    if (heading.includes('shs volume')) {
+      pushChart('Area · 5-year SHS client volume',
+        'Add an area chart of catchment SHS clients FY20-FY24.');
+    }
+
+    // ---- Chronic disease / risk factors / CVD / screening ----
+    if (heading.includes('diabetes') || heading.includes('gr dandenong')) {
+      pushChart('Bar · type 2 diabetes by LGA',
+        'Add a bar chart of type 2 diabetes prevalence % by SEMPHN LGA. Highlight Greater Dandenong 8.9%.');
+      pushMap('Map · CVD burden', 'cvd-burden', null);
+    }
+    if (heading.includes('cardiovascular') || heading.includes('cvd')) {
+      pushChart('Bar · AMI admissions by LGA',
+        'Add a bar chart of AMI admissions per 100,000 by SEMPHN LGA. Highlight Greater Dandenong 412.');
+      pushMap('Map · CVD burden', 'cvd-burden', null);
+    }
+    if (heading.includes('risk factor') || heading.includes('modifiable')) {
+      pushChart('Bar · overweight + obese by LGA',
+        'Add a bar chart of adult overweight + obese % by SEMPHN LGA. Highlight Cardinia 68.4%.');
+      pushChart('Bar · daily smoker by LGA',
+        'Add a bar chart of daily smoker % adult by SEMPHN LGA. Highlight Greater Dandenong 14.8%.');
+      pushMap('Map · risk factors', 'risk-factors', null);
+    }
+    if (heading.includes('avoidable')) {
+      pushChart('Bar · avoidable admissions by LGA',
+        'Add a bar chart of ACSC avoidable admissions per 100,000 by SEMPHN LGA. Highlight Greater Dandenong 3,460.');
+    }
+    if (heading.includes('cancer screening') || heading.includes('screening')) {
+      pushChart('Bar · bowel screening by LGA',
+        'Add a bar chart of bowel screening % NBCSP FY24 by SEMPHN LGA — ranked lowest first. Highlight Casey 35.9%.');
+      pushChart('Bar · cervical screening by LGA',
+        'Add a bar chart of cervical screening % by SEMPHN LGA. Highlight Greater Dandenong 48.6%.');
+      pushMap('Map · screening gap', 'screening-gap', null);
+    }
+
+    // ---- Workforce ----
+    if (heading.includes('gp age') || heading.includes('retirement')) {
+      pushChart('Donut · GP age distribution',
+        'Add a donut chart of catchment GP age distribution (under 35 14%, 35-44 24%, 45-54 22%, 55-64 24%, 65+ 16%).');
+      pushChart('Area · GP FTE 5-year trend',
+        'Add an area chart of catchment GP FTE 2020-2024.');
+    }
+    if (heading.includes('allied health')) {
+      pushChart('Bar · allied health FTE by LGA',
+        'Add a bar chart of allied health FTE per 10,000 residents by SEMPHN LGA. Highlight Stonnington 64.8.');
+    }
+    if (heading.includes('bulk-billing') || heading.includes('bulk billing')) {
+      pushMap('Map · GP supply', 'gp-supply', null);
+    }
+
+    // ---- Region / catchment ----
+    if (heading.includes('10 lga') || heading.includes('lgas')) {
+      pushChart('Bar · catchment population by LGA',
+        'Add a bar chart of catchment population by SEMPHN LGA. Highlight Casey 393,000.');
+      pushMap('Map · service network', 'service-network', null);
+    }
+    if (heading.includes('population pressure') || heading.includes('growth')) {
+      pushChart('Area · catchment population projection',
+        'Add an area chart of SEMPHN catchment population projection 2024-2030.');
+      pushMap('Map · growth corridor', 'growth-corridor', null);
+    }
+
+    // ---- Methodology / introduction (mostly text) ----
+    if (heading.includes('framework') || heading.includes('bradshaw')) {
+      pushChart('KPI · 13-chapter cycle',
+        'Add a KPI tile showing the 12 chapters of the SEMPHN HNA.');
+    }
+
+    // Universal fallback if no topic match
+    if (charts.length === 0) {
+      pushChart('Bar · catchment headline metric',
+        'Add a bar chart of the most important metric from this section, ranked by LGA. Use real SEMPHN figures from the ground truth.');
+    }
+    if (maps.length === 0) {
+      pushMap('Map · service network', 'service-network', null);
+    }
+
+    return { charts: charts.slice(0, 4), maps: maps.slice(0, 3) };
+  }
+
+  function buildSectionAddToolbar(section, chapter, idx) {
+    var sug = suggestionsForSection(section, chapter);
+    var wrap = document.createElement('div');
+    wrap.className = 'hna-section-add';
+    var label = document.createElement('div');
+    label.className = 'hna-sa-label';
+    label.textContent = 'Add to this section';
+    wrap.appendChild(label);
+    var chips = document.createElement('div');
+    chips.className = 'hna-sa-chips';
+    sug.charts.forEach(function (c) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hna-sa-chip is-chart';
+      btn.innerHTML = '<span class="ico">◐</span><span class="lab">' + escHtml(c.label) + '</span>';
+      btn.addEventListener('click', function () { fireHnaSectionPrompt(c.prompt); });
+      chips.appendChild(btn);
+    });
+    sug.maps.forEach(function (m) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hna-sa-chip is-map';
+      btn.innerHTML = '<span class="ico">▦</span><span class="lab">' + escHtml(m.label) + '</span>';
+      btn.addEventListener('click', function () {
+        if (m.prompt) {
+          // Chart-style: ask AI to emit a choropleth widget directly into HNA
+          fireHnaSectionPrompt(m.prompt);
+        } else if (m.mapTemplate && window.__MAP_TEMPLATES) {
+          // Pre-built template: synthesize a choropleth widget from the template
+          // data and inject as an inline HNA figure (no AI roundtrip needed)
+          var tpl = window.__MAP_TEMPLATES[m.mapTemplate];
+          if (tpl && tpl.choropleth && window.__applyHnaWidget) {
+            var w = JSON.parse(JSON.stringify(tpl.choropleth));
+            w.title = tpl.title || w.title;
+            w.subtitle = tpl.description || w.subtitle;
+            window.__applyHnaWidget(w);
+            showToast('Added map · ' + (tpl.title || ''), 'success');
+          }
+        }
+      });
+      chips.appendChild(btn);
+    });
+    wrap.appendChild(chips);
+    return wrap;
+  }
+
+  function fireHnaSectionPrompt(prompt) {
+    var input = document.getElementById('chat-input');
+    var send  = document.getElementById('chat-send');
+    if (!input) return;
+    input.value = prompt;
+    input.dispatchEvent(new Event('input'));
+    input.focus();
+    if (send && !send.disabled) send.click();
   }
 
   function renderChapterRail() {
@@ -6203,8 +6458,9 @@
                   if (window.__applyHnaParagraph(w)) addedToDoc++;
                 } else if (page === 'hna' && window.__applyHnaWidget &&
                            (t === 'bar' || t === 'line' || t === 'area' || t === 'donut' ||
-                            t === 'kpi' || t === 'table')) {
+                            t === 'kpi' || t === 'table' || t === 'choropleth' || t === 'map')) {
                   // On /hna/, data widgets become inline figures in the chapter
+                  // (including choropleths · rendered as compact LGA tables/maps)
                   if (window.__applyHnaWidget(w)) addedToDoc++;
                 } else if (t === 'paragraph') {
                   // paragraph widget on a non-HNA page → no-op (skip silently)
