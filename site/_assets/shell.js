@@ -3792,6 +3792,92 @@
     clearChapter: clearChapterSeedOverrides,
   };
 
+  /* ============================================================
+   * Clean-slate helpers · per-user workspace reset
+   *
+   * "Clean slate" = hide every predefined SEMPHN paragraph + clear
+   * any AI edits + clear widgets, leaving the user with starter
+   * prompts only. Reversible — original content is in code, not
+   * storage; the restore strip + "Restore original" buttons recover
+   * any single paragraph in one click.
+   *
+   * Three scopes exposed:
+   *   - cleanSlateChapter(slug)    — wipe one HNA chapter
+   *   - cleanSlateAllChapters()    — wipe every HNA chapter
+   *   - cleanSlateAllSurfaces()    — HNA + dashboards + maps
+   * ============================================================ */
+  function cleanSlateChapter(slug) {
+    var ch = HNA_CHAPTERS[slug];
+    if (!ch) return 0;
+    var n = 0;
+    if (ch.deck) { setSeedOverride(slug, 'deck', { discarded: true }); n++; }
+    (ch.sections || []).forEach(function (_, idx) {
+      setSeedOverride(slug, idx, { discarded: true });
+      n++;
+    });
+    // Clear AI edits for this chapter too
+    var arr = readHnaEdits().filter(function (e) {
+      return (e.chapter || DEFAULT_HNA_CHAPTER) !== slug;
+    });
+    writeHnaEdits(arr);
+    return n;
+  }
+  function cleanSlateAllChapters() {
+    var total = 0;
+    Object.keys(HNA_CHAPTERS).forEach(function (slug) {
+      total += cleanSlateChapter(slug);
+    });
+    return total;
+  }
+  function cleanSlateAllSurfaces() {
+    var n = cleanSlateAllChapters();
+    // Clear dashboards + maps widget tiles
+    if (typeof readWidgets === 'function' && typeof writeWidgets === 'function') {
+      writeWidgets('dashboards', []);
+      writeWidgets('maps', []);
+    }
+    // Clear chat history on every page (HNA / dashboards / maps)
+    try {
+      var s = readState();
+      ['hna', 'dashboards', 'maps'].forEach(function (p) { s.byPage[p] = []; });
+      writeState(s);
+    } catch (_) {}
+    return n;
+  }
+  // Expose for command palette + chapter toolbar wiring (defined inline
+  // in hna/index.html and bound in renderHnaChapter below).
+  window.__hnaCleanSlateChapter = cleanSlateChapter;
+  window.__hnaCleanSlateAll = cleanSlateAllChapters;
+  window.__cleanSlateAllSurfaces = cleanSlateAllSurfaces;
+
+  /* First-run clean slate for the real SEMPHN tenant users.
+   * Galina + Penny each get a blank workspace the first time they
+   * log in, so they're building FROM scratch instead of editing
+   * inherited demo content. Runs once per user (sentinel key); the
+   * demo user keeps the seed content as a guided showcase. */
+  var FIRSTRUN_SENTINEL_BASE = 'semphn.firstrun.cleanslate.v1';
+  function FIRSTRUN_SENTINEL_KEY() { return uKey(FIRSTRUN_SENTINEL_BASE); }
+  var FIRSTRUN_CLEANSLATE_EMAILS = {
+    'galina.daraganova@domato.ai': 1,
+    'penny.rudolph@domato.ai': 1,
+  };
+  function maybeFirstRunCleanSlate() {
+    try {
+      var raw = localStorage.getItem(AUTH_KEY);
+      var s = raw ? JSON.parse(raw) : null;
+      var email = (s && s.email || '').toLowerCase();
+      if (!FIRSTRUN_CLEANSLATE_EMAILS[email]) return;
+      if (localStorage.getItem(FIRSTRUN_SENTINEL_KEY())) return;
+      cleanSlateAllChapters();
+      localStorage.setItem(FIRSTRUN_SENTINEL_KEY(), String(Date.now()));
+    } catch (_) {}
+  }
+  // Defer until after the IIFE finishes — HNA_CHAPTERS is declared
+  // further down, so an inline call here would hit a ReferenceError
+  // wrapped in try/catch and silently fail to set the sentinel. The
+  // setTimeout(0) runs before any user paint of the chapter body.
+  setTimeout(maybeFirstRunCleanSlate, 0);
+
   /* Build the Keep/Edit/Discard/Rewrite/Restore controls bar that
    * hangs off every seed paragraph (deck or section). `wrap` is the
    * .hna-seed-section / .hna-seed-deck container. */
@@ -6998,6 +7084,39 @@
     { section: 'Workbench', ico: '/', label: 'Focus chat composer', sub: 'Start typing immediately',       shortcut: '⌘ /',     action: function () { var i = document.getElementById('chat-input'); if (i) i.focus(); } },
     { section: 'Workbench', ico: '↔', label: 'Toggle chat panel', sub: 'Collapse or expand the left panel', shortcut: '⌘ \\',     action: function () { var btn = document.querySelector('.chat-collapse'); if (btn) btn.click(); } },
     { section: 'Workbench', ico: '×', label: 'Clear chat history (this page)', sub: 'Resets to seed turn',  shortcut: '',         action: function () { var s = readState(); s.byPage[pageId()] = null; writeState(s); renderFeed(); showToast('Chat cleared', 'success'); } },
+    // Workspace reset · destructive, reversible per-paragraph via the
+    // restore strip on each HNA chapter. Widgets + chat history aren't
+    // recoverable, so confirm is doubled.
+    { section: 'Workspace', ico: '⌧', label: 'Clean slate · this HNA chapter', sub: 'Discard every seed paragraph in the current chapter',
+      shortcut: '', action: function () {
+        if (typeof window.__hnaCleanSlateChapter !== 'function') { showToast('Open the HNA page first', 'warn'); return; }
+        if (location.pathname.indexOf('/hna') < 0) { showToast('Switch to the HNA tab first', 'warn'); return; }
+        if (typeof currentChapterSlug !== 'function') { return; }
+        var slug = currentChapterSlug();
+        var n = window.__hnaCleanSlateChapter(slug);
+        if (typeof renderHnaChapter === 'function') renderHnaChapter();
+        showToast('Cleaned ' + n + ' paragraphs from ' + slug, 'success');
+      } },
+    { section: 'Workspace', ico: '⌧', label: 'Clean slate · all 12 HNA chapters', sub: 'Discard every seed paragraph across the whole HNA',
+      shortcut: '', action: function () {
+        if (typeof window.__hnaCleanSlateAll !== 'function') { showToast('Reload the page first', 'warn'); return; }
+        if (!confirm('Clean-slate all 12 HNA chapters? Discarded paragraphs stay restorable per-chapter from the yellow restore strip.')) return;
+        var n = window.__hnaCleanSlateAll();
+        if (typeof renderHnaChapter === 'function') renderHnaChapter();
+        showToast('Cleaned ' + n + ' paragraphs across 12 chapters', 'success');
+      } },
+    { section: 'Workspace', ico: '⌧', label: 'Clean slate · everything (HNA, Dashboards, Maps)', sub: 'Full workspace reset · widgets + chat history NOT recoverable',
+      shortcut: '', action: function () {
+        if (typeof window.__cleanSlateAllSurfaces !== 'function') { showToast('Reload the page first', 'warn'); return; }
+        if (!confirm('Full workspace reset?\n\n• Every HNA chapter cleaned (reversible per paragraph)\n• Every Dashboards widget cleared (NOT recoverable)\n• Every Maps widget cleared (NOT recoverable)\n• Chat history cleared on all 3 pages (NOT recoverable)')) return;
+        if (!confirm('Final check — really reset everything?')) return;
+        var n = window.__cleanSlateAllSurfaces();
+        showToast('Workspace reset · ' + n + ' HNA paragraphs cleaned + widgets + chat cleared', 'success');
+        // Re-render whatever page we're on
+        if (typeof renderHnaChapter === 'function' && location.pathname.indexOf('/hna') >= 0) renderHnaChapter();
+        if (typeof window.__renderWidgets === 'function') window.__renderWidgets();
+        if (typeof renderFeed === 'function') renderFeed();
+      } },
     { section: 'Account',   ico: '↗', label: 'Sign out',          sub: 'End this session',                  shortcut: '',         action: function () { showToast('Signing out…', 'success'); setTimeout(function () { clearSession(); location.href = SIGNIN; }, 400); } },
   ];
 
@@ -7414,6 +7533,31 @@
       var preflight = document.getElementById('hna-preflight-btn');
       if (preflight) preflight.addEventListener('click', function () {
         if (typeof window.__openPreflight === 'function') window.__openPreflight();
+      });
+      // Clean slate · two-option confirm (this chapter / all 12) + irreversible
+      // chat-history clear is opt-in via the all-surfaces command palette entry.
+      var cleanBtn = document.getElementById('hna-clean-slate-btn');
+      if (cleanBtn) cleanBtn.addEventListener('click', function () {
+        var ch = HNA_CHAPTERS[currentChapterSlug()];
+        var name = ch ? ch.title.replace(/<[^>]+>/g, '') : 'this chapter';
+        var choice = window.prompt(
+          'Clean slate · what to wipe?\n\n' +
+          'Type 1 → just this chapter (' + name + ')\n' +
+          'Type 2 → ALL 12 chapters of the HNA\n\n' +
+          'Cancel to keep everything.\n' +
+          '(Reversible — each discarded paragraph stays restorable from the yellow strip at the chapter top.)',
+          '1'
+        );
+        if (choice === '1') {
+          var n = cleanSlateChapter(currentChapterSlug());
+          renderHnaChapter();
+          showToast('Cleaned ' + n + ' paragraph' + (n === 1 ? '' : 's') + ' from ' + name, 'success');
+        } else if (choice === '2') {
+          if (!confirm('Are you sure? This will clean-slate ALL 12 HNA chapters.')) return;
+          var total = cleanSlateAllChapters();
+          renderHnaChapter();
+          showToast('Cleaned ' + total + ' paragraphs across all 12 chapters', 'success');
+        }
       });
       var preflightX = document.getElementById('hna-preflight-x');
       var preflightClose = document.getElementById('hna-preflight-close-2');
