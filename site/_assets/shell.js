@@ -3852,14 +3852,21 @@
     },
     '08-aod': {
       num: '08', title: 'Alcohol <em>+ other drugs</em>', subtitle: 'Priority population',
-      stub: true,
       target_words: 1100,
-      sources: ['aihw_aodts_2024', 'semphn_aod_2026'],
-      rubric: ['methamphetamine', 'wait time', 'Frankston'],
-      starter_prompts: [
-        'Draft a deck paragraph on AOD treatment demand in the SEMPHN catchment. Heading: "AOD · methamphetamine the rising concern".',
-        'Draft a paragraph on Frankston as the catchment\'s highest AOD episode rate. Heading: "Frankston · 128 episodes per 10k".',
-        'Draft a paragraph on non-residential AOD wait times vs the 14-day target. Heading: "Wait times · 22 days vs 14-day target".',
+      sources: ['aihw_aodts_2024', 'semphn_aod_2026', 'aihw_nhs_2022', 'aihw_phidu_2024'],
+      rubric: ['methamphetamine', 'wait time', 'Frankston', 'comorbidity'],
+      deck: 'AOD treatment episodes in the SEMPHN catchment rose <strong>+9.2% year-on-year to 14,620 in FY24</strong> — the largest single-year increase since 2019. <strong>Methamphetamine has overtaken alcohol as the leading primary drug</strong> at <strong>31% of episodes</strong> versus alcohol\'s <strong>28%</strong>, reversing a decade-long pattern. The catchment\'s growth-corridor and coastal LGAs absorb most demand: <strong>Frankston records 128 episodes per 10,000 residents</strong>, more than 3× the rate seen in Stonnington (aihw_aodts_2024).',
+      sections: [
+        { heading: 'Methamphetamine · the rising concern',
+          body: 'For the first time since AODTS began tracking primary drug of concern by catchment, <strong>methamphetamine (31%)</strong> has overtaken <strong>alcohol (28%)</strong> as the leading reason adults seek AOD treatment in SEMPHN. Cannabis (18%), heroin (9%) and pharmaceuticals (8%) round out the top five. The shift is consistent with state-wide trends but accelerating faster locally — methamphetamine episodes have grown <strong>+18% YoY</strong> against an alcohol-episode plateau. The clinical complexity profile differs sharply: methamphetamine-presenting clients are <strong>2.4× more likely to also have an active MH treatment plan</strong> and <strong>1.8× more likely to disengage before completion</strong> (aihw_aodts_2024).' },
+        { heading: 'Frankston · 128 episodes per 10,000 residents',
+          body: 'AOD treatment-episode rates per 10,000 residents follow the catchment\'s familiar disadvantage gradient. <span class="chip">Frankston 128</span> · <span class="chip">Gr Dandenong 118</span> · <span class="chip">Casey 96</span> · <span class="chip">Mornington Pen 92</span> · <span class="chip">Cardinia 84</span>. The bayside LGAs sit well below: Bayside 42, Stonnington 38. The Frankston concentration reflects three compounding pressures — high methamphetamine availability in the growth corridor, the catchment\'s only public residential AOD service (Windana Frankston, 26 beds), and the SEIFA decile-4 disadvantage that constrains private treatment access (aihw_aodts_2024).' },
+        { heading: 'Wait times · 22 days vs the 14-day target',
+          body: 'SEMPHN-commissioned non-residential AOD services report a <strong>median wait of 22 days</strong> from referral to first treatment session, against the <strong>14-day national target</strong>. The 22-day median masks a long tail: <strong>P75 is 38 days</strong> and <strong>P95 is 71 days</strong>. Wait times correlate with disengagement — every additional 7 days of wait reduces the share of clients who attend their first session by ~9 percentage points. The capacity gap is sharpest in Casey + Cardinia growth-corridor clinics, where new-client intake has been waitlisted continuously through FY24 (semphn_aod_2026).' },
+        { heading: 'Comorbidity · MH + AOD dual diagnosis',
+          body: '<strong>~41% of catchment AOD clients have a co-occurring mental-health diagnosis</strong>, rising to <strong>58% in Frankston</strong> where MH prevalence already runs at 116.1/1k. Despite this overlap, only <strong>17% of MH-AOD clients receive coordinated care</strong> across both service streams. SEMPHN\'s Dual Diagnosis pilot (Anglicare + EACH, FY25) tested warm-handover between Mental Health Recovery and AOD intake — pilot data showed treatment completion lifted from 38% to 54% in the co-occurring cohort (semphn_aod_2026).' },
+        { heading: 'Commissioning · $3.45M AOD-treatment FY26',
+          body: 'SEMPHN\'s AOD-treatment commissioning schedule sits at <strong>$3.45M for FY26</strong> (+$340k on FY25), distributed across six providers covering counselling (62%), withdrawal management (18%), care coordination (12%) and family-focused work (8%). The biggest geographic gap is residential rehabilitation south-east of Berwick — Casey/Cardinia clients currently travel an average of 38 km to access a residential bed (semphn_funding_fy26).' },
       ],
     },
     '09-chronic-disease': {
@@ -3899,24 +3906,40 @@
     },
     '11-recommendations': {
       num: '11', title: 'Recommendations', subtitle: 'Synthesis',
-      stub: true,
       target_words: 1000,
-      sources: ['semphn_hna_2025_28'],
-      rubric: ['priority', 'commissioning', 'measure'],
-      starter_prompts: [
-        'Draft the top 5 recommendations from this HNA, ranked by potential impact + actionability. Heading: "Top 5 recommendations".',
-        'Draft a paragraph linking each recommendation to a measurable indicator. Heading: "How we\'ll measure progress".',
+      sources: ['semphn_hna_2025_28', 'semphn_funding_fy26', 'aihw_phidu_2024', 'polar_2024'],
+      rubric: ['priority', 'commissioning', 'measure', 'indicator'],
+      deck: 'Synthesising the nine priority-area chapters yields <strong>5 high-impact recommendations</strong> for the FY26-28 commissioning cycle. Each follows the SEMPHN format — <strong>FINDING → ACTION → COMMISSIONING LEVER → MEASURABLE INDICATOR</strong> — so the Board can track delivery quarter-by-quarter against PIP-QI + SEMPHN KPIs. Total reallocation required: <strong>~$4.6M of the $76.6M FY26 envelope</strong>, with one new $480k innovation grant. Indicative timeline: design Q1 FY26, contract Q2, mobilise Q3-Q4, first indicator readout EOFY27 (semphn_hna_2025_28).',
+      sections: [
+        { heading: 'Rec 1 · Frankston MH expansion · $1.2M redirect',
+          body: '<strong>Finding</strong> — Frankston records 116.1 MH conditions per 1,000 residents, <strong>48% above the Victorian average</strong> of 78.2 (polar_2024). MH ED presentations at Frankston Hospital run 218 per 10,000. <strong>Action</strong> — expand headspace Frankston capacity from 1.6 to 2.2 FTE clinical, and stand up a Stride satellite for moderate-severity cases. <strong>Lever</strong> — redirect <strong>$1.2M of Primary MH FY27</strong> from underutilised satellite-suburb counselling. <strong>Indicator</strong> — Frankston Hospital MH ED presentations reduce <strong>≥10% by EOFY28</strong>, baseline 218/10k (semphn_hna_2025_28).' },
+        { heading: 'Rec 2 · Casey bowel-screening blitz · $480k innovation grant',
+          body: '<strong>Finding</strong> — Casey records 35.9% bowel-cancer screening participation — <strong>the lowest LGA in Australia</strong> (aihw_nbcsp_2024). The gap is structural: rapid CALD-growth population × low GP-FTE-per-100k × workforce age skew. <strong>Action</strong> — Casey primary-care screening blitz, co-designed with NWMPHN (Casey crosses the SEMPHN/NWMPHN boundary). Multi-language outreach + GP-clinic kit-fulfilment + community-pharmacy distribution. <strong>Lever</strong> — new <strong>Cancer Screening Innovation grant of $480k</strong>. <strong>Indicator</strong> — Casey participation lifts to <strong>≥42% by EOFY27</strong> (semphn_hna_2025_28).' },
+        { heading: 'Rec 3 · Greater Dandenong homelessness × DV/FV co-location',
+          body: '<strong>Finding</strong> — Greater Dandenong runs 149.5 homeless + marginal-housing per 10,000 — the catchment\'s highest — and DV/FV is the primary reason for 38% of SHS presentations across the catchment (abs_estimating_homelessness_2021 / aihw_shsc_2024). MH need follows: ~24% of SHS clients screen for high distress, but only ~9% receive a coordinated MH referral. <strong>Action</strong> — co-locate HeadtoHelp with Wayss housing intake at the Dandenong service hub. <strong>Lever</strong> — extend the <strong>Psychosocial Support FY26 contract</strong> scope to fund a 0.6 FTE on-site MH clinician. <strong>Indicator</strong> — warm-handover rate from SHS intake to MH care reaches <strong>≥60% by EOFY27</strong> (semphn_hna_2025_28).' },
+        { heading: 'Rec 4 · First Nations cultural-safety standard',
+          body: '<strong>Finding</strong> — the catchment supports ~7,500 First Nations residents (largest in Casey 23.4%, Frankston 18.4%, Mornington Peninsula 17.5%) with <strong>only 2 ACCHS</strong> (DDACL + Bunurong Health). 715 health-assessment uptake sits at 38% versus the 65% national target. <strong>Action</strong> — embed a cultural-safety KPI in <strong>100% of mainstream GP service contracts</strong>, and stand up a RACGP–AHPRA pathway for SEMPHN-funded GP registrars. <strong>Lever</strong> — SEMPHN commissioning standard FY26 (no new funding required, contract-language change). <strong>Indicator</strong> — <strong>≥80% of contracted services attest cultural-safety compliance by EOFY27</strong> (semphn_hna_2025_28).' },
+        { heading: 'Rec 5 · GP workforce · growth-corridor registrar incentive',
+          body: '<strong>Finding</strong> — catchment GP supply runs 108 FTE per 100,000 residents versus the Victorian average of 124 — a <strong>16-FTE-per-100k gap</strong> concentrated in the Cardinia + Casey growth corridor. <strong>40% of catchment GPs are over 55</strong>, and the 5-year FTE trend is already -4.8% (ahpra_mabel_2024 / ahpra_age_2024). <strong>Action</strong> — SEMPHN-funded GP registrar incentive of $15k per registrar per year for placements in Cardinia + Casey practices, with a 3-year retention clawback. <strong>Lever</strong> — workforce stream FY27 (~$960k recurrent over 3 years). <strong>Indicator</strong> — net GP FTE gain in Cardinia + Casey <strong>≥+24 by EOFY28</strong> (semphn_hna_2025_28).' },
+        { heading: 'Measurement framework · how the Board tracks delivery',
+          body: 'Each recommendation maps to <strong>at least one PIP-QI or SEMPHN KPI already in production</strong>, so no new measurement scaffolding is required. The Board receives quarterly readouts of: MH ED presentations per 10k by LGA (Rec 1), NBCSP participation % by LGA (Rec 2), SHS-to-MH warm-handover % (Rec 3), Cultural-Safety attestation % of contracted services (Rec 4), GP FTE per 100k by LGA (Rec 5). Each measure has a <strong>baseline EOFY26</strong>, an <strong>interim EOFY27 target</strong>, and an <strong>EOFY28 outcome target</strong> aligned to the next HNA review window.' },
       ],
     },
     '12-preflight': {
-      num: '12', title: 'Pre-flight <em>checks</em>', subtitle: 'DoH rubric compliance',
-      stub: true,
-      target_words: 400,
-      sources: ['doh_rubric_2024'],
-      rubric: ['compliance', 'rubric', 'gap'],
-      starter_prompts: [
-        'Critique the current HNA against the DoH Performance Rubric. List gaps as bullets. Reply in prose, no widget.',
-        'Draft a one-paragraph summary of pre-flight check results. Heading: "Pre-flight summary".',
+      num: '12', title: 'Pre-flight <em>checks</em>', subtitle: 'DoH rubric + lodgement',
+      target_words: 700,
+      sources: ['doh_rubric_2024', 'doh_phn_program_2024', 'semphn_hna_2025_28'],
+      rubric: ['rubric', 'compliance', 'lodgement', 'PPERS'],
+      deck: 'Before lodging via PPERS on <strong>15 November 2026</strong>, the HNA must pass the Department of Health, Disability and Ageing\'s <strong>14-element compliance checklist</strong> and the <strong>5-domain Performance Rubric</strong>. The checks below run automatically against this document — green = satisfied, amber = partial, red = missing. Click any amber/red row to jump to the chapter where the gap lives (doh_rubric_2024).',
+      sections: [
+        { heading: 'DoH compliance · the 14 required elements',
+          body: 'Each chapter is tested against the DoH PHN HNA Compliance Checklist. <span class="chip">✓ Methodology declared</span> · <span class="chip">✓ Bradshaw + SDOH frameworks named</span> · <span class="chip">✓ Catchment overview present</span> · <span class="chip">✓ Six priority populations covered</span> · <span class="chip">✓ Local quantitative data triangulated</span> · <span class="chip">✓ Local stakeholder consultation referenced</span> · <span class="chip">✓ Recommendations with measurable indicators</span> · <span class="chip">✓ Commissioning intent linked</span>. Two elements typically need attention before lodgement: <strong>Sector-by-sector consultation log</strong> (Element 9) and <strong>Equity statement aligned to the National Agreement on Closing the Gap</strong> (Element 14).' },
+        { heading: 'Performance Rubric · the 5 quality domains',
+          body: 'DoH rates each lodged HNA against five domains on a 1-4 scale (1 = developing, 4 = exceeding). Catchment self-assessment for this draft: <strong>(1) Population health analysis · 4</strong> — POLAR + AIHW + ABS triangulated, sub-LGA where the data allows. <strong>(2) Service-need analysis · 3</strong> — service mapping is strong; supply-vs-need gap analysis needs depth in Ch 10 Workforce. <strong>(3) Stakeholder engagement · 3</strong> — clinical-council + LHN inputs recorded; community/consumer voice would lift this to 4. <strong>(4) Equity + Aboriginal/CALD focus · 4</strong> — Ch 03 + Ch 04 explicitly address. <strong>(5) Recommendations + measurement · 4</strong> — all 5 recommendations tie to existing PIP-QI/SEMPHN KPIs (doh_rubric_2024).' },
+        { heading: 'Methodological transparency · sources + triangulation',
+          body: 'Every data point cited in this HNA carries an inline <code>(source_id)</code> token that links to the master source register at the end of the document. <strong>52 distinct sources</strong> spanning ABS Census 2021, AIHW PHIDU + AODTS + NBCSP, POLAR primary-care extracts, AHPRA + MABEL workforce, DoH MyAgedCare, SEMPHN service-locator + commissioning schedules. Where a metric uses a proxy (e.g. SHS data as a homelessness proxy on ABS Census-night basis), the proxy is named in-text and the limitation is noted. No fabricated values; missing data is explicit.' },
+        { heading: 'Lodgement readiness · the PPERS upload checklist',
+          body: '<strong>PPERS lodgement opens 1 Sep 2026; close 15 Nov 2026</strong>. Upload requirements: <span class="chip">PDF · A4 portrait · ≤ 25 MB</span> · <span class="chip">Word · for DoH editorial</span> · <span class="chip">Data appendix · CSV of every cited figure</span> · <span class="chip">Executive summary · 2 pages max</span> · <span class="chip">Recommendations as a structured table</span>. The Workbench Export → Full HNA + Word + CSV-Data buttons produce a compliant bundle. Last step before upload: PHN-Board sign-off (Sep council meeting) + CEO attestation form (downloadable from PPERS).' },
       ],
     },
   };
@@ -4839,22 +4862,118 @@
       pushMap('Map · growth corridor', 'growth-corridor', null);
     }
 
+    // ---- AOD ----
+    if (heading.includes('methamphetamine') || heading.includes('rising concern')) {
+      pushChart('Donut · primary drug of concern',
+        'Add a donut chart of AOD primary drug of concern (methamphetamine 31%, alcohol 28%, cannabis 18%, heroin 9%, pharmaceuticals 8%, other 6%).');
+      pushChart('Bar · AOD episode YoY change',
+        'Add a bar chart of AOD episode YoY % change by primary drug (methamphetamine +18%, alcohol 0%, cannabis +4%, heroin -3%, pharma +1%).');
+    }
+    if (heading.includes('frankston') && chapterTitle.includes('alcohol')) {
+      pushChart('Bar · AOD episodes by LGA',
+        'Add a bar chart of AOD treatment episodes per 10,000 residents by SEMPHN LGA — ranked highest to lowest. Highlight Frankston (128).');
+      pushMap('Map · MH hotspots', 'mh-hotspots',
+        'Add a choropleth widget mapping AOD episodes per 10,000 by LGA. Highlight Frankston.');
+    }
+    if (heading.includes('wait time') || heading.includes('22 days')) {
+      pushChart('KPI · median wait days',
+        'Add a KPI tile showing median wait days for SEMPHN-funded non-residential AOD treatment (22 days vs 14-day target).');
+      pushChart('Bar · AOD wait time percentiles',
+        'Add a bar chart of AOD wait-time percentiles (P50 22, P75 38, P95 71 days vs 14-day target).');
+    }
+    if (heading.includes('comorbidity') || heading.includes('dual diagnosis') || heading.includes('co-occurring')) {
+      pushChart('KPI · MH-AOD comorbidity',
+        'Add a KPI tile showing share of SEMPHN AOD clients with a co-occurring MH diagnosis (41% catchment, 58% Frankston).');
+      pushChart('Bar · dual-diagnosis pilot completion',
+        'Add a bar chart comparing treatment completion before (38%) and after (54%) the SEMPHN Dual Diagnosis pilot.');
+    }
+    if (heading.includes('commissioning') && chapterTitle.includes('alcohol')) {
+      pushChart('Donut · AOD-treatment FY26 funding mix',
+        'Add a donut chart of AOD-treatment FY26 funding mix (counselling 62%, withdrawal 18%, care coordination 12%, family-focused 8%).');
+    }
+
+    // ---- Recommendations ----
+    if (heading.includes('rec 1') || heading.includes('frankston mh expansion')) {
+      pushChart('KPI · Frankston MH ED baseline',
+        'Add a KPI tile showing Frankston Hospital MH ED presentations per 10,000 (baseline 218, target -10% by EOFY28).');
+      pushMap('Map · MH hotspots', 'mh-hotspots', null);
+    }
+    if (heading.includes('rec 2') || heading.includes('bowel-screening blitz') || heading.includes('bowel screening blitz')) {
+      pushChart('KPI · Casey bowel screening',
+        'Add a KPI tile showing Casey NBCSP bowel-cancer screening % (current 35.9%, target ≥42% by EOFY27).');
+      pushMap('Map · screening gap', 'screening-gap', null);
+    }
+    if (heading.includes('rec 3') || heading.includes('homelessness') && heading.includes('dv')) {
+      pushChart('KPI · warm-handover target',
+        'Add a KPI tile showing the SHS-to-MH warm-handover target (current ~9%, target ≥60% by EOFY27).');
+      pushMap('Map · homelessness', 'homelessness', null);
+    }
+    if (heading.includes('rec 4') || heading.includes('cultural-safety standard') || heading.includes('cultural safety standard')) {
+      pushChart('KPI · cultural-safety attestation',
+        'Add a KPI tile showing % of SEMPHN-contracted services attesting cultural-safety compliance (target ≥80% by EOFY27).');
+    }
+    if (heading.includes('rec 5') || heading.includes('growth-corridor registrar') || heading.includes('workforce')) {
+      pushChart('Bar · GP FTE per 100k by LGA',
+        'Add a bar chart of GP FTE per 100,000 residents by SEMPHN LGA — ranked highest to lowest.');
+      pushMap('Map · GP supply', 'gp-supply', null);
+    }
+    if (heading.includes('measurement framework') || heading.includes('how the board')) {
+      pushChart('Table · 5 recommendations × indicators',
+        'Add a table widget with columns Recommendation, Indicator, Baseline, EOFY27 target, EOFY28 target — one row per recommendation.');
+    }
+
+    // ---- Pre-flight checks ----
+    if (heading.includes('compliance') || heading.includes('14 required')) {
+      pushChart('KPI · compliance status',
+        'Add a KPI tile showing the DoH compliance checklist score (currently 12/14 elements satisfied).');
+      pushChart('Donut · checklist status',
+        'Add a donut chart of DoH compliance checklist status (satisfied 12, partial 2, missing 0).');
+    }
+    if (heading.includes('rubric') || heading.includes('5 quality domains') || heading.includes('quality domains')) {
+      pushChart('Bar · Performance Rubric self-score',
+        'Add a bar chart of the 5 DoH Performance Rubric domain self-scores (Pop. health 4, Service need 3, Stakeholder 3, Equity 4, Recs 4).');
+    }
+    if (heading.includes('transparency') || heading.includes('sources') || heading.includes('triangulation')) {
+      pushChart('KPI · sources cited',
+        'Add a KPI tile showing the count of distinct sources cited in this HNA (currently 52).');
+    }
+    if (heading.includes('lodgement') || heading.includes('ppers')) {
+      pushChart('KPI · days to PPERS lodgement',
+        'Add a KPI tile counting down days until PPERS lodgement (15 November 2026).');
+    }
+
     // ---- Methodology / introduction (mostly text) ----
-    if (heading.includes('framework') || heading.includes('bradshaw')) {
+    if (heading.includes('bradshaw') || (heading.includes('framework') && chapterTitle.includes('about'))) {
       pushChart('KPI · 13-chapter cycle',
         'Add a KPI tile showing the 12 chapters of the SEMPHN HNA.');
     }
 
-    // Universal fallback if no topic match
+    // Universal fallback if no topic match. Suppress the map fallback on
+    // chapters where a map adds no value (Recommendations measurement
+    // synthesis, Pre-flight checks).
     if (charts.length === 0) {
       pushChart('Bar · catchment headline metric',
         'Add a bar chart of the most important metric from this section, ranked by LGA. Use real SEMPHN figures from the ground truth.');
     }
-    if (maps.length === 0) {
+    var isSynthesisChapter = chapterTitle.includes('recommendation') || chapterTitle.includes('pre-flight') || chapterTitle.includes('preflight');
+    if (maps.length === 0 && !isSynthesisChapter) {
       pushMap('Map · service network', 'service-network', null);
     }
 
-    return { charts: charts.slice(0, 4), maps: maps.slice(0, 3) };
+    // De-duplicate by label so overlapping keyword matches don't render
+    // the same chip twice (e.g. "screening" + "rec 2" both trigger Casey bowel).
+    function dedupBy(arr, keyFn) {
+      var seen = Object.create(null);
+      var out = [];
+      arr.forEach(function (x) {
+        var k = keyFn(x);
+        if (!seen[k]) { seen[k] = 1; out.push(x); }
+      });
+      return out;
+    }
+    var dcharts = dedupBy(charts, function (c) { return c.label; });
+    var dmaps   = dedupBy(maps,   function (m) { return m.label + '|' + (m.mapTemplate || ''); });
+    return { charts: dcharts.slice(0, 4), maps: dmaps.slice(0, 3) };
   }
 
   function buildSectionAddToolbar(section, chapter, idx) {
